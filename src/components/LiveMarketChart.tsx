@@ -71,6 +71,40 @@ const defaultOverlaySettings: OverlaySettings = {
   cisd: true
 };
 
+const overlayPresets = {
+  all: defaultOverlaySettings,
+  structure: {
+    ema200: true,
+    orderBlocks: false,
+    fvgs: false,
+    ote: false,
+    msb: true,
+    choch: true,
+    sweep: true,
+    cisd: true
+  } satisfies OverlaySettings,
+  zones: {
+    ema200: false,
+    orderBlocks: true,
+    fvgs: true,
+    ote: true,
+    msb: false,
+    choch: false,
+    sweep: false,
+    cisd: false
+  } satisfies OverlaySettings,
+  minimal: {
+    ema200: true,
+    orderBlocks: true,
+    fvgs: false,
+    ote: false,
+    msb: true,
+    choch: false,
+    sweep: false,
+    cisd: false
+  } satisfies OverlaySettings
+};
+
 interface PineSnapshot {
   msb?: DirectionState | "long" | "short" | 1 | -1;
   choch?: DirectionState | "long" | "short" | 1 | -1;
@@ -877,6 +911,10 @@ export function LiveMarketChart() {
     }));
   }
 
+  function applyOverlayPreset(preset: keyof typeof overlayPresets) {
+    setOverlaySettings(overlayPresets[preset]);
+  }
+
   async function copyDebugSnapshot() {
     if (!activeAnalysis) return;
 
@@ -1157,6 +1195,36 @@ export function LiveMarketChart() {
           </div>
           <div className="rounded-md border border-white/10 bg-black/20 p-3 sm:col-span-2">
             <p className="text-xs font-semibold text-slate-400">차트 오버레이</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => applyOverlayPreset("all")}
+                className="min-h-9 rounded-md border border-accent-blue/30 bg-accent-blue/10 px-3 text-xs font-bold text-accent-blue hover:bg-accent-blue/20"
+              >
+                전체
+              </button>
+              <button
+                type="button"
+                onClick={() => applyOverlayPreset("structure")}
+                className="min-h-9 rounded-md border border-white/10 bg-black/20 px-3 text-xs font-bold text-slate-300 hover:border-accent-blue/40"
+              >
+                구조 집중
+              </button>
+              <button
+                type="button"
+                onClick={() => applyOverlayPreset("zones")}
+                className="min-h-9 rounded-md border border-white/10 bg-black/20 px-3 text-xs font-bold text-slate-300 hover:border-accent-blue/40"
+              >
+                구간 집중
+              </button>
+              <button
+                type="button"
+                onClick={() => applyOverlayPreset("minimal")}
+                className="min-h-9 rounded-md border border-white/10 bg-black/20 px-3 text-xs font-bold text-slate-300 hover:border-accent-blue/40"
+              >
+                미니멀
+              </button>
+            </div>
             <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
               {[
                 ["ema200", "EMA200"],
