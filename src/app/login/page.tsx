@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, KeyRound, MessageCircle } from "lucide-react";
+import { ArrowLeft, KeyRound } from "lucide-react";
 import { getOAuthUrl, isSupabaseConfigured } from "@/lib/supabase";
 
 export default function LoginPage() {
   const configured = isSupabaseConfigured();
 
-  function startLogin(provider: "google" | "kakao") {
+  function startLogin(provider: "google") {
     const url = getOAuthUrl(provider);
     if (!url) return;
     window.location.href = url;
@@ -45,19 +45,10 @@ export default function LoginPage() {
             >
               Google로 계속하기
             </button>
-            <button
-              type="button"
-              disabled={!configured}
-              onClick={() => startLogin("kakao")}
-              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-[#FEE500] px-4 text-sm font-black text-[#191919] disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <MessageCircle size={17} aria-hidden />
-              카카오로 계속하기
-            </button>
           </div>
 
           <p className="mt-5 text-xs leading-5 text-slate-500">
-            OAuth 제공자 설정은 Supabase 대시보드의 Authentication Providers에서 Google/Kakao를 켜면 활성화됩니다.
+            카카오 로그인은 사업자 인증 후 추가 예정입니다.
           </p>
         </section>
       </div>
