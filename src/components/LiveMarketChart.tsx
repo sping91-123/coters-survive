@@ -5,10 +5,13 @@ import Link from "next/link";
 import {
   CandlestickSeries,
   LineStyle,
+  createSeriesMarkers,
   createChart,
   type IChartApi,
   type IPriceLine,
+  type ISeriesMarkersPluginApi,
   type ISeriesApi,
+  type SeriesMarker,
   type Time
 } from "lightweight-charts";
 import { Activity, AlertTriangle, BarChart3, Bug, Calculator, ClipboardCheck, Copy, History, LockKeyhole, RefreshCcw, Settings2 } from "lucide-react";
@@ -62,6 +65,11 @@ function formatPrice(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: value > 100 ? 2 : 5
   }).format(value);
+}
+
+function candleTimeAt(candles: Candle[], index: number): Time | null {
+  if (index < 0 || index >= candles.length) return null;
+  return candles[index].time as Time;
 }
 
 function formatUpdatedAt(value?: string) {
@@ -258,6 +266,7 @@ export function LiveMarketChart() {
   const chartApiRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const priceLinesRef = useRef<IPriceLine[]>([]);
+  const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
 
   const [symbol, setSymbol] = useState("BTCUSDT.P");
   const [activeTimeframe, setActiveTimeframe] = useState<ChartTimeframe>("15m");
@@ -465,12 +474,15 @@ export function LiveMarketChart() {
 
     chartApiRef.current = chart;
     candleSeriesRef.current = candleSeries;
+    markersRef.current = createSeriesMarkers(candleSeries, []);
 
     return () => {
       if (candleSeriesRef.current) {
         priceLinesRef.current.forEach((line) => candleSeriesRef.current?.removePriceLine(line));
         priceLinesRef.current = [];
       }
+      markersRef.current?.setMarkers([]);
+      markersRef.current = null;
       chart.remove();
       chartApiRef.current = null;
       candleSeriesRef.current = null;
@@ -504,10 +516,12 @@ export function LiveMarketChart() {
 
     priceLinesRef.current.forEach((line) => series.removePriceLine(line));
     priceLinesRef.current = [];
+    markersRef.current?.setMarkers([]);
 
     if (!activeAnalysis) return;
 
     const lines: Array<{ price: number | null | undefined; color: string; title: string; style?: LineStyle }> = [];
+    const markers: SeriesMarker<Time>[] = [];
 
     if (activeAnalysis.ema200Value) {
       lines.push({
@@ -524,6 +538,17 @@ export function LiveMarketChart() {
         { price: activeAnalysis.latestOb.top, color, title: `${activeAnalysis.timeframe} OB 상단` },
         { price: activeAnalysis.latestOb.bottom, color, title: `${activeAnalysis.timeframe} OB 하단` }
       );
+
+      const obTime = candleTimeAt(candles, activeAnalysis.latestOb.originIndex);
+      if (obTime) {
+        markers.push({
+          time: obTime,
+          position: activeAnalysis.latestOb.direction === "bullish" ? "belowBar" : "aboveBar",
+          color,
+          shape: activeAnalysis.latestOb.direction === "bullish" ? "arrowUp" : "arrowDown",
+          text: "OB"
+        });
+      }
     }
 
     if (activeAnalysis.latestFvg) {
@@ -542,6 +567,104 @@ export function LiveMarketChart() {
           style: LineStyle.Dashed
         }
       );
+
+      const fvgTime = candleTimeAt(candles, activeAnalysis.latestFvg.originIndex);
+      if (fvgTime) {
+        markers.push({
+          time: fvgTime,
+          position: activeAnalysis.latestFvg.direction === "bullish" ? "belowBar" : "aboveBar",
+          color,
+          shape: "circle",
+          text: activeAnalysis.latestFvg.state === "ifvg" ? "iFVG" : "FVG"
+        });
+      }
+    }
+
+    if (activeAnalysis.oteLevels) {
+      lines.push(
+        {
+          price: activeAnalysis.oteLevels.longLow,
+          color: "#14b8a6",
+          title: `${activeAnalysis.timeframe} OTE 롱 하단`,
+          style: LineStyle.Dotted
+        },
+        {
+          price: activeAnalysis.oteLevels.longHigh,
+          color: "#14b8a6",
+          title: `${activeAnalysis.timeframe} OTE 롱 상단`,
+          style: LineStyle.Dotted
+        },
+        {
+          price: activeAnalysis.oteLevels.shortLow,
+          color: "#a855f7",
+          title: `${activeAnalysis.timeframe} OTE 숏 하단`,
+          style: LineStyle.Dotted
+        },
+        {
+          price: activeAnalysis.oteLevels.shortHigh,
+          color: "#a855f7",
+          title: `${activeAnalysis.timeframe} OTE 숏 상단`,
+          style: LineStyle.Dotted
+        },
+        {
+          price: activeAnalysis.oteLevels.midpoint,
+          color: "#94a3b8",
+          title: `${activeAnalysis.timeframe} PD 50%`,
+          style: LineStyle.Dashed
+        }
+      );
+    }
+
+    if (activeAnalysis.latestMsbEvent) {
+      const msbTime = candleTimeAt(candles, activeAnalysis.latestMsbEvent.index);
+      if (msbTime) {
+        markers.push({
+          time: msbTime,
+          position: activeAnalysis.latestMsbEvent.direction === "bullish" ? "belowBar" : "aboveBar",
+          color: activeAnalysis.latestMsbEvent.direction === "bullish" ? "#22c55e" : "#ef4444",
+          shape: activeAnalysis.latestMsbEvent.direction === "bullish" ? "arrowUp" : "arrowDown",
+          text: "MSB"
+        });
+      }
+    }
+
+    if (activeAnalysis.latestChochEvent) {
+      const chochTime = candleTimeAt(candles, activeAnalysis.latestChochEvent.index);
+      if (chochTime) {
+        markers.push({
+          time: chochTime,
+          position: activeAnalysis.latestChochEvent.direction === "bullish" ? "belowBar" : "aboveBar",
+          color: activeAnalysis.latestChochEvent.direction === "bullish" ? "#4ade80" : "#f87171",
+          shape: "square",
+          text: "CH"
+        });
+      }
+    }
+
+    if (activeAnalysis.latestSweep) {
+      const sweepTime = candleTimeAt(candles, activeAnalysis.latestSweep.index);
+      if (sweepTime) {
+        markers.push({
+          time: sweepTime,
+          position: activeAnalysis.latestSweep.direction === "bullish" ? "belowBar" : "aboveBar",
+          color: activeAnalysis.latestSweep.direction === "bullish" ? "#60a5fa" : "#fbbf24",
+          shape: "circle",
+          text: "SWP"
+        });
+      }
+    }
+
+    if (activeAnalysis.latestCisd) {
+      const cisdTime = candleTimeAt(candles, activeAnalysis.latestCisd.index);
+      if (cisdTime) {
+        markers.push({
+          time: cisdTime,
+          position: activeAnalysis.latestCisd.direction === "bullish" ? "belowBar" : "aboveBar",
+          color: activeAnalysis.latestCisd.direction === "bullish" ? "#10b981" : "#f97316",
+          shape: "square",
+          text: "CISD"
+        });
+      }
     }
 
     priceLinesRef.current = lines
@@ -556,7 +679,8 @@ export function LiveMarketChart() {
           title: line.title
         })
       );
-  }, [activeAnalysis]);
+    markersRef.current?.setMarkers(markers);
+  }, [activeAnalysis, candles]);
 
   const mtfFvgMap = useMemo(
     () =>

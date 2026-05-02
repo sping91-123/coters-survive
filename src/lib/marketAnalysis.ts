@@ -26,6 +26,7 @@ export interface FvgZone {
   bottom: number;
   age: number;
   isInside: boolean;
+  originIndex: number;
 }
 
 export interface OrderBlockZone {
@@ -35,6 +36,7 @@ export interface OrderBlockZone {
   bottom: number;
   age: number;
   isInside: boolean;
+  originIndex: number;
 }
 
 export interface SweepZone {
@@ -43,12 +45,31 @@ export interface SweepZone {
   level: number;
   age: number;
   kind: "wick";
+  index: number;
 }
 
 export interface CisdSignal {
   timeframe: ChartTimeframe;
   direction: "bullish" | "bearish";
   age: number;
+  index: number;
+  level: number;
+}
+
+export interface StructureEvent {
+  timeframe: ChartTimeframe;
+  type: "msb" | "choch";
+  direction: "bullish" | "bearish";
+  index: number;
+  level: number;
+}
+
+export interface OteLevels {
+  midpoint: number;
+  longLow: number;
+  longHigh: number;
+  shortLow: number;
+  shortHigh: number;
 }
 
 export interface StructureDebug {
@@ -68,6 +89,8 @@ export interface TimeframeAnalysis {
   choch: DirectionState;
   ema200Side: "above" | "below" | "unknown";
   ema200Value: number | null;
+  latestMsbEvent: StructureEvent | null;
+  latestChochEvent: StructureEvent | null;
   latestFvg: FvgZone | null;
   inFvg: boolean;
   latestOb: OrderBlockZone | null;
@@ -77,6 +100,7 @@ export interface TimeframeAnalysis {
   latestSweep: SweepZone | null;
   latestCisd: CisdSignal | null;
   oteZone: "long" | "short" | "none";
+  oteLevels: OteLevels | null;
   premiumDiscount: "premium" | "discount" | "equilibrium" | "unknown";
   score: number;
   debug: StructureDebug;
@@ -143,6 +167,8 @@ interface StructureState {
   l1: PivotPoint | null;
   hiPoints: PivotPoint[];
   loPoints: PivotPoint[];
+  latestMsbEvent: StructureEvent | null;
+  latestChochEvent: StructureEvent | null;
   latestOb: OrderBlockZone | null;
   latestBb: OrderBlockZone | null;
   latestCisd: CisdSignal | null;
@@ -444,7 +470,8 @@ function buildBreakerBlock(
     top: candles[originIndex].high,
     bottom: candles[originIndex].low,
     age: candles.length - 1 - originIndex,
-    isInside: latestPrice <= candles[originIndex].high && latestPrice >= candles[originIndex].low
+    isInside: latestPrice <= candles[originIndex].high && latestPrice >= candles[originIndex].low,
+    originIndex
   };
 }
 
@@ -458,6 +485,8 @@ function buildStructureState(
 
   let market: 1 | -1 = 1;
   let chochDir: 1 | -1 = 1;
+  let latestMsbEvent: StructureEvent | null = null;
+  let latestChochEvent: StructureEvent | null = null;
   let latestOb: OrderBlockZone | null = null;
   let latestBb: OrderBlockZone | null = null;
   let latestCisd: CisdSignal | null = null;
@@ -479,6 +508,13 @@ function buildStructureState(
     if (bullBreak) {
       market = 1;
       chochDir = 1;
+      latestMsbEvent = {
+        timeframe,
+        type: "msb",
+        direction: "bullish",
+        index,
+        level: h0.price
+      };
 
       if (h1 && l0) {
         const fromIndex = Math.max(0, h1.index);
@@ -490,7 +526,8 @@ function buildStructureState(
           top: candles[originIndex].high,
           bottom: candles[originIndex].low,
           age: candles.length - 1 - originIndex,
-          isInside: false
+          isInside: false,
+          originIndex
         };
       }
 
@@ -500,6 +537,13 @@ function buildStructureState(
     if (bearBreak) {
       market = -1;
       chochDir = -1;
+      latestMsbEvent = {
+        timeframe,
+        type: "msb",
+        direction: "bearish",
+        index,
+        level: l0.price
+      };
 
       if (l1 && h0) {
         const fromIndex = Math.max(0, l1.index);
@@ -511,7 +555,8 @@ function buildStructureState(
           top: candles[originIndex].high,
           bottom: candles[originIndex].low,
           age: candles.length - 1 - originIndex,
-          isInside: false
+          isInside: false,
+          originIndex
         };
       }
 
@@ -524,8 +569,26 @@ function buildStructureState(
 
     if (instantBearChoch) {
       chochDir = -1;
+      if (l0) {
+        latestChochEvent = {
+          timeframe,
+          type: "choch",
+          direction: "bearish",
+          index,
+          level: l0.price
+        };
+      }
     } else if (instantBullChoch) {
       chochDir = 1;
+      if (h0) {
+        latestChochEvent = {
+          timeframe,
+          type: "choch",
+          direction: "bullish",
+          index,
+          level: h0.price
+        };
+      }
     }
 
     if (chochDir !== previousChoch && latestOb) {
@@ -537,7 +600,9 @@ function buildStructureState(
           latestCisd = {
             timeframe,
             direction: "bullish",
-            age: candles.length - 1 - index
+            age: candles.length - 1 - index,
+            index,
+            level: latestOb.bottom
           };
         }
 
@@ -545,7 +610,9 @@ function buildStructureState(
           latestCisd = {
             timeframe,
             direction: "bearish",
-            age: candles.length - 1 - index
+            age: candles.length - 1 - index,
+            index,
+            level: latestOb.top
           };
         }
       }
@@ -576,6 +643,8 @@ function buildStructureState(
     l1,
     hiPoints,
     loPoints,
+    latestMsbEvent,
+    latestChochEvent,
     latestOb,
     latestBb,
     latestCisd
@@ -600,7 +669,8 @@ function detectLatestSweep(
           direction: "bearish",
           level: point.price,
           age: latestIndex - index,
-          kind: "wick"
+          kind: "wick",
+          index
         };
 
         if (!best || candidate.age < best.age) {
@@ -619,7 +689,8 @@ function detectLatestSweep(
           direction: "bullish",
           level: point.price,
           age: latestIndex - index,
-          kind: "wick"
+          kind: "wick",
+          index
         };
 
         if (!best || candidate.age < best.age) {
@@ -656,7 +727,8 @@ function detectLatestFvg(candles: Candle[], timeframe: ChartTimeframe): FvgZone 
         top,
         bottom,
         age: candles.length - 1 - index,
-        isInside: latestPrice <= top && latestPrice >= bottom
+        isInside: latestPrice <= top && latestPrice >= bottom,
+        originIndex: index
       };
     }
 
@@ -675,7 +747,8 @@ function detectLatestFvg(candles: Candle[], timeframe: ChartTimeframe): FvgZone 
         top,
         bottom,
         age: candles.length - 1 - index,
-        isInside: latestPrice <= top && latestPrice >= bottom
+        isInside: latestPrice <= top && latestPrice >= bottom,
+        originIndex: index
       };
     }
   }
@@ -690,7 +763,8 @@ function detectOteAndPd(candles: Candle[], anchorCandles?: Candle[]) {
   if (!latest || range.length < 20) {
     return {
       oteZone: "none" as const,
-      premiumDiscount: "unknown" as const
+      premiumDiscount: "unknown" as const,
+      oteLevels: null
     };
   }
 
@@ -701,7 +775,8 @@ function detectOteAndPd(candles: Candle[], anchorCandles?: Candle[]) {
   if (span <= 0) {
     return {
       oteZone: "none" as const,
-      premiumDiscount: "unknown" as const
+      premiumDiscount: "unknown" as const,
+      oteLevels: null
     };
   }
 
@@ -727,7 +802,17 @@ function detectOteAndPd(candles: Candle[], anchorCandles?: Candle[]) {
       ? ("short" as const)
       : ("none" as const);
 
-  return { oteZone, premiumDiscount };
+  return {
+    oteZone,
+    premiumDiscount,
+    oteLevels: {
+      midpoint: low + span * 0.5,
+      longLow: longLower,
+      longHigh: longUpper,
+      shortLow: shortLower,
+      shortHigh: shortUpper
+    }
+  };
 }
 
 function appendReason(reasons: AnalysisReason[], text: string, tone: ReasonTone) {
@@ -1209,7 +1294,7 @@ export function analyzeTimeframe(
   const latestOb = structure.latestOb;
   const latestBb = structure.latestBb;
   const latestCisd = structure.latestCisd;
-  const { oteZone, premiumDiscount } = detectOteAndPd(candles, context?.oteAnchorCandles);
+  const { oteZone, premiumDiscount, oteLevels } = detectOteAndPd(candles, context?.oteAnchorCandles);
 
   const msb: DirectionState = structure.market === 1 ? "bullish" : "bearish";
   const choch: DirectionState = structure.chochDir === 1 ? "bullish" : "bearish";
@@ -1240,6 +1325,8 @@ export function analyzeTimeframe(
     choch,
     ema200Side: ema200 ? (latest.close >= ema200 ? "above" : "below") : "unknown",
     ema200Value: ema200,
+    latestMsbEvent: structure.latestMsbEvent,
+    latestChochEvent: structure.latestChochEvent,
     latestFvg,
     inFvg: Boolean(latestFvg?.isInside),
     latestOb,
@@ -1249,6 +1336,7 @@ export function analyzeTimeframe(
     latestSweep,
     latestCisd,
     oteZone,
+    oteLevels,
     premiumDiscount,
     score: Number(score.toFixed(2)),
     debug: {
