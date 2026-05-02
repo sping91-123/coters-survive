@@ -25,7 +25,8 @@ import {
   type ChartTimeframe,
   type DirectionState,
   type MarketAnalysis,
-  type ReasonTone
+  type ReasonTone,
+  type TimeframeAnalysis
 } from "@/lib/marketAnalysis";
 import { appendJournalEntry } from "@/lib/journal";
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
@@ -296,6 +297,25 @@ function MiniMetric({ label, value }: { label: string; value: string }) {
       <p className="mt-1 text-sm font-bold text-white">{value}</p>
     </div>
   );
+}
+
+function barsAgoLabel(age: number) {
+  if (age <= 0) return "방금";
+  return `${age}봉 전`;
+}
+
+function eventDirectionLabel(direction: "bullish" | "bearish") {
+  return direction === "bullish" ? "상승" : "하락";
+}
+
+function timeframeSignalSummary(item: TimeframeAnalysis) {
+  const parts: string[] = [];
+  if (item.inOb && item.latestOb) parts.push(`${item.latestOb.direction === "bullish" ? "상승" : "하락"} OB 내부`);
+  if (item.inFvg && item.latestFvg) parts.push(item.latestFvg.state === "ifvg" ? "iFVG 내부" : "FVG 내부");
+  if (item.oteZone !== "none") parts.push(`${item.oteZone === "long" ? "롱" : "숏"} OTE`);
+  if (item.latestSweep && item.latestSweep.age <= 8) parts.push(`Sweep ${barsAgoLabel(item.latestSweep.age)}`);
+  if (item.latestCisd && item.latestCisd.age <= 8) parts.push(`CISD ${barsAgoLabel(item.latestCisd.age)}`);
+  return parts.length ? parts.slice(0, 2).join(" / ") : "겹치는 신호 없음";
 }
 
 export function LiveMarketChart() {
@@ -1395,9 +1415,90 @@ export function LiveMarketChart() {
                       <div className={`rounded-md border px-2 py-1 text-xs font-bold ${directionBadge(item.choch)}`}>
                         CHoCH {stateLabel(item.choch)}
                       </div>
+                      <div className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-semibold text-slate-300">
+                        점수 {item.score}
+                      </div>
+                      <p className="text-[11px] leading-5 text-slate-500">{timeframeSignalSummary(item)}</p>
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+          ) : null}
+
+          {activeAnalysis ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+                <h3 className="text-sm font-bold text-white">현재 TF 이벤트</h3>
+                <div className="mt-3 space-y-2">
+                  {activeAnalysis.latestMsbEvent ? (
+                    <p className="rounded-md border border-emerald-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      MSB {eventDirectionLabel(activeAnalysis.latestMsbEvent.direction)} / {barsAgoLabel(Math.max(0, candles.length - 1 - activeAnalysis.latestMsbEvent.index))} / {formatPrice(activeAnalysis.latestMsbEvent.level)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.latestChochEvent ? (
+                    <p className="rounded-md border border-rose-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      CHoCH {eventDirectionLabel(activeAnalysis.latestChochEvent.direction)} / {barsAgoLabel(Math.max(0, candles.length - 1 - activeAnalysis.latestChochEvent.index))} / {formatPrice(activeAnalysis.latestChochEvent.level)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.latestSweep ? (
+                    <p className="rounded-md border border-amber-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      Sweep {eventDirectionLabel(activeAnalysis.latestSweep.direction)} / {barsAgoLabel(activeAnalysis.latestSweep.age)} / {formatPrice(activeAnalysis.latestSweep.level)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.latestCisd ? (
+                    <p className="rounded-md border border-orange-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      CISD {eventDirectionLabel(activeAnalysis.latestCisd.direction)} / {barsAgoLabel(activeAnalysis.latestCisd.age)} / {formatPrice(activeAnalysis.latestCisd.level)}
+                    </p>
+                  ) : null}
+                  {!activeAnalysis.latestMsbEvent &&
+                  !activeAnalysis.latestChochEvent &&
+                  !activeAnalysis.latestSweep &&
+                  !activeAnalysis.latestCisd ? (
+                    <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-400">
+                      최근 이벤트가 충분히 누적되지 않았습니다.
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+                <h3 className="text-sm font-bold text-white">현재 TF 주요 구간</h3>
+                <div className="mt-3 space-y-2">
+                  {activeAnalysis.latestOb ? (
+                    <p className="rounded-md border border-emerald-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      OB {eventDirectionLabel(activeAnalysis.latestOb.direction)} / {formatPriceRange(activeAnalysis.latestOb.bottom, activeAnalysis.latestOb.top)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.latestBb ? (
+                    <p className="rounded-md border border-violet-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      BB {eventDirectionLabel(activeAnalysis.latestBb.direction)} / {formatPriceRange(activeAnalysis.latestBb.bottom, activeAnalysis.latestBb.top)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.latestFvg ? (
+                    <p className="rounded-md border border-sky-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      {activeAnalysis.latestFvg.state === "ifvg" ? "iFVG" : "FVG"} {eventDirectionLabel(activeAnalysis.latestFvg.direction)} / {formatPriceRange(activeAnalysis.latestFvg.bottom, activeAnalysis.latestFvg.top)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.oteLevels ? (
+                    <>
+                      <p className="rounded-md border border-teal-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                        OTE 롱 / {formatPriceRange(activeAnalysis.oteLevels.longLow, activeAnalysis.oteLevels.longHigh)}
+                      </p>
+                      <p className="rounded-md border border-purple-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                        OTE 숏 / {formatPriceRange(activeAnalysis.oteLevels.shortLow, activeAnalysis.oteLevels.shortHigh)}
+                      </p>
+                    </>
+                  ) : null}
+                  {!activeAnalysis.latestOb &&
+                  !activeAnalysis.latestBb &&
+                  !activeAnalysis.latestFvg &&
+                  !activeAnalysis.oteLevels ? (
+                    <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-400">
+                      아직 표시할 주요 구간이 부족합니다.
+                    </p>
+                  ) : null}
+                </div>
               </div>
             </div>
           ) : null}
