@@ -20,6 +20,7 @@ import {
   chartTimeframes,
   fetchBinanceCandles,
   summarizeMarket,
+  type AnalysisReason,
   type Candle,
   type ChartTimeframe,
   type DirectionState,
@@ -33,6 +34,7 @@ import { getSupabaseSession } from "@/lib/supabase";
 const symbols = ["BTCUSDT.P", "ETHUSDT.P", "SOLUSDT.P", "XRPUSDT.P", "DOGEUSDT.P"];
 const dailyFreeReadouts = 5;
 const creditStorageKey = "coters.readCredits.v1";
+const overlaySettingsStorageKey = "coters.overlaySettings.v1";
 
 interface MarketCachePayload {
   analysis: MarketAnalysis;
@@ -45,6 +47,28 @@ interface CreditState {
   used: number;
   unlockedKeys: string[];
 }
+
+interface OverlaySettings {
+  ema200: boolean;
+  orderBlocks: boolean;
+  fvgs: boolean;
+  ote: boolean;
+  msb: boolean;
+  choch: boolean;
+  sweep: boolean;
+  cisd: boolean;
+}
+
+const defaultOverlaySettings: OverlaySettings = {
+  ema200: true,
+  orderBlocks: true,
+  fvgs: true,
+  ote: true,
+  msb: true,
+  choch: true,
+  sweep: true,
+  cisd: true
+};
 
 interface PineSnapshot {
   msb?: DirectionState | "long" | "short" | 1 | -1;
@@ -123,6 +147,19 @@ function readCreditState(): CreditState {
 function writeCreditState(nextState: CreditState) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(creditStorageKey, JSON.stringify(nextState));
+}
+
+function readOverlaySettings(): OverlaySettings {
+  if (typeof window === "undefined") return defaultOverlaySettings;
+
+  try {
+    const raw = window.localStorage.getItem(overlaySettingsStorageKey);
+    if (!raw) return defaultOverlaySettings;
+    const parsed = JSON.parse(raw) as Partial<OverlaySettings>;
+    return { ...defaultOverlaySettings, ...parsed };
+  } catch {
+    return defaultOverlaySettings;
+  }
 }
 
 function stateLabel(value: string) {
@@ -285,6 +322,7 @@ export function LiveMarketChart() {
   const [creditState, setCreditState] = useState<CreditState>(() => freshCreditState());
   const [paywallMessage, setPaywallMessage] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
+  const [overlaySettings, setOverlaySettings] = useState<OverlaySettings>(defaultOverlaySettings);
 
   const cacheKey = `coters.marketCache.${symbol}.${analysisMode}.${msbMode}`;
   const readoutKey = `${symbol}.${activeTimeframe}.${analysisMode}.${msbMode}`;
@@ -293,6 +331,7 @@ export function LiveMarketChart() {
     const nextState = readCreditState();
     writeCreditState(nextState);
     setCreditState(nextState);
+    setOverlaySettings(readOverlaySettings());
   }, []);
 
   useEffect(() => {
@@ -330,6 +369,10 @@ export function LiveMarketChart() {
   useEffect(() => {
     window.localStorage.setItem("coters.msbMode", msbMode);
   }, [msbMode]);
+
+  useEffect(() => {
+    window.localStorage.setItem(overlaySettingsStorageKey, JSON.stringify(overlaySettings));
+  }, [overlaySettings]);
 
   useEffect(() => {
     try {
@@ -523,7 +566,7 @@ export function LiveMarketChart() {
     const lines: Array<{ price: number | null | undefined; color: string; title: string; style?: LineStyle }> = [];
     const markers: SeriesMarker<Time>[] = [];
 
-    if (activeAnalysis.ema200Value) {
+    if (overlaySettings.ema200 && activeAnalysis.ema200Value) {
       lines.push({
         price: activeAnalysis.ema200Value,
         color: "#facc15",
@@ -532,7 +575,7 @@ export function LiveMarketChart() {
       });
     }
 
-    if (activeAnalysis.latestOb) {
+    if (overlaySettings.orderBlocks && activeAnalysis.latestOb) {
       const color = activeAnalysis.latestOb.direction === "bullish" ? "#34d399" : "#fb4d5f";
       lines.push(
         { price: activeAnalysis.latestOb.top, color, title: `${activeAnalysis.timeframe} OB 상단` },
@@ -551,7 +594,7 @@ export function LiveMarketChart() {
       }
     }
 
-    if (activeAnalysis.latestFvg) {
+    if (overlaySettings.fvgs && activeAnalysis.latestFvg) {
       const color = activeAnalysis.latestFvg.direction === "bullish" ? "#38bdf8" : "#f59e0b";
       lines.push(
         {
@@ -580,7 +623,7 @@ export function LiveMarketChart() {
       }
     }
 
-    if (activeAnalysis.oteLevels) {
+    if (overlaySettings.ote && activeAnalysis.oteLevels) {
       lines.push(
         {
           price: activeAnalysis.oteLevels.longLow,
@@ -615,7 +658,7 @@ export function LiveMarketChart() {
       );
     }
 
-    if (activeAnalysis.latestMsbEvent) {
+    if (overlaySettings.msb && activeAnalysis.latestMsbEvent) {
       const msbTime = candleTimeAt(candles, activeAnalysis.latestMsbEvent.index);
       if (msbTime) {
         markers.push({
@@ -628,7 +671,7 @@ export function LiveMarketChart() {
       }
     }
 
-    if (activeAnalysis.latestChochEvent) {
+    if (overlaySettings.choch && activeAnalysis.latestChochEvent) {
       const chochTime = candleTimeAt(candles, activeAnalysis.latestChochEvent.index);
       if (chochTime) {
         markers.push({
@@ -641,7 +684,7 @@ export function LiveMarketChart() {
       }
     }
 
-    if (activeAnalysis.latestSweep) {
+    if (overlaySettings.sweep && activeAnalysis.latestSweep) {
       const sweepTime = candleTimeAt(candles, activeAnalysis.latestSweep.index);
       if (sweepTime) {
         markers.push({
@@ -654,7 +697,7 @@ export function LiveMarketChart() {
       }
     }
 
-    if (activeAnalysis.latestCisd) {
+    if (overlaySettings.cisd && activeAnalysis.latestCisd) {
       const cisdTime = candleTimeAt(candles, activeAnalysis.latestCisd.index);
       if (cisdTime) {
         markers.push({
@@ -680,7 +723,7 @@ export function LiveMarketChart() {
         })
       );
     markersRef.current?.setMarkers(markers);
-  }, [activeAnalysis, candles]);
+  }, [activeAnalysis, candles, overlaySettings]);
 
   const mtfFvgMap = useMemo(
     () =>
@@ -791,6 +834,29 @@ export function LiveMarketChart() {
     return Math.round((matched / parityRows.length) * 100);
   }, [parityRows]);
 
+  const groupedReasons = useMemo(() => {
+    if (!analysis) {
+      return {
+        bullish: [] as AnalysisReason[],
+        bearish: [] as AnalysisReason[],
+        neutral: [] as AnalysisReason[]
+      };
+    }
+
+    return {
+      bullish: analysis.reasons.filter((reason) => reason.tone === "bullish"),
+      bearish: analysis.reasons.filter((reason) => reason.tone === "bearish"),
+      neutral: analysis.reasons.filter((reason) => reason.tone === "neutral")
+    };
+  }, [analysis]);
+
+  function toggleOverlay(key: keyof OverlaySettings) {
+    setOverlaySettings((current) => ({
+      ...current,
+      [key]: !current[key]
+    }));
+  }
+
   async function copyDebugSnapshot() {
     if (!activeAnalysis) return;
 
@@ -817,6 +883,7 @@ export function LiveMarketChart() {
       latestFvg: activeAnalysis.latestFvg,
       latestSweep: activeAnalysis.latestSweep,
       latestCisd: activeAnalysis.latestCisd,
+      overlaySettings,
       currentLocationLabel: analysis?.currentLocationLabel ?? null,
       msbMode,
       longScenario: analysis?.longScenario ?? null,
@@ -1068,6 +1135,38 @@ export function LiveMarketChart() {
               MSB 윅 포함
             </button>
           </div>
+          <div className="rounded-md border border-white/10 bg-black/20 p-3 sm:col-span-2">
+            <p className="text-xs font-semibold text-slate-400">차트 오버레이</p>
+            <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {[
+                ["ema200", "EMA200"],
+                ["orderBlocks", "OB / BB"],
+                ["fvgs", "FVG / iFVG"],
+                ["ote", "OTE / PD"],
+                ["msb", "MSB"],
+                ["choch", "CHoCH"],
+                ["sweep", "Sweep"],
+                ["cisd", "CISD"]
+              ].map(([key, label]) => {
+                const settingKey = key as keyof OverlaySettings;
+                const enabled = overlaySettings[settingKey];
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => toggleOverlay(settingKey)}
+                    className={`min-h-10 rounded-md border px-3 text-xs font-bold transition ${
+                      enabled
+                        ? "border-accent-blue bg-accent-blue/15 text-accent-blue"
+                        : "border-surface-line bg-black/20 text-slate-400 hover:border-accent-blue/40"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       ) : null}
 
@@ -1099,7 +1198,19 @@ export function LiveMarketChart() {
           </div>
           {activeAnalysis ? (
             <div className="border-b border-surface-line bg-black/20 px-4 py-2 text-xs leading-5 text-slate-400">
-              차트 가격선: EMA200, 현재 TF OB, 현재 TF FVG/iFVG 구간
+              표시 중:{" "}
+              {[
+                overlaySettings.ema200 ? "EMA200" : null,
+                overlaySettings.orderBlocks ? "OB/BB" : null,
+                overlaySettings.fvgs ? "FVG/iFVG" : null,
+                overlaySettings.ote ? "OTE/PD" : null,
+                overlaySettings.msb ? "MSB" : null,
+                overlaySettings.choch ? "CHoCH" : null,
+                overlaySettings.sweep ? "Sweep" : null,
+                overlaySettings.cisd ? "CISD" : null
+              ]
+                .filter(Boolean)
+                .join(", ")}
             </div>
           ) : null}
           <div className="relative">
@@ -1112,6 +1223,21 @@ export function LiveMarketChart() {
               </div>
             ) : null}
           </div>
+          {activeAnalysis ? (
+            <div className="border-t border-surface-line bg-black/20 px-4 py-3">
+              <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-300">
+                <span className="rounded-md border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-emerald-300">OB</span>
+                <span className="rounded-md border border-sky-400/20 bg-sky-400/10 px-2 py-1 text-sky-300">FVG / iFVG</span>
+                <span className="rounded-md border border-teal-400/20 bg-teal-400/10 px-2 py-1 text-teal-300">OTE 롱</span>
+                <span className="rounded-md border border-violet-400/20 bg-violet-400/10 px-2 py-1 text-violet-300">OTE 숏</span>
+                <span className="rounded-md border border-slate-400/20 bg-slate-400/10 px-2 py-1 text-slate-300">PD 50%</span>
+                <span className="rounded-md border border-green-500/20 bg-green-500/10 px-2 py-1 text-green-300">MSB</span>
+                <span className="rounded-md border border-rose-400/20 bg-rose-400/10 px-2 py-1 text-rose-300">CHoCH</span>
+                <span className="rounded-md border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-amber-300">Sweep</span>
+                <span className="rounded-md border border-orange-400/20 bg-orange-400/10 px-2 py-1 text-orange-300">CISD</span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="space-y-4">
@@ -1567,15 +1693,58 @@ export function LiveMarketChart() {
           {analysis ? (
             <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <h3 className="text-sm font-bold text-white">판독 근거</h3>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {analysis.reasons.map((reason) => (
-                  <span
-                    key={`${reason.text}-${reason.tone}`}
-                    className={`rounded-md border px-2.5 py-1.5 text-sm font-semibold ${reasonClasses(reason.tone)}`}
-                  >
-                    {reason.text}
-                  </span>
-                ))}
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-md border border-signal-success/20 bg-signal-success/5 p-3">
+                  <p className="text-xs font-bold text-signal-success">상승 근거</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {groupedReasons.bullish.length > 0 ? (
+                      groupedReasons.bullish.map((reason) => (
+                        <span
+                          key={`${reason.text}-${reason.tone}`}
+                          className={`rounded-md border px-2.5 py-1.5 text-sm font-semibold ${reasonClasses(reason.tone)}`}
+                        >
+                          {reason.text}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-500">뚜렷한 상승 근거 없음</span>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-md border border-signal-danger/20 bg-signal-danger/5 p-3">
+                  <p className="text-xs font-bold text-signal-danger">하락 근거</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {groupedReasons.bearish.length > 0 ? (
+                      groupedReasons.bearish.map((reason) => (
+                        <span
+                          key={`${reason.text}-${reason.tone}`}
+                          className={`rounded-md border px-2.5 py-1.5 text-sm font-semibold ${reasonClasses(reason.tone)}`}
+                        >
+                          {reason.text}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-500">뚜렷한 하락 근거 없음</span>
+                    )}
+                  </div>
+                </div>
+                <div className="rounded-md border border-white/10 bg-black/20 p-3">
+                  <p className="text-xs font-bold text-slate-300">중립 / 참고</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {groupedReasons.neutral.length > 0 ? (
+                      groupedReasons.neutral.map((reason) => (
+                        <span
+                          key={`${reason.text}-${reason.tone}`}
+                          className={`rounded-md border px-2.5 py-1.5 text-sm font-semibold ${reasonClasses(reason.tone)}`}
+                        >
+                          {reason.text}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="text-xs text-slate-500">추가 참고 근거 없음</span>
+                    )}
+                  </div>
+                </div>
               </div>
               {analysis.warnings.length > 0 ? (
                 <div className="mt-3 space-y-2">
