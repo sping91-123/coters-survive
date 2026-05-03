@@ -1,6 +1,7 @@
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
 import { LiveMarketChart } from "@/components/LiveMarketChart";
+import { SetupScoutPanel } from "@/components/SetupScoutPanel";
 import { TabMenu } from "@/components/TabMenu";
 
 export function SurvivalApp() {
@@ -9,6 +10,7 @@ export function SurvivalApp() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
         <TabMenu />
+        <SetupScoutPanel />
         <LiveMarketChart />
         <AppFooter />
       </div>

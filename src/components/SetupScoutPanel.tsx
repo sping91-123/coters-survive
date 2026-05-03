@@ -1,0 +1,220 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { ArrowDownRight, ArrowUpRight, Loader2, RefreshCw, Sparkles, Target } from "lucide-react";
+import {
+  readScoutCache,
+  scanAllSetups,
+  topSetups,
+  writeScoutCache,
+  type ScoutSetup
+} from "@/lib/setupScout";
+
+type ScanState =
+  | { status: "idle" }
+  | { status: "loading" }
+  | { status: "ready"; setups: ScoutSetup[]; cachedAt: number }
+  | { status: "error"; message: string };
+
+const numberFormatter = new Intl.NumberFormat("ko-KR", {
+  maximumFractionDigits: 4,
+  minimumFractionDigits: 2
+});
+
+function formatPrice(value: number) {
+  if (!Number.isFinite(value)) return "-";
+  if (value >= 100) return numberFormatter.format(Math.round(value * 100) / 100);
+  return numberFormatter.format(value);
+}
+
+function formatCachedAt(ms: number) {
+  const diff = Date.now() - ms;
+  const min = Math.floor(diff / 60000);
+  if (min < 1) return "방금";
+  if (min < 60) return `${min}분 전`;
+  const hr = Math.floor(min / 60);
+  return `${hr}시간 전`;
+}
+
+function ScoreBadge({ score }: { score: number }) {
+  const tone =
+    score >= 80
+      ? "border-signal-success/40 bg-signal-success/15 text-signal-success"
+      : score >= 65
+        ? "border-accent-blue/40 bg-accent-blue/15 text-accent-blue"
+        : "border-signal-warning/40 bg-signal-warning/15 text-signal-warning";
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-black ${tone}`}>
+      {score}점
+    </span>
+  );
+}
+
+function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
+  const isLong = setup.plan.side === "long";
+  const sideColor = isLong ? "text-signal-success" : "text-signal-danger";
+  const SideIcon = isLong ? ArrowUpRight : ArrowDownRight;
+  const sym = setup.symbol.replace("USDT.P", "");
+  const rrLabel = `1R · 1.5R · 2.5R`;
+
+  return (
+    <article className="rounded-lg border border-surface-line bg-surface-cardSoft p-4 transition hover:border-accent-blue/40">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold text-slate-500">TOP {rank}</p>
+          <div className="mt-1 flex items-center gap-2">
+            <h3 className="text-base font-black text-white">{sym}</h3>
+            <span className="rounded border border-white/10 bg-black/20 px-1.5 py-0.5 text-xs font-bold text-slate-300">
+              {setup.timeframe}
+            </span>
+            <SideIcon className={sideColor} size={16} aria-hidden />
+            <span className={`text-xs font-bold ${sideColor}`}>{isLong ? "롱" : "숏"}</span>
+            <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-xs font-bold text-accent-blue">
+              {setup.plan.quality}급
+            </span>
+          </div>
+        </div>
+        <ScoreBadge score={setup.score} />
+      </div>
+
+      <p className="mt-3 text-sm leading-6 text-slate-300">{setup.plan.entryLabel}</p>
+
+      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+        <div className="rounded border border-white/10 bg-black/20 px-2 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">진입</p>
+          <p className="mt-1 text-xs font-bold text-white">
+            {formatPrice(setup.plan.entryLow)} ~ {formatPrice(setup.plan.entryHigh)}
+          </p>
+        </div>
+        <div className="rounded border border-signal-danger/20 bg-signal-danger/10 px-2 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">무효</p>
+          <p className="mt-1 text-xs font-bold text-white">{formatPrice(setup.plan.invalidation)}</p>
+        </div>
+        <div className="rounded border border-signal-success/20 bg-signal-success/10 px-2 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">목표</p>
+          <p className="mt-1 text-xs font-bold text-white">{formatPrice(setup.plan.target1)}</p>
+        </div>
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
+        <span className="inline-flex items-center gap-1">
+          <Target size={12} aria-hidden /> {rrLabel}
+        </span>
+        <span className="font-bold text-slate-400">신뢰도 {setup.plan.confidence}%</span>
+      </div>
+
+      {setup.plan.cautions.length > 0 ? (
+        <p className="mt-3 line-clamp-2 text-[11px] leading-5 text-slate-500">
+          ⚠ {setup.plan.cautions[0]}
+        </p>
+      ) : null}
+    </article>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-5 text-center">
+      <p className="text-sm font-bold text-slate-300">현재 추천할 셋업이 없습니다.</p>
+      <p className="mt-2 text-xs leading-5 text-slate-500">
+        시장이 관망 구간이거나 구조가 명확하지 않은 시점입니다. 잠시 후 다시 스캔해보세요.
+      </p>
+    </div>
+  );
+}
+
+export function SetupScoutPanel() {
+  const [state, setState] = useState<ScanState>({ status: "idle" });
+
+  const runScan = useCallback(async (force = false) => {
+    if (!force) {
+      const cached = readScoutCache();
+      if (cached) {
+        setState({ status: "ready", setups: cached.setups, cachedAt: cached.cachedAt });
+        return;
+      }
+    }
+
+    setState({ status: "loading" });
+    try {
+      const setups = await scanAllSetups();
+      const top = topSetups(setups, 3);
+      writeScoutCache(top);
+      setState({ status: "ready", setups: top, cachedAt: Date.now() });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
+      setState({ status: "error", message });
+    }
+  }, []);
+
+  useEffect(() => {
+    runScan(false);
+  }, [runScan]);
+
+  const cacheLabel = useMemo(() => {
+    if (state.status !== "ready") return null;
+    return formatCachedAt(state.cachedAt);
+  }, [state]);
+
+  return (
+    <section className="rounded-lg border border-accent-blue/25 bg-surface-card p-4 shadow-glow sm:p-5">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex items-start gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/30 bg-accent-blue/15 text-accent-blue">
+            <Sparkles size={21} aria-hidden />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-black text-white">AI Setup Scout</h2>
+              <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-blue">
+                Beta
+              </span>
+            </div>
+            <p className="mt-1 text-sm leading-6 text-slate-400">
+              주요 종목 × 활성 TF를 자동 스캔해 오늘 잡을 만한 셋업 TOP 3를 보여줍니다.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {cacheLabel ? <span className="text-xs text-slate-500">{cacheLabel} 갱신</span> : null}
+          <button
+            type="button"
+            onClick={() => runScan(true)}
+            disabled={state.status === "loading"}
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-bold text-slate-200 hover:border-accent-blue/50 hover:text-white disabled:opacity-50"
+          >
+            <RefreshCw size={13} className={state.status === "loading" ? "animate-spin" : ""} aria-hidden />
+            새로 스캔
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        {state.status === "loading" ? (
+          <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-line bg-surface-cardSoft p-8 text-sm text-slate-400">
+            <Loader2 size={18} className="animate-spin" aria-hidden />
+            15개 조합 분석 중...
+          </div>
+        ) : state.status === "error" ? (
+          <div className="rounded-lg border border-signal-danger/30 bg-signal-danger/10 p-4 text-sm text-signal-danger">
+            {state.message}
+          </div>
+        ) : state.status === "ready" ? (
+          state.setups.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div className="grid gap-3 sm:grid-cols-3">
+              {state.setups.map((setup, idx) => (
+                <SetupCard key={`${setup.symbol}-${setup.timeframe}`} setup={setup} rank={idx + 1} />
+              ))}
+            </div>
+          )
+        ) : null}
+      </div>
+
+      <p className="mt-3 text-[11px] leading-5 text-slate-500">
+        스캔 결과는 5분 단위 캐시됩니다. 이 값은 매수·매도 신호가 아니며, 진입 전 차트 판독과 본인의 매매 원칙을 반드시 함께 확인하세요.
+      </p>
+    </section>
+  );
+}
