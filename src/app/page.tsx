@@ -1,5 +1,5 @@
-import { LandingPage } from "@/components/LandingPage";
+import { SurvivalApp } from "@/components/SurvivalApp";
 
 export default function Home() {
-  return <LandingPage />;
+  return <SurvivalApp />;
 }

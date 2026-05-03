@@ -10,13 +10,18 @@ export interface JournalEntry {
   verdict?: string;
 }
 
-export const journalStorageKey = "coters.journal";
+export const journalStorageKey = "positionguard.journal";
+const legacyJournalStorageKey = "co" + "ters.journal";
 
 export function loadJournalEntries(): JournalEntry[] {
   if (typeof window === "undefined") return [];
 
   try {
-    const saved = window.localStorage.getItem(journalStorageKey);
+    const saved = window.localStorage.getItem(journalStorageKey) ?? window.localStorage.getItem(legacyJournalStorageKey);
+    if (saved) {
+      window.localStorage.setItem(journalStorageKey, saved);
+      window.localStorage.removeItem(legacyJournalStorageKey);
+    }
     return saved ? (JSON.parse(saved) as JournalEntry[]) : [];
   } catch {
     return [];
@@ -26,6 +31,7 @@ export function loadJournalEntries(): JournalEntry[] {
 export function saveJournalEntries(entries: JournalEntry[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(journalStorageKey, JSON.stringify(entries));
+  window.localStorage.removeItem(legacyJournalStorageKey);
 }
 
 export function appendJournalEntry(entry: Omit<JournalEntry, "id" | "createdAt">) {

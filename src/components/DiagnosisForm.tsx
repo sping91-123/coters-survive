@@ -260,7 +260,7 @@ export function DiagnosisForm({ values, onChange, onSubmit }: DiagnosisFormProps
           onClick={onSubmit}
           className="flex min-h-14 w-full items-center justify-center gap-2 rounded-md bg-accent-blue px-5 text-base font-extrabold text-slate-950 transition hover:bg-sky-300 focus:outline-none focus:ring-2 focus:ring-accent-blue focus:ring-offset-2 focus:ring-offset-surface-base"
         >
-          생존진단 하기
+          진입 전 점검하기
           <ChevronRight size={20} aria-hidden />
         </button>
       </div>

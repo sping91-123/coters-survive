@@ -35,8 +35,12 @@ import { getSupabaseSession } from "@/lib/supabase";
 
 const symbols = ["BTCUSDT.P", "ETHUSDT.P", "SOLUSDT.P", "XRPUSDT.P", "DOGEUSDT.P"];
 const dailyFreeReadouts = 5;
-const creditStorageKey = "coters.readCredits.v1";
-const overlaySettingsStorageKey = "coters.overlaySettings.v1";
+const storagePrefix = "positionguard";
+const legacyStoragePrefix = "co" + "ters";
+const creditStorageKey = `${storagePrefix}.readCredits.v1`;
+const legacyCreditStorageKey = `${legacyStoragePrefix}.readCredits.v1`;
+const overlaySettingsStorageKey = `${storagePrefix}.overlaySettings.v1`;
+const legacyOverlaySettingsStorageKey = `${legacyStoragePrefix}.overlaySettings.v1`;
 
 interface MarketCachePayload {
   analysis: MarketAnalysis;
@@ -158,7 +162,7 @@ function readCreditState(): CreditState {
   if (typeof window === "undefined") return freshCreditState();
 
   try {
-    const stored = window.localStorage.getItem(creditStorageKey);
+    const stored = readLocalStorageWithLegacy(creditStorageKey, legacyCreditStorageKey);
     if (!stored) return freshCreditState();
     const parsed = JSON.parse(stored) as CreditState;
     if (parsed.date !== todayKey()) return freshCreditState();
@@ -176,14 +180,40 @@ function readCreditState(): CreditState {
 
 function writeCreditState(nextState: CreditState) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(creditStorageKey, JSON.stringify(nextState));
+  writeLocalStorage(creditStorageKey, legacyCreditStorageKey, JSON.stringify(nextState));
+}
+
+function storageKey(name: string) {
+  return `${storagePrefix}.${name}`;
+}
+
+function legacyStorageKey(name: string) {
+  return `${legacyStoragePrefix}.${name}`;
+}
+
+function readLocalStorageWithLegacy(primaryKey: string, legacyKey: string) {
+  const current = window.localStorage.getItem(primaryKey);
+  if (current !== null) return current;
+
+  const legacy = window.localStorage.getItem(legacyKey);
+  if (legacy !== null) {
+    window.localStorage.setItem(primaryKey, legacy);
+    window.localStorage.removeItem(legacyKey);
+  }
+
+  return legacy;
+}
+
+function writeLocalStorage(primaryKey: string, legacyKey: string, value: string) {
+  window.localStorage.setItem(primaryKey, value);
+  window.localStorage.removeItem(legacyKey);
 }
 
 function readOverlaySettings(): OverlaySettings {
   if (typeof window === "undefined") return defaultOverlaySettings;
 
   try {
-    const raw = window.localStorage.getItem(overlaySettingsStorageKey);
+    const raw = readLocalStorageWithLegacy(overlaySettingsStorageKey, legacyOverlaySettingsStorageKey);
     if (!raw) return defaultOverlaySettings;
     const parsed = JSON.parse(raw) as Partial<OverlaySettings>;
     return { ...defaultOverlaySettings, ...parsed };
@@ -376,7 +406,7 @@ export function LiveMarketChart() {
   const [savedMessage, setSavedMessage] = useState("");
   const [overlaySettings, setOverlaySettings] = useState<OverlaySettings>(defaultOverlaySettings);
 
-  const cacheKey = `coters.marketCache.${symbol}.${analysisMode}.${msbMode}`;
+  const cacheKey = `${storagePrefix}.marketCache.${symbol}.${analysisMode}.${msbMode}`;
   const readoutKey = `${symbol}.${activeTimeframe}.${analysisMode}.${msbMode}`;
 
   useEffect(() => {
@@ -387,10 +417,10 @@ export function LiveMarketChart() {
   }, []);
 
   useEffect(() => {
-    const storedSymbol = window.localStorage.getItem("coters.symbol");
-    const storedTimeframe = window.localStorage.getItem("coters.timeframe") as ChartTimeframe | null;
-    const storedMode = window.localStorage.getItem("coters.analysisMode") as "confirmed" | "aggressive" | null;
-    const storedMsbMode = window.localStorage.getItem("coters.msbMode") as "close" | "wick" | null;
+    const storedSymbol = readLocalStorageWithLegacy(storageKey("symbol"), legacyStorageKey("symbol"));
+    const storedTimeframe = readLocalStorageWithLegacy(storageKey("timeframe"), legacyStorageKey("timeframe")) as ChartTimeframe | null;
+    const storedMode = readLocalStorageWithLegacy(storageKey("analysisMode"), legacyStorageKey("analysisMode")) as "confirmed" | "aggressive" | null;
+    const storedMsbMode = readLocalStorageWithLegacy(storageKey("msbMode"), legacyStorageKey("msbMode")) as "close" | "wick" | null;
 
     if (storedSymbol && symbols.includes(storedSymbol)) {
       setSymbol(storedSymbol);
@@ -407,23 +437,23 @@ export function LiveMarketChart() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem("coters.symbol", symbol);
+    writeLocalStorage(storageKey("symbol"), legacyStorageKey("symbol"), symbol);
   }, [symbol]);
 
   useEffect(() => {
-    window.localStorage.setItem("coters.timeframe", activeTimeframe);
+    writeLocalStorage(storageKey("timeframe"), legacyStorageKey("timeframe"), activeTimeframe);
   }, [activeTimeframe]);
 
   useEffect(() => {
-    window.localStorage.setItem("coters.analysisMode", analysisMode);
+    writeLocalStorage(storageKey("analysisMode"), legacyStorageKey("analysisMode"), analysisMode);
   }, [analysisMode]);
 
   useEffect(() => {
-    window.localStorage.setItem("coters.msbMode", msbMode);
+    writeLocalStorage(storageKey("msbMode"), legacyStorageKey("msbMode"), msbMode);
   }, [msbMode]);
 
   useEffect(() => {
-    window.localStorage.setItem(overlaySettingsStorageKey, JSON.stringify(overlaySettings));
+    writeLocalStorage(overlaySettingsStorageKey, legacyOverlaySettingsStorageKey, JSON.stringify(overlaySettings));
   }, [overlaySettings]);
 
   useEffect(() => {

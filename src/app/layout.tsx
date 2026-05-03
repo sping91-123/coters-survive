@@ -3,25 +3,27 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "코털스 | 생존진단",
-    template: "%s | 코털스"
+    default: "포지션가드",
+    template: "%s | 포지션가드"
   },
-  description: "거래소 페이백, 심화반 트레이딩 교육, 진입 전 생존진단을 제공하는 코털스 공식 웹사이트",
-  applicationName: "코털스",
+  description: "진입 전, 내 매매가 위험한지 먼저 점검하는 매매 리스크 관리 도구",
+  applicationName: "포지션가드",
   keywords: [
-    "코털스",
-    "거래소 페이백",
-    "트레이딩 교육",
+    "포지션가드",
+    "진입 전 점검",
+    "매매 리스크",
+    "포지션 계산",
+    "매매 복기",
     "비트코인",
     "MSB",
     "CHoCH",
     "FVG",
     "OB",
-    "생존진단"
+    "리스크관리"
   ],
   openGraph: {
-    title: "코털스 | 생존진단",
-    description: "코인에 털린 사람들을 위한 코털스 공식 웹사이트와 진입 전 생존진단 도구",
+    title: "포지션가드",
+    description: "진입 전, 차트 구조와 포지션 리스크를 먼저 확인하세요.",
     type: "website",
     locale: "ko_KR"
   },
@@ -31,8 +33,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "코털스 | 생존진단",
-    description: "거래소 페이백, 심화반, 차트 판독을 한 곳에서 확인하세요."
+    title: "포지션가드",
+    description: "진입 전, 내 매매가 위험한지 먼저 점검하세요."
   }
 };
 

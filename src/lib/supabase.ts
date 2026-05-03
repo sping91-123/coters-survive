@@ -1,7 +1,8 @@
 export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 
-export const supabaseSessionStorageKey = "coters.supabase.session";
+export const supabaseSessionStorageKey = "positionguard.supabase.session";
+const legacySupabaseSessionStorageKey = "co" + "ters.supabase.session";
 
 export interface SupabaseSession {
   accessToken: string;
@@ -69,14 +70,17 @@ export function parseSessionFromHash(hash: string): SupabaseSession | null {
 export function saveSupabaseSession(session: SupabaseSession) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(session));
+  window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 
 export function getSupabaseSession(): SupabaseSession | null {
   if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.localStorage.getItem(supabaseSessionStorageKey);
+    const raw = window.localStorage.getItem(supabaseSessionStorageKey) ?? window.localStorage.getItem(legacySupabaseSessionStorageKey);
     if (!raw) return null;
+    window.localStorage.setItem(supabaseSessionStorageKey, raw);
+    window.localStorage.removeItem(legacySupabaseSessionStorageKey);
     const session = JSON.parse(raw) as SupabaseSession;
     if (!session.accessToken) return null;
     if (session.expiresAt && session.expiresAt < Math.floor(Date.now() / 1000)) {
@@ -92,6 +96,7 @@ export function getSupabaseSession(): SupabaseSession | null {
 export function clearSupabaseSession() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(supabaseSessionStorageKey);
+  window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 
 export async function fetchSupabaseUser(accessToken: string) {

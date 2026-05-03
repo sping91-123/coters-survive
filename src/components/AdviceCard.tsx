@@ -10,7 +10,7 @@ export function AdviceCard({ result }: AdviceCardProps) {
     <section className="rounded-lg border border-surface-line bg-surface-card p-5">
       <div className="flex items-center gap-3">
         <MessageSquareWarning className="text-accent-blue" size={20} aria-hidden />
-        <h2 className="text-lg font-bold text-white">코털스식 한마디</h2>
+        <h2 className="text-lg font-bold text-white">리스크 코멘트</h2>
       </div>
       <p className="mt-3 text-sm leading-7 text-slate-300">
         {result

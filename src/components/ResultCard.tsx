@@ -68,7 +68,7 @@ export function ResultCard({ result }: ResultCardProps) {
         <div className="flex items-start gap-3">
           <Icon className={`mt-1 shrink-0 ${tone.text}`} size={24} aria-hidden />
           <div>
-            <p className="text-sm font-semibold text-slate-400">생존 판정</p>
+            <p className="text-sm font-semibold text-slate-400">진입 위험 판정</p>
             <h2 className={`mt-1 text-3xl font-black ${tone.text}`}>{result.verdict}</h2>
           </div>
         </div>

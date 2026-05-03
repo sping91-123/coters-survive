@@ -20,7 +20,7 @@ export function TabMenu() {
     <nav className="rounded-lg border border-surface-line bg-surface-card p-2">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
         {pageLinks.map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href;
+          const isActive = pathname === href || (pathname === "/" && href === "/survival");
 
           return (
             <Link

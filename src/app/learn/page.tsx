@@ -18,7 +18,7 @@ const lessons = [
   },
   {
     title: "킬존",
-    body: "코털스 기준 킬존은 뉴욕 시간 Asia 20:00-22:00, London 02:00-05:00, New York 07:00-12:00입니다."
+    body: "기본 킬존은 뉴욕 시간 Asia 20:00-22:00, London 02:00-05:00, New York 07:00-12:00입니다."
   }
 ];
 
