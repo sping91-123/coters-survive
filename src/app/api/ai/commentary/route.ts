@@ -13,6 +13,7 @@
 
 import { NextResponse } from "next/server";
 import { getAIProvider, AIProviderError, type CommentaryInput } from "@/lib/ai";
+import { generateFallbackCommentary } from "@/lib/ai/fallback";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -96,13 +97,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ commentary: text, model: provider.model, cached: false });
   } catch (error) {
     if (error instanceof AIProviderError) {
-      console.error(`[ai/commentary] ${error.provider} 실패:`, error.message);
-      return NextResponse.json(
-        { error: "AI 코멘트 생성에 실패했습니다.", detail: error.message },
-        { status: 502 }
-      );
+      console.warn(`[ai/commentary] ${error.provider} 실패, 폴백 사용:`, error.message);
+      // 할당량 초과(429) 또는 일시 오류 → 규칙 기반 코멘트로 대체
+      const fallback = generateFallbackCommentary(input);
+      return NextResponse.json({ commentary: fallback, model: "fallback", cached: false });
     }
     console.error("[ai/commentary] 알 수 없는 오류:", error);
-    return NextResponse.json({ error: "AI 코멘트 생성에 실패했습니다." }, { status: 500 });
+    // 알 수 없는 오류도 폴백으로 처리
+    const fallback = generateFallbackCommentary(input);
+    return NextResponse.json({ commentary: fallback, model: "fallback", cached: false });
   }
 }

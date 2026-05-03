@@ -1,7 +1,7 @@
 import type { AIProvider, CommentaryInput } from "./types";
 import { AIProviderError } from "./types";
 
-const GEMINI_MODEL = "gemini-1.5-flash";
+const GEMINI_MODEL = "gemini-2.0-flash-lite";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_INSTRUCTION = `당신은 한국 트레이더용 리스크 점검 코치입니다.
