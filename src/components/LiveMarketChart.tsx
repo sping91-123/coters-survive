@@ -338,11 +338,26 @@ function parsePineSnapshot(value: string): PineSnapshot | null {
 
     if (!entries.length) return null;
 
-    const parsed: Record<string, string | number | null> = {};
+    const parsed: Record<string, string | number | null | Record<string, string | number | null>> = {};
     for (const [key, rawValue] of entries) {
       if (!key || rawValue === undefined) continue;
       const numeric = Number(rawValue);
-      parsed[key] = Number.isFinite(numeric) ? numeric : rawValue;
+      const parsedValue = Number.isFinite(numeric) ? numeric : rawValue;
+
+      if (key.includes(".")) {
+        const [parentKey, childKey] = key.split(".");
+        if (parentKey && childKey) {
+          const parent =
+            typeof parsed[parentKey] === "object" && parsed[parentKey] !== null
+              ? (parsed[parentKey] as Record<string, string | number | null>)
+              : {};
+          parent[childKey] = parsedValue;
+          parsed[parentKey] = parent;
+          continue;
+        }
+      }
+
+      parsed[key] = parsedValue;
     }
 
     return parsed as PineSnapshot;
@@ -389,6 +404,30 @@ function barsAgoLabel(age: number) {
 
 function eventDirectionLabel(direction: "bullish" | "bearish") {
   return direction === "bullish" ? "상승" : "하락";
+}
+
+function parityHint(row: ParityRow) {
+  if (row.label.includes("MSB") || row.label.includes("CHoCH")) {
+    return "구조 방향 차이는 봉 확정 여부, MSB 종가/윅 기준, ZigZag length를 먼저 맞춰보세요.";
+  }
+
+  if (row.label === "h0" || row.label === "h1" || row.label === "l0" || row.label === "l1") {
+    return "스윙 포인트 차이는 보통 피벗 확정 시점이나 ZigZag 계산 기준에서 납니다.";
+  }
+
+  if (row.label.includes("OB") || row.label.includes("FVG")) {
+    return "구간 차이는 origin candle 선택, mitigation 기준, iFVG 전환 기준을 비교해보세요.";
+  }
+
+  if (row.label.includes("OTE") || row.label.includes("PD")) {
+    return "OTE/PD 차이는 기준 범위가 4H 20봉인지, 지표의 스윙 기준인지 확인이 필요합니다.";
+  }
+
+  if (row.label.includes("EMA")) {
+    return "EMA 차이는 4H EMA 원본/스무딩 여부와 현재 봉 포함 여부를 확인하면 됩니다.";
+  }
+
+  return "해당 항목의 계산 기준과 현재 봉 포함 여부를 먼저 맞춰보세요.";
 }
 
 function timeframeSignalSummary(item: TimeframeAnalysis) {
@@ -1052,6 +1091,63 @@ export function LiveMarketChart() {
 
   function applyOverlayPreset(preset: keyof typeof overlayPresets) {
     setOverlaySettings(overlayPresets[preset]);
+  }
+
+  function comparableSnapshotFromWeb() {
+    if (!activeAnalysis) return null;
+
+    return {
+      symbol,
+      timeframe: activeTimeframe,
+      market: activeAnalysis.debug.market,
+      chochDir: activeAnalysis.debug.choch,
+      msb: activeAnalysis.msb,
+      choch: activeAnalysis.choch,
+      ema200Side: activeAnalysis.ema200Side,
+      premiumDiscount: activeAnalysis.premiumDiscount,
+      oteZone: activeAnalysis.oteZone,
+      h0: activeAnalysis.debug.h0,
+      h1: activeAnalysis.debug.h1,
+      l0: activeAnalysis.debug.l0,
+      l1: activeAnalysis.debug.l1,
+      hiCount: activeAnalysis.debug.hiCount,
+      loCount: activeAnalysis.debug.loCount,
+      latestOb: activeAnalysis.latestOb
+        ? {
+            direction: activeAnalysis.latestOb.direction,
+            top: activeAnalysis.latestOb.top,
+            bottom: activeAnalysis.latestOb.bottom
+          }
+        : null,
+      latestFvg: activeAnalysis.latestFvg
+        ? {
+            direction: activeAnalysis.latestFvg.direction,
+            state: activeAnalysis.latestFvg.state,
+            top: activeAnalysis.latestFvg.top,
+            bottom: activeAnalysis.latestFvg.bottom
+          }
+        : null,
+      latestSweep: activeAnalysis.latestSweep
+        ? {
+            direction: activeAnalysis.latestSweep.direction,
+            level: activeAnalysis.latestSweep.level,
+            age: activeAnalysis.latestSweep.age
+          }
+        : null,
+      latestCisd: activeAnalysis.latestCisd
+        ? {
+            direction: activeAnalysis.latestCisd.direction,
+            level: activeAnalysis.latestCisd.level,
+            age: activeAnalysis.latestCisd.age
+          }
+        : null
+    };
+  }
+
+  function fillParityTemplateFromWeb() {
+    const snapshot = comparableSnapshotFromWeb();
+    if (!snapshot) return;
+    setPineSnapshotInput(JSON.stringify(snapshot, null, 2));
   }
 
   async function copyDebugSnapshot() {
@@ -1956,6 +2052,22 @@ export function LiveMarketChart() {
                         </span>
                       ) : null}
                     </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={fillParityTemplateFromWeb}
+                        className="inline-flex min-h-9 items-center rounded-md border border-accent-blue/30 bg-accent-blue/10 px-3 text-xs font-bold text-accent-blue hover:bg-accent-blue/20"
+                      >
+                        웹값 예시 채우기
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPineSnapshotInput("")}
+                        className="inline-flex min-h-9 items-center rounded-md border border-white/10 bg-black/20 px-3 text-xs font-bold text-slate-300 hover:border-accent-blue/40"
+                      >
+                        입력 비우기
+                      </button>
+                    </div>
                     <textarea
                       value={pineSnapshotInput}
                       onChange={(event) => setPineSnapshotInput(event.target.value)}
@@ -1989,6 +2101,13 @@ export function LiveMarketChart() {
                             >
                               {row.label}
                             </span>
+                          ))}
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          {parityMismatches.slice(0, 3).map((row) => (
+                            <p key={`${row.label}-hint`} className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-slate-300">
+                              <span className="font-bold text-slate-100">{row.label}</span>: {parityHint(row)}
+                            </p>
                           ))}
                         </div>
                       </div>
