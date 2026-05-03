@@ -1214,8 +1214,32 @@ if fvg_enabled
 // =============================================================================
 string appBiasSide = longBias ? "long" : shortBias ? "short" : "neutral"
 string appEmaSide = na(htfEMA) ? "unknown" : close >= htfEMA ? "above" : "below"
+float appPdPosition = oteSpan > 0 ? (close - h4_low_20) / oteSpan : na
+string appPdZone = na(appPdPosition) ? "unknown" : appPdPosition > 0.55 ? "premium" : appPdPosition < 0.45 ? "discount" : "equilibrium"
 string appOteZone = inLongOTE ? "long" : inShortOTE ? "short" : "none"
 string appCisdSide = bull_cisd ? "bullish" : bear_cisd ? "bearish" : "none"
+
+string appObDir = "none"
+float appObTop = na
+float appObBottom = na
+int appBuObLeft = na
+int appBeObLeft = na
+
+if array.size(buObBoxes) > 0
+    appBuOb = array.get(buObBoxes, array.size(buObBoxes) - 1)
+    appBuObLeft := box.get_left(appBuOb)
+    if na(appBeObLeft) or appBuObLeft >= appBeObLeft
+        appObDir := "bullish"
+        appObTop := box.get_top(appBuOb)
+        appObBottom := box.get_bottom(appBuOb)
+
+if array.size(beObBoxes) > 0
+    appBeOb = array.get(beObBoxes, array.size(beObBoxes) - 1)
+    appBeObLeft := box.get_left(appBeOb)
+    if na(appBuObLeft) or appBeObLeft >= appBuObLeft
+        appObDir := "bearish"
+        appObTop := box.get_top(appBeOb)
+        appObBottom := box.get_bottom(appBeOb)
 
 bool appInFvg = false
 bool appFvgIsIfvg = false
@@ -1254,10 +1278,20 @@ string appStateJson =
   "\"biasScore\":" + f_num_json(biasVal) + "," +
   "\"structureScore\":" + f_num_json(structureScore) + "," +
   "\"structureDecay\":" + f_num_json(structureDecayFactor) + "," +
+  "\"market\":" + str.tostring(market) + "," +
+  "\"chochDir\":" + str.tostring(choch_dir) + "," +
+  "\"h0\":" + f_num_json(h0) + "," +
+  "\"h1\":" + f_num_json(h1) + "," +
+  "\"l0\":" + f_num_json(l0) + "," +
+  "\"l1\":" + f_num_json(l1) + "," +
+  "\"hiCount\":" + str.tostring(array.size(hiPts)) + "," +
+  "\"loCount\":" + str.tostring(array.size(loPts)) + "," +
   "\"msb\":{\"1m\":\"" + f_dir_text(sec1_msb) + "\",\"5m\":\"" + f_dir_text(sec5_msb) + "\",\"15m\":\"" + f_dir_text(sec15_msb) + "\",\"1h\":\"" + f_dir_text(sec60_msb) + "\",\"4h\":\"" + f_dir_text(sec240_msb) + "\",\"1d\":\"" + f_dir_text(secD_msb) + "\"}," +
   "\"choch\":{\"1m\":\"" + f_dir_text(sec1_choch) + "\",\"5m\":\"" + f_dir_text(sec5_choch) + "\",\"15m\":\"" + f_dir_text(sec15_choch) + "\",\"1h\":\"" + f_dir_text(sec60_choch) + "\",\"4h\":\"" + f_dir_text(sec240_choch) + "\",\"1d\":\"" + f_dir_text(secD_choch) + "\"}," +
   "\"oteZone\":\"" + appOteZone + "\"," +
   "\"ema200Side\":\"" + appEmaSide + "\"," +
+  "\"premiumDiscount\":\"" + appPdZone + "\"," +
+  "\"latestOb\":{\"direction\":\"" + appObDir + "\",\"top\":" + f_num_json(appObTop) + ",\"bottom\":" + f_num_json(appObBottom) + "}," +
   "\"inFvg\":" + f_bool_json(appInFvg) + "," +
   "\"fvgTf\":\"" + appFvgTf + "\"," +
   "\"fvgDir\":\"" + appFvgDir + "\"," +

@@ -836,6 +836,8 @@ export function LiveMarketChart() {
             bottom: pineSnapshot.fvgBottom
           }
         : null);
+    const pineObDirection =
+      pineSnapshot.latestOb?.direction && pineSnapshot.latestOb.direction !== "none" ? pineSnapshot.latestOb.direction : undefined;
     const pineCisdDirection =
       pineSnapshot.latestCisd?.direction ?? (pineSnapshot.cisd && pineSnapshot.cisd !== "none" ? normalizePineDirection(pineSnapshot.cisd) : undefined);
     const rows: ParityRow[] = [
@@ -907,8 +909,8 @@ export function LiveMarketChart() {
       {
         label: "OB direction",
         web: activeAnalysis.latestOb ? stateLabel(activeAnalysis.latestOb.direction) : "-",
-        pine: pineSnapshot.latestOb?.direction ? stateLabel(pineSnapshot.latestOb.direction) : "-",
-        ...compareOptionalValue(activeAnalysis.latestOb?.direction ?? "", pineSnapshot.latestOb?.direction),
+        pine: pineObDirection ? stateLabel(pineObDirection) : "-",
+        ...compareOptionalValue(activeAnalysis.latestOb?.direction ?? "", pineObDirection),
         importance: "major"
       },
       {

@@ -18,7 +18,7 @@ export interface PineSnapshot {
   hiCount?: number;
   loCount?: number;
   latestOb?: {
-    direction?: "bullish" | "bearish";
+    direction?: "bullish" | "bearish" | "none";
     top?: number | null;
     bottom?: number | null;
   } | null;

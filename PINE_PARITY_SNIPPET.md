@@ -99,6 +99,14 @@ That JSON has multi-timeframe `msb` and `choch` objects. The web panel now reads
   "chartTf": "15",
   "mode": "confirmed",
   "bias": "long",
+  "market": 1,
+  "chochDir": -1,
+  "h0": 104500,
+  "h1": 105100,
+  "l0": 103800,
+  "l1": 102900,
+  "hiCount": 12,
+  "loCount": 12,
   "msb": {
     "1m": "bullish",
     "5m": "bearish",
@@ -117,6 +125,12 @@ That JSON has multi-timeframe `msb` and `choch` objects. The web panel now reads
   },
   "oteZone": "long",
   "ema200Side": "above",
+  "premiumDiscount": "discount",
+  "latestOb": {
+    "direction": "bullish",
+    "top": 104200,
+    "bottom": 103900
+  },
   "fvgDir": "bullish",
   "fvgIsIfvg": false,
   "fvgTop": 104800,
@@ -125,7 +139,9 @@ That JSON has multi-timeframe `msb` and `choch` objects. The web panel now reads
 }
 ```
 
-For full parity, add the swing and zone fields from the debug snippet too: `market`, `chochDir`, `h0`, `h1`, `l0`, `l1`, `hiCount`, `loCount`, `latestOb.*`, `latestSweep.*`, and `latestCisd.*`.
+The repo version of `pine/Coters_v2.42.pine` includes the structure, PD, and latest OB fields in App State JSON. If your TradingView copy is older, add those fields from this file or use the debug snippet below.
+
+For full parity, add the remaining event fields when needed: `latestSweep.*` and `latestCisd.*`.
 
 ## Pine Debug Snippet
 
