@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Loader2, RefreshCw, Sparkles, Target } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Bot, Loader2, RefreshCw, Sparkles, Target } from "lucide-react";
 import {
   readScoutCache,
   scanAllSetups,
@@ -9,6 +9,7 @@ import {
   writeScoutCache,
   type ScoutSetup
 } from "@/lib/setupScout";
+import type { CommentaryInput } from "@/lib/ai/types";
 
 type ScanState =
   | { status: "idle" }
@@ -89,6 +90,100 @@ function formatPriceWithSymbol(price: number) {
   }).format(price);
 }
 
+function buildCommentaryInput(setup: ScoutSetup): CommentaryInput {
+  const active = setup.analysis.timeframeAnalyses.find((a) => a.timeframe === setup.timeframe);
+  const direction = setup.plan.side === "long" ? "bullish" : "bearish";
+  const higherTfAlignedCount = setup.analysis.timeframeAnalyses
+    .filter((a) => a.timeframe === "4h" || a.timeframe === "1d")
+    .filter((a) => a.msb === direction).length;
+  return {
+    symbol: setup.symbol,
+    timeframe: setup.timeframe,
+    side: setup.plan.side,
+    score: setup.score,
+    currentPrice: setup.currentPrice,
+    entryLow: setup.plan.entryLow,
+    entryHigh: setup.plan.entryHigh,
+    invalidation: setup.plan.invalidation,
+    target1: setup.plan.target1,
+    target2: setup.plan.target2,
+    proximity: setup.proximity === "missed" ? "wait" : setup.proximity,
+    distancePercent: setup.distancePercent,
+    context: {
+      killzone: setup.analysis.killzone,
+      higherTfAlignedCount,
+      inOte: active?.oteZone === setup.plan.side,
+      inOb: active?.inOb === true,
+      inFvg: active?.inFvg === true,
+      quality: setup.plan.quality,
+      riskFlags: setup.analysis.riskFlags ?? [],
+      opportunityFlags: setup.analysis.opportunityFlags ?? []
+    }
+  };
+}
+
+type CommentaryState =
+  | { status: "loading" }
+  | { status: "ready"; text: string; cached: boolean }
+  | { status: "error" };
+
+function useCommentary(setup: ScoutSetup): CommentaryState {
+  const [state, setState] = useState<CommentaryState>({ status: "loading" });
+  const cacheKey = `${setup.symbol}|${setup.timeframe}|${setup.scannedAt}|${Math.round(setup.currentPrice * 100)}`;
+
+  useEffect(() => {
+    let cancelled = false;
+    setState({ status: "loading" });
+
+    const input = buildCommentaryInput(setup);
+    fetch("/api/ai/commentary", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input)
+    })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json() as Promise<{ commentary: string; cached: boolean }>;
+      })
+      .then((payload) => {
+        if (cancelled) return;
+        setState({ status: "ready", text: payload.commentary, cached: payload.cached });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setState({ status: "error" });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey]);
+
+  return state;
+}
+
+function CommentaryLine({ setup }: { setup: ScoutSetup }) {
+  const state = useCommentary(setup);
+
+  if (state.status === "loading") {
+    return (
+      <div className="mt-3 flex items-center gap-2 rounded-md border border-accent-blue/20 bg-accent-blue/5 px-3 py-2 text-[11px] leading-5 text-slate-400">
+        <Loader2 size={12} className="animate-spin text-accent-blue" aria-hidden />
+        <span>AI 코멘트 생성 중...</span>
+      </div>
+    );
+  }
+  if (state.status === "error") return null;
+
+  return (
+    <div className="mt-3 flex items-start gap-2 rounded-md border border-accent-blue/20 bg-accent-blue/5 px-3 py-2 text-[12px] leading-5 text-slate-200">
+      <Bot size={13} className="mt-0.5 shrink-0 text-accent-blue" aria-hidden />
+      <p className="font-medium">{state.text}</p>
+    </div>
+  );
+}
+
 function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
   const isLong = setup.plan.side === "long";
   const sideColor = isLong ? "text-signal-success" : "text-signal-danger";
@@ -152,8 +247,10 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
         <span className="font-bold text-slate-400">2차 {formatPriceWithSymbol(setup.plan.target2)}</span>
       </div>
 
+      <CommentaryLine setup={setup} />
+
       {setup.plan.cautions.length > 0 ? (
-        <p className="mt-3 line-clamp-2 text-[11px] leading-5 text-slate-500">
+        <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
           ⚠ {setup.plan.cautions[0]}
         </p>
       ) : null}
