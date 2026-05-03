@@ -110,14 +110,52 @@ interface PineSnapshot {
   choch?: DirectionState | "long" | "short" | 1 | -1;
   market?: 1 | -1 | 0;
   chochDir?: 1 | -1 | 0;
+  ema200Side?: "above" | "below" | "unknown";
+  premiumDiscount?: "premium" | "discount" | "equilibrium" | "unknown";
+  oteZone?: "long" | "short" | "none";
   h0?: number | null;
   h1?: number | null;
   l0?: number | null;
   l1?: number | null;
   hiCount?: number;
   loCount?: number;
+  latestOb?: {
+    direction?: "bullish" | "bearish";
+    top?: number | null;
+    bottom?: number | null;
+  } | null;
+  latestBb?: {
+    direction?: "bullish" | "bearish";
+    top?: number | null;
+    bottom?: number | null;
+  } | null;
+  latestFvg?: {
+    direction?: "bullish" | "bearish";
+    state?: "fvg" | "ifvg";
+    top?: number | null;
+    bottom?: number | null;
+  } | null;
+  latestSweep?: {
+    direction?: "bullish" | "bearish";
+    level?: number | null;
+    age?: number | null;
+  } | null;
+  latestCisd?: {
+    direction?: "bullish" | "bearish";
+    level?: number | null;
+    age?: number | null;
+  } | null;
   timeframe?: string;
   symbol?: string;
+}
+
+interface ParityRow {
+  label: string;
+  web: string;
+  pine: string;
+  matched: boolean;
+  result: string;
+  importance: "core" | "major" | "minor";
 }
 
 function formatPrice(value: number) {
@@ -321,6 +359,17 @@ function compareNumber(webValue: number | null, pineValue: number | null | undef
   return {
     result: diff <= tolerance ? "일치" : `차이 ${formatPrice(diff)}`,
     matched: diff <= tolerance
+  };
+}
+
+function compareOptionalValue(webValue: string, pineValue: string | undefined) {
+  if (!pineValue) {
+    return { result: "대기", matched: false };
+  }
+
+  return {
+    result: webValue === pineValue ? "일치" : "차이",
+    matched: webValue === pineValue
   };
 }
 
@@ -820,73 +869,163 @@ export function LiveMarketChart() {
 
   const pineSnapshot = useMemo(() => parsePineSnapshot(pineSnapshotInput), [pineSnapshotInput]);
 
-  const parityRows = useMemo(() => {
+  const parityRows = useMemo<ParityRow[]>(() => {
     if (!activeAnalysis || !pineSnapshot) return [];
 
     const pineMsb = normalizeDirection(pineSnapshot.msb ?? pineSnapshot.market);
     const pineChoch = normalizeDirection(pineSnapshot.choch ?? pineSnapshot.chochDir);
-    const rows = [
+    const rows: ParityRow[] = [
       {
-        label: "MSB 방향",
+        label: "MSB ??",
         web: stateLabel(activeAnalysis.msb),
         pine: stateLabel(pineMsb),
         matched: activeAnalysis.msb === pineMsb,
-        result: activeAnalysis.msb === pineMsb ? "일치" : "차이"
+        result: activeAnalysis.msb === pineMsb ? "??" : "??",
+        importance: "core"
       },
       {
-        label: "CHoCH 방향",
+        label: "CHoCH ??",
         web: stateLabel(activeAnalysis.choch),
         pine: stateLabel(pineChoch),
         matched: activeAnalysis.choch === pineChoch,
-        result: activeAnalysis.choch === pineChoch ? "일치" : "차이"
+        result: activeAnalysis.choch === pineChoch ? "??" : "??",
+        importance: "core"
       },
       {
         label: "h0",
         web: activeAnalysis.debug.h0 ? formatPrice(activeAnalysis.debug.h0) : "-",
         pine: pineSnapshot.h0 ? formatPrice(Number(pineSnapshot.h0)) : "-",
-        ...compareNumber(activeAnalysis.debug.h0, pineSnapshot.h0)
+        ...compareNumber(activeAnalysis.debug.h0, pineSnapshot.h0),
+        importance: "major"
       },
       {
         label: "h1",
         web: activeAnalysis.debug.h1 ? formatPrice(activeAnalysis.debug.h1) : "-",
         pine: pineSnapshot.h1 ? formatPrice(Number(pineSnapshot.h1)) : "-",
-        ...compareNumber(activeAnalysis.debug.h1, pineSnapshot.h1)
+        ...compareNumber(activeAnalysis.debug.h1, pineSnapshot.h1),
+        importance: "major"
       },
       {
         label: "l0",
         web: activeAnalysis.debug.l0 ? formatPrice(activeAnalysis.debug.l0) : "-",
         pine: pineSnapshot.l0 ? formatPrice(Number(pineSnapshot.l0)) : "-",
-        ...compareNumber(activeAnalysis.debug.l0, pineSnapshot.l0)
+        ...compareNumber(activeAnalysis.debug.l0, pineSnapshot.l0),
+        importance: "major"
       },
       {
         label: "l1",
         web: activeAnalysis.debug.l1 ? formatPrice(activeAnalysis.debug.l1) : "-",
         pine: pineSnapshot.l1 ? formatPrice(Number(pineSnapshot.l1)) : "-",
-        ...compareNumber(activeAnalysis.debug.l1, pineSnapshot.l1)
+        ...compareNumber(activeAnalysis.debug.l1, pineSnapshot.l1),
+        importance: "major"
       },
       {
-        label: "hiPts 수",
+        label: "EMA200 ??",
+        web: stateLabel(activeAnalysis.ema200Side),
+        pine: stateLabel(pineSnapshot.ema200Side ?? "unknown"),
+        ...compareOptionalValue(activeAnalysis.ema200Side, pineSnapshot.ema200Side),
+        importance: "major"
+      },
+      {
+        label: "PD ??",
+        web: stateLabel(activeAnalysis.premiumDiscount),
+        pine: stateLabel(pineSnapshot.premiumDiscount ?? "unknown"),
+        ...compareOptionalValue(activeAnalysis.premiumDiscount, pineSnapshot.premiumDiscount),
+        importance: "major"
+      },
+      {
+        label: "OTE ??",
+        web: stateLabel(activeAnalysis.oteZone),
+        pine: stateLabel(pineSnapshot.oteZone ?? "unknown"),
+        ...compareOptionalValue(activeAnalysis.oteZone, pineSnapshot.oteZone),
+        importance: "major"
+      },
+      {
+        label: "OB ??",
+        web: activeAnalysis.latestOb ? stateLabel(activeAnalysis.latestOb.direction) : "-",
+        pine: pineSnapshot.latestOb?.direction ? stateLabel(pineSnapshot.latestOb.direction) : "-",
+        ...compareOptionalValue(activeAnalysis.latestOb?.direction ?? "", pineSnapshot.latestOb?.direction),
+        importance: "major"
+      },
+      {
+        label: "OB ??",
+        web: activeAnalysis.latestOb ? formatPrice(activeAnalysis.latestOb.top) : "-",
+        pine: pineSnapshot.latestOb?.top ? formatPrice(Number(pineSnapshot.latestOb.top)) : "-",
+        ...compareNumber(activeAnalysis.latestOb?.top ?? null, pineSnapshot.latestOb?.top),
+        importance: "minor"
+      },
+      {
+        label: "OB ??",
+        web: activeAnalysis.latestOb ? formatPrice(activeAnalysis.latestOb.bottom) : "-",
+        pine: pineSnapshot.latestOb?.bottom ? formatPrice(Number(pineSnapshot.latestOb.bottom)) : "-",
+        ...compareNumber(activeAnalysis.latestOb?.bottom ?? null, pineSnapshot.latestOb?.bottom),
+        importance: "minor"
+      },
+      {
+        label: "FVG ??",
+        web: activeAnalysis.latestFvg ? stateLabel(activeAnalysis.latestFvg.direction) : "-",
+        pine: pineSnapshot.latestFvg?.direction ? stateLabel(pineSnapshot.latestFvg.direction) : "-",
+        ...compareOptionalValue(activeAnalysis.latestFvg?.direction ?? "", pineSnapshot.latestFvg?.direction),
+        importance: "major"
+      },
+      {
+        label: "FVG ??",
+        web: activeAnalysis.latestFvg?.state?.toUpperCase() ?? "-",
+        pine: pineSnapshot.latestFvg?.state?.toUpperCase() ?? "-",
+        ...compareOptionalValue(activeAnalysis.latestFvg?.state ?? "", pineSnapshot.latestFvg?.state),
+        importance: "minor"
+      },
+      {
+        label: "Sweep ??",
+        web: activeAnalysis.latestSweep ? stateLabel(activeAnalysis.latestSweep.direction) : "-",
+        pine: pineSnapshot.latestSweep?.direction ? stateLabel(pineSnapshot.latestSweep.direction) : "-",
+        ...compareOptionalValue(activeAnalysis.latestSweep?.direction ?? "", pineSnapshot.latestSweep?.direction),
+        importance: "minor"
+      },
+      {
+        label: "CISD ??",
+        web: activeAnalysis.latestCisd ? stateLabel(activeAnalysis.latestCisd.direction) : "-",
+        pine: pineSnapshot.latestCisd?.direction ? stateLabel(pineSnapshot.latestCisd.direction) : "-",
+        ...compareOptionalValue(activeAnalysis.latestCisd?.direction ?? "", pineSnapshot.latestCisd?.direction),
+        importance: "minor"
+      },
+      {
+        label: "hiPts ?",
         web: String(activeAnalysis.debug.hiCount),
         pine: pineSnapshot.hiCount === undefined ? "-" : String(pineSnapshot.hiCount),
         matched: pineSnapshot.hiCount === activeAnalysis.debug.hiCount,
-        result: pineSnapshot.hiCount === activeAnalysis.debug.hiCount ? "일치" : "차이"
+        result: pineSnapshot.hiCount === activeAnalysis.debug.hiCount ? "??" : "??",
+        importance: "minor"
       },
       {
-        label: "loPts 수",
+        label: "loPts ?",
         web: String(activeAnalysis.debug.loCount),
         pine: pineSnapshot.loCount === undefined ? "-" : String(pineSnapshot.loCount),
         matched: pineSnapshot.loCount === activeAnalysis.debug.loCount,
-        result: pineSnapshot.loCount === activeAnalysis.debug.loCount ? "일치" : "차이"
+        result: pineSnapshot.loCount === activeAnalysis.debug.loCount ? "??" : "??",
+        importance: "minor"
       }
     ];
-    return rows;
+
+    return rows.filter((row) => row.web !== "-" || row.pine !== "-");
   }, [activeAnalysis, pineSnapshot]);
 
   const parityScore = useMemo(() => {
     if (!parityRows.length) return null;
-    const matched = parityRows.filter((row) => row.matched).length;
-    return Math.round((matched / parityRows.length) * 100);
+    const weighted = parityRows.reduce(
+      (acc, row) => {
+        const weight = row.importance === "core" ? 3 : row.importance === "major" ? 2 : 1;
+        return {
+          total: acc.total + weight,
+          matched: acc.matched + (row.matched ? weight : 0)
+        };
+      },
+      { total: 0, matched: 0 }
+    );
+    return Math.round((weighted.matched / weighted.total) * 100);
   }, [parityRows]);
+
+  const parityMismatches = useMemo(() => parityRows.filter((row) => !row.matched), [parityRows]);
 
   const groupedReasons = useMemo(() => {
     if (!analysis) {
@@ -1827,6 +1966,34 @@ export function LiveMarketChart() {
                       <p className="mt-2 text-xs text-signal-danger">스냅샷 형식을 읽지 못했습니다. JSON 또는 market=1, h0=... 형태로 넣어주세요.</p>
                     ) : null}
                     {parityRows.length > 0 ? (
+                      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                        <MiniMetric label="핵심 일치율" value={parityScore !== null ? `${parityScore}%` : "-"} />
+                        <MiniMetric label="대조 항목 수" value={String(parityRows.length)} />
+                        <MiniMetric label="어긋난 항목" value={String(parityMismatches.length)} />
+                      </div>
+                    ) : null}
+                    {parityMismatches.length > 0 ? (
+                      <div className="mt-3 rounded-md border border-signal-warning/25 bg-signal-warning/10 p-3">
+                        <p className="text-xs font-bold text-signal-warning">먼저 볼 차이</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {parityMismatches.slice(0, 6).map((row) => (
+                            <span
+                              key={row.label}
+                              className={`rounded-md border px-2.5 py-1 text-xs font-bold ${
+                                row.importance === "core"
+                                  ? "border-signal-danger/30 bg-signal-danger/10 text-signal-danger"
+                                  : row.importance === "major"
+                                    ? "border-signal-warning/30 bg-signal-warning/10 text-signal-warning"
+                                    : "border-white/10 bg-black/20 text-slate-300"
+                              }`}
+                            >
+                              {row.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {parityRows.length > 0 ? (
                       <div className="mt-3 overflow-hidden rounded-md border border-surface-line">
                         <div className="grid grid-cols-4 bg-black/30 px-3 py-2 text-[11px] font-bold text-slate-400">
                           <span>항목</span>
@@ -1836,7 +2003,9 @@ export function LiveMarketChart() {
                         </div>
                         {parityRows.map((row) => (
                           <div key={row.label} className="grid grid-cols-4 border-t border-surface-line px-3 py-2 text-xs text-slate-200">
-                            <span>{row.label}</span>
+                            <span className={row.importance === "core" ? "font-bold text-white" : row.importance === "major" ? "font-semibold text-slate-200" : "text-slate-300"}>
+                              {row.label}
+                            </span>
                             <span>{row.web}</span>
                             <span>{row.pine}</span>
                             <span className={row.matched ? "font-bold text-signal-success" : "font-bold text-signal-warning"}>
