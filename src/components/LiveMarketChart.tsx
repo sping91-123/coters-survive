@@ -931,10 +931,12 @@ export function LiveMarketChart() {
   const parityRows = useMemo<ParityRow[]>(() => {
     if (!activeAnalysis || !pineSnapshot) return [];
 
-    const pineMsb = pineSnapshot.msb ? pineDirectionForTimeframe(pineSnapshot.msb, activeTimeframe) : normalizeDirection(pineSnapshot.market);
-    const pineChoch = pineSnapshot.choch
+    const pineMsbFromSnapshot = pineSnapshot.msb ? pineDirectionForTimeframe(pineSnapshot.msb, activeTimeframe) : "unknown";
+    const pineChochFromSnapshot = pineSnapshot.choch
       ? pineDirectionForTimeframe(pineSnapshot.choch, activeTimeframe)
-      : normalizeDirection(pineSnapshot.chochDir);
+      : "unknown";
+    const pineMsb = pineMsbFromSnapshot !== "unknown" ? pineMsbFromSnapshot : normalizeDirection(pineSnapshot.market);
+    const pineChoch = pineChochFromSnapshot !== "unknown" ? pineChochFromSnapshot : normalizeDirection(pineSnapshot.chochDir);
     const pineLatestFvg = pineSnapshot.latestFvg ??
       (pineSnapshot.fvgDir && pineSnapshot.fvgDir !== "none"
         ? {
