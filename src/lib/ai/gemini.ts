@@ -1,7 +1,7 @@
 import type { AIProvider, CommentaryInput } from "./types";
 import { AIProviderError } from "./types";
 
-const GEMINI_MODEL = "gemini-2.0-flash-lite";
+const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 const SYSTEM_INSTRUCTION = `당신은 한국 트레이더용 리스크 점검 코치입니다.
@@ -84,9 +84,9 @@ export class GeminiProvider implements AIProvider {
         }
       ],
       generationConfig: {
-        temperature: 0.4,
+        temperature: 0.3,
         topP: 0.9,
-        maxOutputTokens: 120,
+        maxOutputTokens: 2048,
         candidateCount: 1
       },
       safetySettings: [
@@ -136,10 +136,15 @@ function extractText(payload: unknown): string | null {
   if (!payload || typeof payload !== "object") return null;
   const candidates = (payload as { candidates?: unknown }).candidates;
   if (!Array.isArray(candidates) || candidates.length === 0) return null;
-  const first = candidates[0] as { content?: { parts?: Array<{ text?: string }> } };
+  const first = candidates[0] as { content?: { parts?: Array<{ text?: string; thought?: boolean }> } };
   const parts = first?.content?.parts;
   if (!Array.isArray(parts) || parts.length === 0) return null;
-  const text = parts.map((p) => p.text ?? "").join("").trim();
+  // thought 파트 제외 (Gemini 2.5/3 thinking 모델의 내부 추론 토큰)
+  const text = parts
+    .filter((p) => !p.thought)
+    .map((p) => p.text ?? "")
+    .join("")
+    .trim();
   return text || null;
 }
 
