@@ -21,12 +21,44 @@ export interface ScoutSetup {
   timeframe: ChartTimeframe;
   analysis: MarketAnalysis;
   plan: TradePlanCandidate;
-  /** 0~100 정수. PRO 플랜 confidence 기반 + 정합성 가산 */
+  /** 0~100 정수. PRO 플랜 confidence 기반 + 정합성 + 근접도 가산 */
   score: number;
   /** 사용자에게 보여줄 짧은 헤드라인 (룰 기반, AI 코멘트는 추후 덧붙임) */
   headline: string;
+  /** 진입 영역까지 현재가 거리(%). 음수면 가격이 영역 아래(롱은 진입 후, 숏은 더 멀어짐). */
+  distancePercent: number;
+  /** 현재가가 진입 영역 안에 있는지 */
+  insideZone: boolean;
+  /** "지금 진입 가능" / "근접" / "대기" / "이탈" 중 하나 */
+  proximity: "ready" | "near" | "wait" | "missed";
+  /** 현재가 (진입가 비교용) */
+  currentPrice: number;
   scannedAt: string;
 }
+
+/**
+ * TF별 "이 정도까지 떨어진(올라간) 곳에서 잡으라는 셋업은 비현실적" 임계.
+ * 이걸 넘으면 Scout에서 아예 제외.
+ *
+ * 예: 4h 롱 셋업인데 진입 영역이 현재가보다 8% 아래면, 그 가격까지 가려면
+ *     4h 구조가 이미 망가질 가능성이 높음 → 추천하지 않음.
+ */
+const proximityHardLimit: Record<ChartTimeframe, number> = {
+  "5m": 0.8,
+  "15m": 1.5,
+  "1h": 3.0,
+  "4h": 6.0,
+  "1d": 12.0
+};
+
+/** TF별 "근접" 판정 임계 (이 안이면 대기 가치 있음) */
+const proximityNearLimit: Record<ChartTimeframe, number> = {
+  "5m": 0.3,
+  "15m": 0.5,
+  "1h": 1.0,
+  "4h": 2.0,
+  "1d": 4.0
+};
 
 interface ScannerOptions {
   /** 스캔할 종목. 기본 전체 5개 */
@@ -71,7 +103,14 @@ async function scanCombo(
   const market = summarizeMarket(symbol, activeTimeframe, analyses, lastCandle.close);
   if (!market.proPlan) return null;
 
-  const score = computeScoutScore(market, analyses);
+  const proximityInfo = analyzeProximity(market.proPlan, lastCandle.close, activeTimeframe);
+
+  // Hard filter: 진입 영역까지 너무 멀거나, 이미 영역을 지나친 셋업은 제외.
+  // (롱: 가격이 영역 아래로 내려간 경우 = 구조 이미 깨졌을 가능성)
+  if (proximityInfo.proximity === "missed") return null;
+  if (Math.abs(proximityInfo.distancePercent) > proximityHardLimit[activeTimeframe]) return null;
+
+  const score = computeScoutScore(market, analyses, proximityInfo);
   const headline = buildHeadline(symbol, activeTimeframe, market);
 
   return {
@@ -81,8 +120,57 @@ async function scanCombo(
     plan: market.proPlan,
     score,
     headline,
+    distancePercent: proximityInfo.distancePercent,
+    insideZone: proximityInfo.insideZone,
+    proximity: proximityInfo.proximity,
+    currentPrice: lastCandle.close,
     scannedAt: market.updatedAt
   };
+}
+
+interface ProximityInfo {
+  /** 진입 영역 가장 가까운 경계까지의 거리(%). 영역 안이면 0. */
+  distancePercent: number;
+  insideZone: boolean;
+  proximity: "ready" | "near" | "wait" | "missed";
+}
+
+/**
+ * 현재가와 진입 영역의 관계를 평가.
+ *
+ * - LONG: 영역 위쪽(현재가 > entryHigh)이면 정상 대기 / 영역 안이면 ready / 영역 아래(현재가 < entryLow)면 missed (추격됨)
+ * - SHORT: 영역 아래쪽(현재가 < entryLow)이면 정상 대기 / 영역 안이면 ready / 영역 위(현재가 > entryHigh)면 missed
+ */
+function analyzeProximity(
+  plan: TradePlanCandidate,
+  currentPrice: number,
+  timeframe: ChartTimeframe
+): ProximityInfo {
+  const insideZone = currentPrice >= plan.entryLow && currentPrice <= plan.entryHigh;
+  if (insideZone) {
+    return { distancePercent: 0, insideZone: true, proximity: "ready" };
+  }
+
+  if (plan.side === "long") {
+    if (currentPrice < plan.entryLow) {
+      // 영역 아래 = 추격됨, 구조 깨졌을 가능성
+      const distancePercent = -((plan.entryLow - currentPrice) / currentPrice) * 100;
+      return { distancePercent, insideZone: false, proximity: "missed" };
+    }
+    // 영역 위 = 정상 대기 상황 (가격 내려와야 진입)
+    const distancePercent = ((currentPrice - plan.entryHigh) / currentPrice) * 100;
+    const near = distancePercent <= proximityNearLimit[timeframe];
+    return { distancePercent, insideZone: false, proximity: near ? "near" : "wait" };
+  }
+
+  // SHORT
+  if (currentPrice > plan.entryHigh) {
+    const distancePercent = -((currentPrice - plan.entryHigh) / currentPrice) * 100;
+    return { distancePercent, insideZone: false, proximity: "missed" };
+  }
+  const distancePercent = ((plan.entryLow - currentPrice) / currentPrice) * 100;
+  const near = distancePercent <= proximityNearLimit[timeframe];
+  return { distancePercent, insideZone: false, proximity: near ? "near" : "wait" };
 }
 
 /**
@@ -94,10 +182,15 @@ async function scanCombo(
  * - readiness 보정                      : ±0~5
  * - riskFlags 패널티                    : -0~10
  * - 활성 TF가 OTE 영역인지 가산           : +0~4
+ * - 근접도 가산                          : +0~15 (지금 진입 가능 = 가장 큼)
  *
  * 최종 0~100 클램프.
  */
-function computeScoutScore(market: MarketAnalysis, analyses: TimeframeAnalysis[]): number {
+function computeScoutScore(
+  market: MarketAnalysis,
+  analyses: TimeframeAnalysis[],
+  proximityInfo: ProximityInfo
+): number {
   const plan = market.proPlan!;
   const direction = plan.side === "long" ? "bullish" : "bearish";
 
@@ -119,6 +212,11 @@ function computeScoutScore(market: MarketAnalysis, analyses: TimeframeAnalysis[]
   // 활성 TF OTE 영역 가산
   const active = analyses.find((a) => a.timeframe === market.activeTimeframe);
   if (active?.oteZone === plan.side) score += 4;
+
+  // 근접도 — 지금 진입 가능한 셋업이 가장 가치 있음
+  if (proximityInfo.proximity === "ready") score += 15;
+  else if (proximityInfo.proximity === "near") score += 8;
+  else if (proximityInfo.proximity === "wait") score -= 4;
 
   return Math.round(Math.max(0, Math.min(100, score)));
 }

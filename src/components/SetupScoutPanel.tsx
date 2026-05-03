@@ -50,12 +50,50 @@ function ScoreBadge({ score }: { score: number }) {
   );
 }
 
+function ProximityBadge({ setup }: { setup: ScoutSetup }) {
+  if (setup.proximity === "ready") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-signal-success/40 bg-signal-success/15 px-2 py-1 text-[11px] font-black text-signal-success">
+        🎯 지금 진입 가능
+      </span>
+    );
+  }
+  if (setup.proximity === "near") {
+    const direction = setup.plan.side === "long" ? "내려오면" : "올라오면";
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-accent-blue/40 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
+        ⏱ {Math.abs(setup.distancePercent).toFixed(2)}% {direction} 진입
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-slate-600/40 bg-slate-600/10 px-2 py-1 text-[11px] font-bold text-slate-400">
+      대기 — {Math.abs(setup.distancePercent).toFixed(2)}% 차이
+    </span>
+  );
+}
+
+function formatPriceWithSymbol(price: number) {
+  // 가격 크기에 따라 소수점 자리 자동 조정 (XRP/DOGE 같은 저가 코인 위해)
+  if (!Number.isFinite(price) || price <= 0) return "-";
+  let decimals = 2;
+  if (price < 0.01) decimals = 6;
+  else if (price < 1) decimals = 5;
+  else if (price < 10) decimals = 4;
+  else if (price < 100) decimals = 3;
+  else decimals = 2;
+
+  return new Intl.NumberFormat("ko-KR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(price);
+}
+
 function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
   const isLong = setup.plan.side === "long";
   const sideColor = isLong ? "text-signal-success" : "text-signal-danger";
   const SideIcon = isLong ? ArrowUpRight : ArrowDownRight;
   const sym = setup.symbol.replace("USDT.P", "");
-  const rrLabel = `1R · 1.5R · 2.5R`;
 
   return (
     <article className="rounded-lg border border-surface-line bg-surface-cardSoft p-4 transition hover:border-accent-blue/40">
@@ -77,30 +115,41 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
         <ScoreBadge score={setup.score} />
       </div>
 
+      <div className="mt-3">
+        <ProximityBadge setup={setup} />
+      </div>
+
       <p className="mt-3 text-sm leading-6 text-slate-300">{setup.plan.entryLabel}</p>
 
-      <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-        <div className="rounded border border-white/10 bg-black/20 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">진입</p>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-center">
+        <div className="rounded border border-white/10 bg-black/30 px-2 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">현재가</p>
+          <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.currentPrice)}</p>
+        </div>
+        <div className="rounded border border-accent-blue/20 bg-accent-blue/5 px-2 py-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">진입 영역</p>
           <p className="mt-1 text-xs font-bold text-white">
-            {formatPrice(setup.plan.entryLow)} ~ {formatPrice(setup.plan.entryHigh)}
+            {formatPriceWithSymbol(setup.plan.entryLow)} ~ {formatPriceWithSymbol(setup.plan.entryHigh)}
           </p>
         </div>
+      </div>
+
+      <div className="mt-2 grid grid-cols-2 gap-2 text-center">
         <div className="rounded border border-signal-danger/20 bg-signal-danger/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">무효</p>
-          <p className="mt-1 text-xs font-bold text-white">{formatPrice(setup.plan.invalidation)}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">무효 가격</p>
+          <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.invalidation)}</p>
         </div>
         <div className="rounded border border-signal-success/20 bg-signal-success/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">목표</p>
-          <p className="mt-1 text-xs font-bold text-white">{formatPrice(setup.plan.target1)}</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">1차 목표 (1.5R)</p>
+          <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.target1)}</p>
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span className="inline-flex items-center gap-1">
-          <Target size={12} aria-hidden /> {rrLabel}
+          <Target size={12} aria-hidden /> 신뢰도 {setup.plan.confidence}%
         </span>
-        <span className="font-bold text-slate-400">신뢰도 {setup.plan.confidence}%</span>
+        <span className="font-bold text-slate-400">2차 {formatPriceWithSymbol(setup.plan.target2)}</span>
       </div>
 
       {setup.plan.cautions.length > 0 ? (

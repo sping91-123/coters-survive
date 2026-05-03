@@ -65,15 +65,17 @@ interface OverlaySettings {
   cisd: boolean;
 }
 
+// 기본은 "최소 모드" — 캔들 가독성 우선. 사용자는 오버레이 토글로 더 보여줄 수 있음.
+// 풀 모드(everything 켜진 상태)는 차트가 가려서 첫 인상에 부적합하다는 사용자 피드백 반영.
 const defaultOverlaySettings: OverlaySettings = {
   ema200: true,
   orderBlocks: true,
-  fvgs: true,
-  ote: true,
+  fvgs: false,
+  ote: false,
   msb: true,
-  choch: true,
-  sweep: true,
-  cisd: true
+  choch: false,
+  sweep: false,
+  cisd: false
 };
 
 const overlayPresets = {
@@ -626,6 +628,20 @@ export function LiveMarketChart() {
         close: candle.close
       }))
     );
+
+    // 가격 크기에 맞춰 Y축 정밀도 자동 조정 (XRP/DOGE 같은 저가 코인 대응)
+    if (candles.length > 0) {
+      const lastPrice = candles[candles.length - 1].close;
+      const precision =
+        lastPrice >= 1000 ? 1 : lastPrice >= 100 ? 2 : lastPrice >= 10 ? 3 : lastPrice >= 1 ? 4 : lastPrice >= 0.01 ? 5 : 6;
+      candleSeriesRef.current.applyOptions({
+        priceFormat: {
+          type: "price",
+          precision,
+          minMove: Math.pow(10, -precision)
+        }
+      });
+    }
 
     chartApiRef.current?.timeScale().fitContent();
   }, [candles]);
