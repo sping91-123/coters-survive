@@ -14,7 +14,25 @@ import {
   type SeriesMarker,
   type Time
 } from "lightweight-charts";
-import { Activity, AlertTriangle, BarChart3, Bot, Bug, Calculator, ClipboardCheck, Copy, History, LockKeyhole, RefreshCcw, Settings2 } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  BarChart3,
+  Bot,
+  Bug,
+  Calculator,
+  ClipboardCheck,
+  Copy,
+  Crown,
+  Grid2X2,
+  History,
+  LayoutDashboard,
+  LockKeyhole,
+  Newspaper,
+  RefreshCcw,
+  Settings2,
+  Star
+} from "lucide-react";
 import {
   analyzeTimeframe,
   chartTimeframes,
@@ -36,7 +54,18 @@ import { normalizePineDirection, parsePineSnapshot, pineDirectionForTimeframe, t
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getSupabaseSession } from "@/lib/supabase";
 
-const symbols = ["BTCUSDT.P", "ETHUSDT.P", "SOLUSDT.P", "XRPUSDT.P", "DOGEUSDT.P"];
+const symbols = [
+  "BTCUSDT.P",
+  "ETHUSDT.P",
+  "XRPUSDT.P",
+  "SOLUSDT.P",
+  "DOGEUSDT.P",
+  "ADAUSDT.P",
+  "LINKUSDT.P",
+  "AVAXUSDT.P",
+  "SUIUSDT.P",
+  "LTCUSDT.P"
+];
 const timeframeScoreLimit = 6.25;
 const storagePrefix = "positionguard";
 const legacyStoragePrefix = "co" + "ters";
@@ -162,6 +191,14 @@ interface ParityRow {
   importance: "core" | "major" | "minor";
 }
 
+const radarProductTabs = [
+  { label: "기본코인", icon: Grid2X2, href: "#basic-coins", active: true },
+  { label: "관심코인", icon: Star, href: "#watchlist", active: false },
+  { label: "대시보드", icon: LayoutDashboard, href: "#radar-dashboard", active: false },
+  { label: "AI 브리핑", icon: Newspaper, href: "#ai-briefing", active: false },
+  { label: "프리미엄", icon: Crown, href: "#premium-preview", active: false }
+] as const;
+
 type MarketBriefingState =
   | { status: "idle" }
   | { status: "loading" }
@@ -204,6 +241,38 @@ function formatPrice(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: value > 100 ? 2 : 5
   }).format(value);
+}
+
+function symbolLabel(symbol: string) {
+  return symbol.replace("USDT.P", "");
+}
+
+function biasLabel(bias?: MarketAnalysis["bias"]) {
+  if (bias === "long") return "롱 우세";
+  if (bias === "short") return "숏 우세";
+  return "횡보 관찰";
+}
+
+function signalRatio(analysis: MarketAnalysis | null) {
+  if (!analysis) {
+    return { bullish: 0, bearish: 0, neutral: 0, total: 0 };
+  }
+
+  const bullish = analysis.reasons.filter((reason) => reason.tone === "bullish").length;
+  const bearish = analysis.reasons.filter((reason) => reason.tone === "bearish").length;
+  const neutral = Math.max(
+    0,
+    analysis.reasons.filter((reason) => reason.tone === "neutral").length +
+      analysis.timeframeAnalyses.filter((item) => item.msb === "neutral").length
+  );
+  const total = Math.max(1, bullish + bearish + neutral);
+
+  return { bullish, bearish, neutral, total };
+}
+
+function ratioPercent(count: number, total: number) {
+  if (total <= 0) return 0;
+  return Math.round((count / total) * 100);
 }
 
 /** lightweight-charts v5는 timeZone 옵션 미지원 → UTC 타임스탬프에 KST 오프셋 직접 가산 */
@@ -1113,6 +1182,11 @@ export function LiveMarketChart() {
     };
   }, [analysis]);
 
+  const radarSignalRatio = useMemo(() => signalRatio(analysis), [analysis]);
+  const bullishPercent = ratioPercent(radarSignalRatio.bullish, radarSignalRatio.total);
+  const bearishPercent = ratioPercent(radarSignalRatio.bearish, radarSignalRatio.total);
+  const neutralPercent = Math.max(0, 100 - bullishPercent - bearishPercent);
+
   const pineSnapshot = useMemo(() => parsePineSnapshot(pineSnapshotInput), [pineSnapshotInput]);
 
   const parityRows = useMemo<ParityRow[]>(() => {
@@ -1501,100 +1575,153 @@ export function LiveMarketChart() {
   }
 
   return (
-    <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
-            <BarChart3 size={21} aria-hidden />
+    <section id="basic-coins" className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
+              <BarChart3 size={21} aria-hidden />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">Chart Radar Beta</p>
+              <h2 className="mt-1 text-xl font-black text-white">기본코인 레이더</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">
+                ICT 구조를 먼저 보고, 보조지표는 과열과 추격 위험을 확인하는 참고값으로만 씁니다.
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold text-white">차트 레이더</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-400">
-              방향보다 먼저, 지금 자리가 위험한지 구조와 구간을 점검합니다.
-            </p>
-          </div>
+          <button
+            type="button"
+            onClick={() => loadMarket()}
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-bold text-slate-300 hover:border-accent-blue/60 hover:text-white"
+          >
+            <RefreshCcw size={16} className={isLoading ? "animate-spin" : ""} aria-hidden />
+            새로고침
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => loadMarket()}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-bold text-slate-300 hover:border-accent-blue/60 hover:text-white"
-        >
-          <RefreshCcw size={16} className={isLoading ? "animate-spin" : ""} aria-hidden />
-          새로고침
-        </button>
-      </div>
 
-      <div className="mt-4 rounded-lg border border-accent-blue/20 bg-accent-blue/10 p-4">
-        <p className="text-xs font-semibold text-accent-blue">베타 안내</p>
-        <p className="mt-1 text-sm leading-6 text-slate-300">
-          현재 베타버전은 코인 데이터를 우선 분석합니다. 추후 해외선물까지 확대할 계획이며, 판독 중심은 ICT 구조에 보조 필터를 더한 분석입니다.
-        </p>
-        <p className="mt-2 text-xs leading-5 text-slate-400">
-          베타 기간에는 모든 판독 기능을 공개합니다. 복기와 저장 데이터는 정식 서비스 전환 과정에서 보존되지 않을 수 있습니다.
-        </p>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,220px)_1fr]">
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-1">
-          {symbols.map((item) => (
-            <button
-              key={item}
-              type="button"
-              onClick={() => setSymbol(item)}
-              className={`min-h-10 rounded-md border px-3 text-sm font-bold transition ${
-                symbol === item
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
+        <nav className="grid grid-cols-5 gap-1.5 rounded-lg border border-surface-line bg-black/20 p-1.5">
+          {radarProductTabs.map(({ label, icon: Icon, href, active }) => (
+            <a
+              key={label}
+              href={href}
+              className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-1 text-[10px] font-black transition sm:text-xs ${
+                active
+                  ? "bg-accent-blue/15 text-accent-blue"
+                  : "text-slate-400 hover:bg-white/5 hover:text-white"
               }`}
             >
-              {item}
-            </button>
+              <Icon size={18} aria-hidden />
+              <span className="whitespace-nowrap">{label}</span>
+            </a>
           ))}
-        </div>
+        </nav>
+      </div>
 
-        <div className="grid gap-2">
-          <div className="grid grid-cols-5 gap-2">
-          {modeTimeframes.map((timeframe) => (
-            <button
-              key={timeframe}
-              type="button"
-              onClick={() => setActiveTimeframe(timeframe)}
-              className={`min-h-10 rounded-md border px-2 text-sm font-bold transition ${
-                activeTimeframe === timeframe
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
-              }`}
-            >
-              {timeframe}
-            </button>
-          ))}
-          </div>
-        </div>
+      <div className="mt-4 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {symbols.map((item) => (
+          <button
+            key={item}
+            type="button"
+            onClick={() => setSymbol(item)}
+            className={`min-h-11 min-w-[76px] whitespace-nowrap rounded-md border px-4 text-sm font-black transition ${
+              symbol === item
+                ? "border-accent-blue bg-accent-blue text-slate-950"
+                : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
+            }`}
+          >
+            {symbolLabel(item)}
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3 hidden grid-cols-5 gap-2 sm:grid">
+        {modeTimeframes.map((timeframe) => (
+          <button
+            key={timeframe}
+            type="button"
+            onClick={() => setActiveTimeframe(timeframe)}
+            className={`min-h-10 rounded-md border px-2 text-sm font-bold transition ${
+              activeTimeframe === timeframe
+                ? "border-accent-blue bg-accent-blue text-slate-950"
+                : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
+            }`}
+          >
+            {timeframe}
+          </button>
+        ))}
       </div>
 
       {analysis ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className={`rounded-lg border p-4 shadow-[0_0_30px_rgba(56,189,248,0.08)] ${biasClasses(analysis.bias)}`}>
-            <p className="text-xs font-semibold opacity-75">오늘 방향</p>
-            <p className="mt-2 text-xl font-black">{analysis.verdict}</p>
+        <div className={`mt-4 rounded-lg border p-4 ${biasClasses(analysis.bias)}`}>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black opacity-80">{symbolLabel(symbol)} · {activeTimeframe} 레이더 결론</p>
+              <h3 className="mt-2 text-3xl font-black">{analysis.verdict}</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-200 [word-break:keep-all]">
+                {analysis.summaryLine}
+              </p>
+            </div>
+            <div className="grid h-28 w-28 shrink-0 place-items-center rounded-full border border-current/30 bg-current/10 text-center">
+              <span className="px-3 text-base font-black">{biasLabel(analysis.bias)}</span>
+            </div>
           </div>
-          <div className={`rounded-lg border p-4 ${decisionTone(userFacingRiskLabel(analysis))}`}>
-            <p className="text-xs font-semibold opacity-75">자리 위험도</p>
-            <p className="mt-2 text-xl font-black">{userFacingRiskLabel(analysis)}</p>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className="rounded-md border border-signal-success/25 bg-black/20 p-3">
+              <div className="flex items-center justify-between text-xs font-bold text-signal-success">
+                <span>상승 근거</span>
+                <span>{radarSignalRatio.bullish}개 · {bullishPercent}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-signal-success" style={{ width: `${bullishPercent}%` }} />
+              </div>
+            </div>
+            <div className="rounded-md border border-signal-danger/25 bg-black/20 p-3">
+              <div className="flex items-center justify-between text-xs font-bold text-signal-danger">
+                <span>하락 근거</span>
+                <span>{radarSignalRatio.bearish}개 · {bearishPercent}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-signal-danger" style={{ width: `${bearishPercent}%` }} />
+              </div>
+            </div>
+            <div className="rounded-md border border-signal-warning/25 bg-black/20 p-3">
+              <div className="flex items-center justify-between text-xs font-bold text-signal-warning">
+                <span>횡보·주의</span>
+                <span>{radarSignalRatio.neutral}개 · {neutralPercent}%</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-signal-warning" style={{ width: `${neutralPercent}%` }} />
+              </div>
+            </div>
           </div>
-          <div className={`rounded-lg border p-4 ${decisionTone(userFacingNextStep(analysis))}`}>
-            <p className="text-xs font-semibold opacity-75">다음 행동</p>
-            <p className="mt-2 text-xl font-black">{userFacingNextStep(analysis)}</p>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <div className={`rounded-md border p-3 ${decisionTone(userFacingRiskLabel(analysis))}`}>
+              <p className="text-xs font-semibold opacity-75">자리 위험도</p>
+              <p className="mt-1 text-base font-black">{userFacingRiskLabel(analysis)}</p>
+            </div>
+            <div className={`rounded-md border p-3 ${decisionTone(userFacingNextStep(analysis))}`}>
+              <p className="text-xs font-semibold opacity-75">다음 행동</p>
+              <p className="mt-1 text-base font-black">{userFacingNextStep(analysis)}</p>
+            </div>
+            <div className={`rounded-md border p-3 ${readinessClasses(analysis.readiness)}`}>
+              <p className="text-xs font-semibold opacity-75">판독 상태</p>
+              <p className="mt-1 text-base font-black">{readinessLabel(analysis.readiness)}</p>
+            </div>
           </div>
         </div>
       ) : (
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {["오늘 방향", "자리 위험도", "다음 행동"].map((item) => (
-            <div key={item} className="min-h-24 animate-pulse rounded-lg border border-surface-line bg-surface-cardSoft p-4">
-              <p className="text-xs font-semibold text-slate-500">{item}</p>
-              <div className="mt-3 h-5 w-24 rounded bg-white/10" />
-            </div>
-          ))}
+        <div className="mt-4 min-h-56 animate-pulse rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+          <p className="text-xs font-semibold text-slate-500">{symbolLabel(symbol)} · {activeTimeframe} 레이더 결론</p>
+          <div className="mt-4 h-8 w-40 rounded bg-white/10" />
+          <div className="mt-4 h-4 w-full max-w-lg rounded bg-white/10" />
+          <div className="mt-5 grid gap-2 sm:grid-cols-3">
+            <div className="h-14 rounded bg-white/10" />
+            <div className="h-14 rounded bg-white/10" />
+            <div className="h-14 rounded bg-white/10" />
+          </div>
         </div>
       )}
 
@@ -1870,7 +1997,7 @@ export function LiveMarketChart() {
           </div>
 
           {analysis && activeAnalysis ? (
-            <div className="rounded-lg border border-accent-blue/25 bg-surface-cardSoft p-4">
+            <div id="ai-briefing" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-surface-cardSoft p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">AI 레이더 브리핑</p>
@@ -1944,7 +2071,7 @@ export function LiveMarketChart() {
           ) : null}
 
           {analysis && activeAnalysis && activeAnalysis.condition ? (
-            <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+            <div id="radar-dashboard" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">판독 체계</p>
@@ -2645,7 +2772,7 @@ export function LiveMarketChart() {
           ) : null}
 
           {showDetailedReadout && analysis ? (
-            <div className="rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
+            <div id="premium-preview" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
               <div className="flex items-start gap-3">
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-accent-blue/25 bg-black/20 text-accent-blue">
                   <LockKeyhole size={17} aria-hidden />
@@ -2668,6 +2795,50 @@ export function LiveMarketChart() {
               </div>
             </div>
           ) : null}
+        </div>
+      </div>
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 py-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur sm:hidden">
+        <div className="mx-auto max-w-5xl">
+          <div className="grid grid-cols-5 gap-2">
+            {modeTimeframes.map((timeframe) => (
+              <button
+                key={timeframe}
+                type="button"
+                onClick={() => setActiveTimeframe(timeframe)}
+                className={`min-h-11 rounded-md border px-2 text-sm font-black transition ${
+                  activeTimeframe === timeframe
+                    ? "border-accent-blue bg-accent-blue text-slate-950"
+                    : "border-surface-line bg-surface-cardSoft text-slate-300"
+                }`}
+              >
+                {timeframe}
+              </button>
+            ))}
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={loadMarketBriefing}
+              disabled={!analysis || !activeAnalysis || marketBriefing.status === "loading"}
+              className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-blue px-3 text-sm font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              분석하기
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById("ai-briefing")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-black text-slate-200"
+            >
+              요약보기
+            </button>
+            <button
+              type="button"
+              onClick={() => document.getElementById("radar-dashboard")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-flex min-h-11 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-black text-slate-200"
+            >
+              근거보기
+            </button>
+          </div>
         </div>
       </div>
     </section>
