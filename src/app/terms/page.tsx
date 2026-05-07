@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "이용약관",
-  description: "무제 Beta 이용약관"
+  description: "차트 레이더 Beta 이용약관"
 };
 
 const sections = [

@@ -8,8 +8,8 @@ import {
   CheckCircle2,
   Loader2,
   RefreshCw,
+  Radar,
   Save,
-  Sparkles,
   Target
 } from "lucide-react";
 import { readScoutCache, writeScoutCache, type ScoutRiskProfile, type ScoutSetup } from "@/lib/setupScout";
@@ -235,7 +235,7 @@ function CommentaryLine({ setup }: { setup: ScoutSetup }) {
     return (
       <div className="mt-3 flex items-center gap-2 rounded-md border border-accent-blue/20 bg-accent-blue/5 px-3 py-2 text-[11px] leading-5 text-slate-400">
         <Loader2 size={12} className="animate-spin text-accent-blue" aria-hidden />
-        <span>AI 구조 코멘트 생성 중...</span>
+        <span>AI 레이더 코멘트 생성 중...</span>
       </div>
     );
   }
@@ -315,7 +315,7 @@ function buildJournalNote(setup: ScoutSetup) {
   const opportunities = setup.analysis.opportunityFlags.slice(0, 5);
 
   return [
-    `AI 셋업 스캐너 저장: ${setup.headline}`,
+    `차트 레이더 저장: ${setup.headline}`,
     `현재가: ${formatPriceWithSymbol(setup.currentPrice)}`,
     `검토 구간: ${formatPriceWithSymbol(setup.plan.entryLow)} ~ ${formatPriceWithSymbol(setup.plan.entryHigh)}`,
     `리스크 기준: ${formatPriceWithSymbol(setup.plan.invalidation)}`,
@@ -511,7 +511,7 @@ function EmptyState() {
       <p className="text-sm font-black text-signal-warning">현재는 검토 후보도, 관찰 후보도 없습니다.</p>
       <p className="mt-2 text-xs leading-5 text-slate-300">
         이 상태는 오류가 아니라 “매매하지 않을 근거”입니다. 구조가 애매하거나 검토 구간에서 너무 멀어진 상태라
-        무리해서 찾기보다 다음 스캔을 기다리는 편이 낫습니다.
+        무리해서 찾기보다 다음 레이더 판독을 기다리는 편이 낫습니다.
       </p>
       <div className="mt-3 grid gap-2 text-left text-[11px] leading-5 text-slate-400 sm:grid-cols-3">
         <span className="rounded-md border border-surface-line bg-black/20 px-3 py-2">1. 킬존/세션 재진입 대기</span>
@@ -607,7 +607,7 @@ export function SetupScoutPanel() {
       writeScoutCache(data.setups, scoutMode, riskProfile);
       setState({ status: "ready", setups: data.setups, cachedAt: data.cachedAt });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
+      const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setState({ status: "error", message });
     }
   }, [scoutMode, riskProfile]);
@@ -630,11 +630,11 @@ export function SetupScoutPanel() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/30 bg-accent-blue/15 text-accent-blue">
-            <Sparkles size={21} aria-hidden />
+            <Radar size={21} aria-hidden />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-white">AI 셋업 스캐너</h2>
+              <h2 className="text-lg font-black text-white">차트 레이더 후보</h2>
               <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-blue">
                 Beta
               </span>
@@ -694,7 +694,7 @@ export function SetupScoutPanel() {
               {profile === "guard" ? "보수적 분석" : "공격적 분석"}
             </button>
           ))}
-          {cacheLabel ? <span className="text-xs text-slate-500">{cacheLabel} 스캔</span> : null}
+          {cacheLabel ? <span className="text-xs text-slate-500">{cacheLabel} 레이더</span> : null}
           <button
             type="button"
             onClick={() => runScan(true)}
@@ -702,7 +702,7 @@ export function SetupScoutPanel() {
             className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-bold text-slate-200 hover:border-accent-blue/50 hover:text-white disabled:opacity-50"
           >
             <RefreshCw size={13} className={state.status === "loading" ? "animate-spin" : ""} aria-hidden />
-            다시 스캔
+            다시 돌리기
           </button>
         </div>
       </div>
@@ -711,7 +711,7 @@ export function SetupScoutPanel() {
         {state.status === "loading" ? (
           <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-line bg-surface-cardSoft p-8 text-sm text-slate-400">
             <Loader2 size={18} className="animate-spin" aria-hidden />
-            후보 조합을 분석하는 중...
+            레이더가 후보 조합을 감지하는 중...
           </div>
         ) : state.status === "error" ? (
           <div className="rounded-lg border border-signal-danger/30 bg-signal-danger/10 p-4 text-sm text-signal-danger">
@@ -739,7 +739,7 @@ export function SetupScoutPanel() {
       </div>
 
       <p className="mt-3 text-[11px] leading-5 text-slate-500">
-        스캔 결과는 5분 단위로 갱신됩니다. 제공되는 후보는 구조 기반 분석 결과이며 매수·매도
+        레이더 결과는 5분 단위로 갱신됩니다. 제공되는 후보는 구조 기반 분석 결과이며 매수·매도
         추천이 아닙니다. 검토 구간과 리스크 기준은 반드시 본인의 차트 판독, 손절 원칙,
         포지션 크기 기준으로 다시 확인하세요.
       </p>

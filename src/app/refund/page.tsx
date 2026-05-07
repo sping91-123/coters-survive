@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "환불 및 베타 운영정책",
-  description: "무제 Beta PRO 베타 환불 및 운영정책"
+  description: "차트 레이더 Beta 환불 및 운영정책"
 };
 
 const policies = [

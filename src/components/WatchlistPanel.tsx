@@ -8,11 +8,10 @@ import {
   BookmarkCheck,
   Loader2,
   Plus,
+  Radar,
   RefreshCw,
-  Star,
   X
 } from "lucide-react";
-import Link from "next/link";
 import { watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
 import {
   addToWatchlist,
@@ -22,7 +21,6 @@ import {
   WATCHLIST_LIMIT,
   type WatchlistPlan
 } from "@/lib/watchlist";
-import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
 
 // ─── 가격 포매터 ─────────────────────────────────────────────────────────────
 function formatPrice(price: number): string {
@@ -142,7 +140,7 @@ function AddCoinModal({
           </button>
         </div>
         <p className="mt-1.5 text-xs leading-5 text-slate-500">
-          현재 {watchlist.length}/{limit}개 · Tier 2 코인에서 선택하세요.
+          현재 {watchlist.length}/{limit}개 · 베타 기간에는 전체 공개로 테스트합니다.
         </p>
 
         <div className="mt-4 grid grid-cols-3 gap-2">
@@ -177,7 +175,7 @@ function AddCoinModal({
         </div>
 
         <p className="mt-4 text-[10px] leading-5 text-slate-600">
-          추가한 코인은 3분 단위로 스캔됩니다. Tier 2 코인은 멤버십 이상에서만 관심 코인으로 설정할 수 있습니다.
+          추가한 코인은 3분 단위로 레이더가 돌며 확인합니다. 정식 서비스 전까지 저장 조건과 제공 범위는 바뀔 수 있습니다.
         </p>
       </div>
     </div>
@@ -193,9 +191,7 @@ type ScanState =
 
 // ─── 메인 패널 ────────────────────────────────────────────────────────────────
 export function WatchlistPanel() {
-  const { profile } = useSupabaseAuth();
-  const plan = (profile?.plan ?? "free") as WatchlistPlan;
-  const isPro = plan === "member" || plan === "premium" || plan === "admin";
+  const plan: WatchlistPlan = "admin";
   const limit = WATCHLIST_LIMIT[plan];
 
   const [watchlist, setWatchlist] = useState<string[]>([]);
@@ -207,7 +203,7 @@ export function WatchlistPanel() {
     setWatchlist(getWatchlist());
   }, []);
 
-  // 스캔 실행
+  // 레이더 실행
   const runScan = useCallback(async (symbols: string[]) => {
     if (symbols.length === 0) {
       setScanState({ status: "idle" });
@@ -228,19 +224,19 @@ export function WatchlistPanel() {
       const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
       setScanState({ status: "ready", setups: data.setups, cachedAt: data.cachedAt });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
+      const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setScanState({ status: "error", message });
     }
   }, []);
 
-  // watchlist 변경 시 자동 스캔
+  // watchlist 변경 시 자동 레이더 판독
   useEffect(() => {
-    if (isPro && watchlist.length > 0) {
+    if (watchlist.length > 0) {
       void runScan(watchlist);
     } else {
       setScanState({ status: "idle" });
     }
-  }, [watchlist, isPro, runScan]);
+  }, [watchlist, runScan]);
 
   function handleAdd(symbol: string) {
     const success = addToWatchlist(symbol, plan);
@@ -254,32 +250,7 @@ export function WatchlistPanel() {
     setWatchlist(getWatchlist());
   }
 
-  // ── 비멤버: 업셀 배너만 표시 ──
-  if (!isPro) {
-    return (
-      <section className="rounded-lg border border-surface-line bg-surface-card p-4 sm:p-5">
-        <div className="flex items-start gap-3">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
-            <Star size={20} aria-hidden />
-          </div>
-          <div>
-            <h2 className="text-base font-black text-white">관심 코인</h2>
-            <p className="mt-1 text-sm leading-6 text-slate-400">
-              BTC·ETH·SOL 외 관심 있는 알트코인을 최대 5개까지 추가하고 셋업 후보를 따로 스캔할 수 있습니다.
-            </p>
-            <Link
-              href="/pro"
-              className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-md border border-accent-blue/50 bg-accent-blue/20 px-4 text-xs font-black text-accent-blue transition hover:bg-accent-blue hover:text-slate-950"
-            >
-              멤버십 가입 후 이용 →
-            </Link>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // ── 멤버: 풀 UI ──
+  // ── 베타 기간 전체 공개 UI ──
   const isEmpty = watchlist.length === 0;
 
   return (
@@ -297,12 +268,12 @@ export function WatchlistPanel() {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
-              <Star size={20} aria-hidden />
+              <Radar size={20} aria-hidden />
             </div>
             <div>
-              <h2 className="text-base font-black text-white">관심 코인</h2>
+              <h2 className="text-base font-black text-white">관심 코인 레이더</h2>
               <p className="mt-0.5 text-xs leading-5 text-slate-500">
-                {watchlist.length}/{limit}개 · 3분 단위 스캔
+                {watchlist.length}/{limit}개 · 3분 단위 레이더
               </p>
             </div>
           </div>
@@ -314,7 +285,7 @@ export function WatchlistPanel() {
                 className="inline-flex min-h-8 items-center gap-1.5 rounded-md border border-surface-line bg-surface-cardSoft px-2.5 text-[11px] font-bold text-slate-200 hover:border-accent-blue/50 hover:text-white disabled:opacity-50"
               >
                 <RefreshCw size={12} aria-hidden />
-                다시 스캔
+                다시 돌리기
               </button>
             )}
             <button
@@ -351,14 +322,14 @@ export function WatchlistPanel() {
           </div>
         )}
 
-        {/* 스캔 결과 영역 */}
+        {/* 레이더 결과 영역 */}
         <div className="mt-4">
           {isEmpty ? (
             <div className="rounded-lg border border-dashed border-surface-line p-6 text-center">
               <Bookmark className="mx-auto text-slate-600" size={24} aria-hidden />
               <p className="mt-2 text-sm font-bold text-slate-400">관심 코인을 추가해보세요.</p>
               <p className="mt-1 text-xs leading-5 text-slate-600">
-                ADA, AVAX, LINK 등 Tier 2 코인 중 최대 {limit}개를 선택해 셋업 후보를 스캔합니다.
+                ADA, AVAX, LINK 등 관심 코인 중 최대 {limit}개를 선택해 구조 후보를 감지합니다.
               </p>
               <button
                 type="button"
@@ -372,7 +343,7 @@ export function WatchlistPanel() {
           ) : scanState.status === "loading" ? (
             <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-line bg-surface-cardSoft p-6 text-sm text-slate-400">
               <Loader2 size={16} className="animate-spin" aria-hidden />
-              관심 코인 스캔 중...
+              관심 코인 레이더 작동 중...
             </div>
           ) : scanState.status === "error" ? (
             <div className="rounded-lg border border-signal-danger/30 bg-signal-danger/10 p-4 text-sm text-signal-danger">

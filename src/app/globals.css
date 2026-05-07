@@ -53,3 +53,78 @@ button {
 ::selection {
   background: rgba(56, 189, 248, 0.35);
 }
+
+@keyframes radar-sweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes radar-pulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.radar-mark {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, rgba(56, 189, 248, 0.35) 0 10%, transparent 11%),
+    repeating-radial-gradient(circle, rgba(56, 189, 248, 0.2) 0 1px, transparent 1px 11px),
+    linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(2, 6, 23, 0.2));
+}
+
+.radar-mark::before {
+  position: absolute;
+  inset: 50% 0 0 50%;
+  content: "";
+  width: 50%;
+  height: 50%;
+  transform-origin: 0 0;
+  background: linear-gradient(35deg, rgba(56, 189, 248, 0.65), transparent 62%);
+  animation: radar-sweep 2.8s linear infinite;
+}
+
+.radar-mark::after {
+  position: absolute;
+  inset: 47% 47% auto auto;
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.95);
+  animation: radar-pulse 1.8s ease-in-out infinite;
+}
+
+.radar-scan-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-scan-line::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  width: 45%;
+  transform: translateX(-120%);
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.18), transparent);
+  animation: radar-sweep-horizontal 1.6s ease-in-out infinite;
+}
+
+@keyframes radar-sweep-horizontal {
+  to {
+    transform: translateX(260%);
+  }
+}

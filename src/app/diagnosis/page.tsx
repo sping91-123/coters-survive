@@ -61,7 +61,7 @@ export default function DiagnosisPage() {
         <TabMenu />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
-          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>에서 후보를 확인한 뒤,
+          <span className="font-bold text-accent-blue">차트 레이더</span>에서 후보를 확인한 뒤,
           지금 보려는 자리가 원칙에 맞는지 이 진입 점검으로 검토해보세요.
           점검 후 포지션 크기는 <Link href="/calculator" className="font-bold text-accent-blue underline underline-offset-2">계산기</Link>에서 확인할 수 있습니다.
         </div>

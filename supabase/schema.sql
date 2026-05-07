@@ -19,10 +19,13 @@ create table if not exists public.journals (
   title text not null,
   bias text not null default '관망',
   note text not null default '',
-  source text not null default 'manual' check (source in ('manual', 'chart')),
+  source text not null default 'manual' check (source in ('manual', 'chart', 'scout')),
   symbol text,
   timeframe text,
   verdict text,
+  scout_snapshot jsonb,
+  outcome text check (outcome in ('win', 'loss', 'breakeven', 'missed')),
+  outcome_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

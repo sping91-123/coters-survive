@@ -10,7 +10,6 @@ export interface SupabaseSession {
   refreshToken?: string;
   expiresAt?: number;
   tokenType?: string;
-  providerToken?: string;
 }
 
 export interface SupabaseUser {
@@ -63,8 +62,7 @@ export function parseSessionFromHash(hash: string): SupabaseSession | null {
     accessToken,
     refreshToken: params.get("refresh_token") ?? undefined,
     expiresAt,
-    tokenType: params.get("token_type") ?? undefined,
-    providerToken: params.get("provider_token") ?? undefined
+    tokenType: params.get("token_type") ?? undefined
   };
 }
 
@@ -90,6 +88,7 @@ export function getSupabaseSession(): SupabaseSession | null {
     const session = JSON.parse(raw) as SupabaseSession;
     if (!session.accessToken) return null;
     if (session.expiresAt && session.expiresAt < Math.floor(Date.now() / 1000)) {
+      if (session.refreshToken) return session;
       clearSupabaseSession();
       return null;
     }
@@ -104,6 +103,46 @@ export function clearSupabaseSession() {
   window.localStorage.removeItem(supabaseSessionStorageKey);
   window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
+}
+
+export async function refreshSupabaseSession(session: SupabaseSession): Promise<SupabaseSession | null> {
+  if (!isSupabaseConfigured() || !session.refreshToken) return null;
+
+  const response = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
+    method: "POST",
+    headers: {
+      apikey: supabasePublishableKey,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ refresh_token: session.refreshToken })
+  });
+
+  if (!response.ok) {
+    clearSupabaseSession();
+    return null;
+  }
+
+  const payload = (await response.json()) as {
+    access_token?: string;
+    refresh_token?: string;
+    expires_in?: number;
+    token_type?: string;
+  };
+
+  if (!payload.access_token) {
+    clearSupabaseSession();
+    return null;
+  }
+
+  const nextSession: SupabaseSession = {
+    accessToken: payload.access_token,
+    refreshToken: payload.refresh_token ?? session.refreshToken,
+    expiresAt: payload.expires_in ? Math.floor(Date.now() / 1000) + payload.expires_in : undefined,
+    tokenType: payload.token_type
+  };
+
+  saveSupabaseSession(nextSession);
+  return nextSession;
 }
 
 export async function fetchSupabaseUser(accessToken: string) {

@@ -9,12 +9,12 @@ function HeroSection() {
   return (
     <section className="rounded-lg border border-surface-line bg-surface-card px-5 py-6 sm:px-6">
       <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">
-        ICT 리스크 판독 베타
+        Chart Radar Beta
       </p>
       <h2 className="mt-2 text-2xl font-black leading-snug text-white sm:text-3xl">
-        지금 볼 만한 매매 후보가 있는지,
+        진입 전 레이더를 돌려
         <br className="hidden sm:block" />
-        <span className="text-accent-blue"> 들어가기 전에 먼저 걸러봅니다.</span>
+        <span className="text-accent-blue"> 차트 구조와 리스크를 먼저 감지합니다.</span>
       </h2>
       <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
         현재 베타버전은 코인 데이터를 우선 분석합니다. 추후 해외선물까지 확대할 계획이며,
@@ -41,8 +41,8 @@ function HeroSection() {
 const workflowItems = [
   {
     icon: ScanSearch,
-    title: "1. 후보를 찾지 말고 먼저 거른다",
-    body: "AI 셋업 스캐너는 검토 후보와 관찰 카드를 나눕니다. 후보가 없으면 그것도 하나의 판독 결과입니다."
+    title: "1. 레이더로 먼저 감지한다",
+    body: "차트 레이더는 검토 후보와 관찰 카드를 나눕니다. 감지된 구조가 없으면 그것도 하나의 분석 결과입니다."
   },
   {
     icon: BarChart2,
@@ -57,7 +57,7 @@ const workflowItems = [
   {
     icon: History,
     title: "4. 들어간 이유와 결과를 남긴다",
-    body: "판독 저장과 복기를 연결해 어떤 조건에서 손실이 반복되는지 확인합니다."
+    body: "레이더 저장과 복기를 연결해 어떤 조건에서 손실이 반복되는지 확인합니다."
   }
 ] as const;
 

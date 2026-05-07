@@ -1,7 +1,7 @@
 /**
  * POST /api/watchlist-scan
  *
- * 관심 코인 목록을 받아 셋업 스캔 결과를 반환.
+ * 관심 코인 목록을 받아 레이더 판독 결과를 반환.
  * Body: { symbols: string[] }
  *
  * - 종목 수 최대 10개 (서버 부하 방지)
@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { scanAllSetups, watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
+import { isBodyTooLarge, rateLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,6 +33,18 @@ function makeCacheKey(symbols: string[]): string {
 }
 
 export async function POST(req: NextRequest) {
+  const limit = rateLimit(req, { key: "watchlist-scan", limit: 20, windowMs: 5 * 60 * 1000 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+        { error: "관심 코인 레이더 요청이 너무 많습니다. 잠시 후 다시 시도하세요." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+
+  if (isBodyTooLarge(req, 12_000)) {
+    return NextResponse.json({ error: "요청 본문이 너무 큽니다." }, { status: 413 });
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -90,7 +103,7 @@ export async function POST(req: NextRequest) {
       cached: false
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
+    const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
     console.error("[api/watchlist-scan] 오류:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }

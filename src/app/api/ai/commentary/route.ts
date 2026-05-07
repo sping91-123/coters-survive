@@ -14,6 +14,7 @@
 import { NextResponse } from "next/server";
 import { getAIProvider, AIProviderError, type CommentaryInput } from "@/lib/ai";
 import { generateFallbackCommentary } from "@/lib/ai/fallback";
+import { isBodyTooLarge, rateLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -45,8 +46,10 @@ function cacheKey(input: CommentaryInput): string {
 function isValidInput(value: unknown): value is CommentaryInput {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
+  const context = v.context as Record<string, unknown> | null;
   return (
     typeof v.symbol === "string" &&
+    v.symbol.length <= 24 &&
     typeof v.timeframe === "string" &&
     typeof v.side === "string" &&
     typeof v.score === "number" &&
@@ -59,11 +62,27 @@ function isValidInput(value: unknown): value is CommentaryInput {
     typeof v.proximity === "string" &&
     typeof v.distancePercent === "number" &&
     typeof v.context === "object" &&
-    v.context !== null
+    v.context !== null &&
+    Array.isArray(context?.riskFlags) &&
+    context.riskFlags.length <= 8 &&
+    Array.isArray(context?.opportunityFlags) &&
+    context.opportunityFlags.length <= 8
   );
 }
 
 export async function POST(request: Request) {
+  const limit = rateLimit(request, { key: "ai-commentary", limit: 30, windowMs: 10 * 60 * 1000 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "AI 코멘트 요청이 너무 많습니다. 잠시 후 다시 시도하세요." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+
+  if (isBodyTooLarge(request, 40_000)) {
+    return NextResponse.json({ error: "요청 본문이 너무 큽니다." }, { status: 413 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();

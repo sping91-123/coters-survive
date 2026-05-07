@@ -31,7 +31,8 @@ import {
   createRemoteJournalEntry,
   deleteRemoteJournalEntry,
   loadRemoteJournalEntries,
-  migrateLocalJournalEntries
+  migrateLocalJournalEntries,
+  updateRemoteJournalOutcome
 } from "@/lib/remoteJournal";
 import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
 
@@ -41,7 +42,7 @@ const promptChips = [
   "손절 기준은 지켰는가?",
   "다음엔 무엇 하나만 고칠까?"
 ];
-const filters = ["전체", "스캐너 저장", "직접 기록"] as const;
+const filters = ["전체", "레이더 저장", "직접 기록"] as const;
 
 /** 30일 Scout 결과 통계 */
 function useScoutStats(entries: JournalEntry[]) {
@@ -157,7 +158,7 @@ function SourceBadge({ entry }: { entry: JournalEntry }) {
       </span>
       {entry.source === "scout" ? (
         <span className="rounded-md border border-accent-blue/30 bg-accent-blue/10 px-2 py-1 text-[11px] font-bold text-accent-blue">
-          AI 스캐너
+                  차트 레이더
         </span>
       ) : entry.source === "chart" ? (
         <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-bold text-slate-300">
@@ -326,7 +327,7 @@ export default function JournalPage() {
   }, [isLoadingAuth, session, shouldAutoSync, localEntries, migrateLocalEntries]);
 
   const filteredEntries = useMemo(() => {
-    if (activeFilter === "스캐너 저장") return entries.filter((entry) => entry.source === "scout");
+    if (activeFilter === "레이더 저장") return entries.filter((entry) => entry.source === "scout");
     if (activeFilter === "직접 기록") return entries.filter((entry) => entry.source !== "chart" && entry.source !== "scout");
     return entries;
   }, [activeFilter, entries]);
@@ -343,8 +344,21 @@ export default function JournalPage() {
       });
 
     if (session) {
-      // 서버 저장은 현재 PATCH 미구현 → 로컬만 업데이트
+      const current = entries.find((entry) => entry.id === id);
+      const nextOutcome = current?.outcome === outcome ? null : outcome;
+      const nextOutcomeAt = nextOutcome ? new Date().toISOString() : null;
+      const previous = entries;
       setEntries(updater(entries));
+
+      try {
+        const updated = await updateRemoteJournalOutcome(session.accessToken, id, nextOutcome, nextOutcomeAt);
+        if (updated) {
+          setEntries((list) => list.map((entry) => (entry.id === id ? updated : entry)));
+        }
+      } catch (error) {
+        setEntries(previous);
+        setSyncMessage(error instanceof Error ? error.message : "결과 기록 저장에 실패했습니다.");
+      }
     } else {
       const next = updater(loadJournalEntries());
       saveJournalEntries(next);
@@ -374,10 +388,10 @@ export default function JournalPage() {
             </div>
           </div>
 
-          {/* 스캐너 30일 통계 카드 */}
+              {/* 레이더 30일 통계 카드 */}
           {stats.scoutEntries.length > 0 && (
             <div className="mt-5 rounded-lg border border-accent-blue/20 bg-accent-blue/5 p-4">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-accent-blue">스캐너 후보 · 30일 결과</p>
+                  <p className="mb-3 text-xs font-bold uppercase tracking-wider text-accent-blue">레이더 후보 · 30일 결과</p>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="rounded-md border border-signal-success/20 bg-signal-success/10 px-2 py-2">
                   <p className="text-lg font-black text-signal-success">{stats.win}</p>
@@ -602,7 +616,7 @@ export default function JournalPage() {
                         <div className="mt-4 rounded-md border border-white/10 bg-black/20 p-3">
                           <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-500">
                             <Rows3 size={14} aria-hidden />
-                            {isScout ? "AI 스캐너 분석" : "직접 기록"}
+                              {isScout ? "차트 레이더 분석" : "직접 기록"}
                           </div>
                           <p className="whitespace-pre-wrap text-sm leading-7 text-slate-300">{entry.note}</p>
                         </div>

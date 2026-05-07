@@ -18,14 +18,14 @@ export default function LoginPage() {
       <div className="mx-auto flex w-full max-w-md flex-col gap-5">
         <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-white">
           <ArrowLeft size={16} aria-hidden />
-          포지션가드로 돌아가기
+          차트 레이더로 돌아가기
         </Link>
 
         <section className="rounded-lg border border-surface-line bg-surface-card p-5 shadow-glow">
           <div className="grid h-12 w-12 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
             <KeyRound size={24} aria-hidden />
           </div>
-          <h1 className="mt-5 text-2xl font-black text-white">포지션가드 로그인</h1>
+        <h1 className="mt-5 text-2xl font-black text-white">차트 레이더 로그인</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
             서버 복기, 구독 기능, 추후 알림 기능을 위한 계정 시스템입니다.
           </p>

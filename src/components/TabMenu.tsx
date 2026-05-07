@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const pageLinks = [
-  { href: "/survival", label: "차트 판독", icon: BarChart3 },
+  { href: "/survival", label: "레이더", icon: BarChart3 },
   { href: "/diagnosis", label: "진입 진단", icon: ClipboardCheck },
   { href: "/calculator", label: "계산", icon: Calculator },
   { href: "/journal", label: "복기", icon: History },

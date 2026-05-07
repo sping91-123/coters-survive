@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "개인정보 처리방침",
-  description: "무제 Beta 개인정보 처리방침"
+  description: "차트 레이더 Beta 개인정보 처리방침"
 };
 
 const sections = [

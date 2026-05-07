@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "무제 Beta",
-    short_name: "무제",
-    description: "진입 전 차트 구조와 포지션 리스크를 먼저 점검하는 매매 리스크 판독 도구",
+    name: "차트 레이더 Beta",
+    short_name: "차트 레이더",
+    description: "진입 전 차트 구조와 포지션 리스크를 먼저 감지하는 코인 분석 레이더",
     start_url: "/survival",
     scope: "/",
     display: "standalone",

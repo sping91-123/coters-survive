@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "";
 
 const routes = [
   "",
@@ -15,6 +15,8 @@ const routes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!siteUrl) return [];
+
   const lastModified = new Date();
 
   return routes.map((route) => ({

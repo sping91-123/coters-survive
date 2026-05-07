@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { AIProviderError, getAIProvider, type MarketBriefingInput } from "@/lib/ai";
 import { generateFallbackMarketBriefing } from "@/lib/ai/fallback";
+import { isBodyTooLarge, rateLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every((item) => typeof item === "string");
+  return Array.isArray(value) && value.length <= 12 && value.every((item) => typeof item === "string" && item.length <= 240);
 }
 
 function isValidInput(value: unknown): value is MarketBriefingInput {
@@ -22,6 +23,7 @@ function isValidInput(value: unknown): value is MarketBriefingInput {
   if (!isRecord(value.active)) return false;
   if (!Array.isArray(value.timeframes)) return false;
   if (!Array.isArray(value.reasons)) return false;
+  if (value.timeframes.length > 5 || value.reasons.length > 16) return false;
 
   return (
     typeof value.symbol === "string" &&
@@ -61,6 +63,18 @@ function cacheKey(input: MarketBriefingInput) {
 }
 
 export async function POST(request: Request) {
+  const limit = rateLimit(request, { key: "ai-market-briefing", limit: 12, windowMs: 10 * 60 * 1000 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "AI 피드백 요청이 너무 많습니다. 잠시 후 다시 시도하세요." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+
+  if (isBodyTooLarge(request, 80_000)) {
+    return NextResponse.json({ error: "요청 본문이 너무 큽니다." }, { status: 413 });
+  }
+
   let body: unknown;
   try {
     body = await request.json();

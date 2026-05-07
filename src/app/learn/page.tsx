@@ -39,9 +39,9 @@ export default function LearnPage() {
         <TabMenu />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
-          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>가 찾아준 후보의 근거를 직접 이해하고 싶다면 여기서 핵심 개념을 확인하세요.
-          스캐너 결과를 볼 줄 알아야 자기 판단이 가능합니다.{" "}
-          <Link href="/survival" className="font-bold text-accent-blue underline underline-offset-2">스캐너 보러 가기 →</Link>
+            <span className="font-bold text-accent-blue">차트 레이더</span>가 감지한 후보의 근거를 직접 이해하고 싶다면 여기서 핵심 개념을 확인하세요.
+            레이더 결과를 볼 줄 알아야 자기 판단이 가능합니다.{" "}
+            <Link href="/survival" className="font-bold text-accent-blue underline underline-offset-2">레이더 보러 가기 →</Link>
         </div>
 
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
@@ -52,7 +52,7 @@ export default function LearnPage() {
             <div>
               <h2 className="text-lg font-bold text-white">학습 노트</h2>
               <p className="mt-1 text-sm leading-6 text-slate-400">
-                AI 셋업 스캐너가 사용하는 ICT·구조매매 핵심 개념을 최소한으로 정리했습니다.
+          차트 레이더가 사용하는 ICT·구조매매 핵심 개념을 최소한으로 정리했습니다.
               </p>
             </div>
           </div>

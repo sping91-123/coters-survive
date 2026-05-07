@@ -40,6 +40,7 @@ function Field({
 
 export default function CalculatorPage() {
   const [seed, setSeed] = useState("");
+  const [direction, setDirection] = useState<"long" | "short">("long");
   const [riskPercent, setRiskPercent] = useState("1");
   const [entryPrice, setEntryPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
@@ -55,6 +56,12 @@ export default function CalculatorPage() {
     const target = toNumber(targetPrice);
 
     if (!seedValue || !riskValue || !entry || !stop || !lev) return null;
+    const invalidStopDirection = direction === "long" ? stop >= entry : stop <= entry;
+    if (invalidStopDirection) {
+      return {
+        error: direction === "long" ? "롱은 손절가가 진입가보다 아래에 있어야 합니다." : "숏은 손절가가 진입가보다 위에 있어야 합니다."
+      };
+    }
 
     const stopGapRate = Math.abs(entry - stop) / entry;
     if (stopGapRate <= 0) return null;
@@ -72,7 +79,7 @@ export default function CalculatorPage() {
       stopGapRate,
       rr
     };
-  }, [entryPrice, leverage, riskPercent, seed, stopPrice, targetPrice]);
+  }, [direction, entryPrice, leverage, riskPercent, seed, stopPrice, targetPrice]);
 
   return (
     <main className="min-h-screen px-4 pb-10">
@@ -81,7 +88,7 @@ export default function CalculatorPage() {
         <TabMenu />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
-          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>에서 관찰 구간과 리스크 기준을 확인한 뒤,
+          <span className="font-bold text-accent-blue">차트 레이더</span>에서 관찰 구간과 리스크 기준을 확인한 뒤,
           여기서 시드·손절폭 기준 포지션 크기와 손익비를 계산해보세요.
           진입 점검은 <Link href="/diagnosis" className="font-bold text-accent-blue underline underline-offset-2">진입 점검</Link>에서 확인할 수 있습니다.
         </div>
@@ -100,6 +107,28 @@ export default function CalculatorPage() {
           </div>
 
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <span className="text-sm font-semibold text-slate-200">방향</span>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {[
+                  { label: "롱", value: "long" as const },
+                  { label: "숏", value: "short" as const }
+                ].map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => setDirection(item.value)}
+                    className={`min-h-11 rounded-md border px-3 text-sm font-bold ${
+                      direction === item.value
+                        ? "border-accent-blue bg-accent-blue text-slate-950"
+                        : "border-surface-line bg-surface-cardSoft text-slate-300"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <Field label="총 시드" value={seed} onChange={setSeed} placeholder="예: 1000000" />
             <Field label="허용 손실률 (%)" value={riskPercent} onChange={setRiskPercent} placeholder="예: 1" />
             <Field label="진입가" value={entryPrice} onChange={setEntryPrice} placeholder="예: 68000" />
@@ -109,7 +138,12 @@ export default function CalculatorPage() {
           </div>
 
           <div className="mt-5 rounded-lg border border-white/10 bg-black/20 p-4">
-            {result ? (
+            {result && "error" in result ? (
+              <div className="flex items-start gap-3 text-sm leading-6 text-signal-warning">
+                <ShieldAlert className="mt-0.5 shrink-0 text-signal-warning" size={18} aria-hidden />
+                {result.error}
+              </div>
+            ) : result ? (
               <div className="grid gap-3 sm:grid-cols-2">
                 <Metric label="허용 손실 금액" value={formatCurrency(result.allowedLoss)} />
                 <Metric label="적정 포지션 명목가" value={formatCurrency(result.notional)} />

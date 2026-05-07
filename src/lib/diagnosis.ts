@@ -74,6 +74,10 @@ function calculatePositionSizing(values: DiagnosisFormValues): PositionSizing | 
     return null;
   }
 
+  if (!isStopLossDirectionValid(values.direction, entryPrice, stopLossPrice)) {
+    return null;
+  }
+
   const priceGapRate = Math.abs(entryPrice - stopLossPrice) / entryPrice;
   if (priceGapRate <= 0) {
     return null;
@@ -93,16 +97,23 @@ function calculatePositionSizing(values: DiagnosisFormValues): PositionSizing | 
   };
 }
 
+function isStopLossDirectionValid(direction: DiagnosisFormValues["direction"], entryPrice: number | null, stopLossPrice: number | null) {
+  if (!entryPrice || !stopLossPrice) return true;
+  return direction === "롱" ? stopLossPrice < entryPrice : stopLossPrice > entryPrice;
+}
+
 export function diagnoseTrade(values: DiagnosisFormValues): DiagnosisResult {
   let riskScore = 0;
   const violations: string[] = [];
   const leverage = toNumber(values.leverage);
   const riskPercent = getRiskPercent(values);
   const needsStopLossPrice = values.stopLossStatus === "있음";
+  const entryPrice = toNumber(values.entryPrice);
+  const stopLossPrice = toNumber(values.stopLossPrice);
 
   const missingRequiredValues =
-    !toNumber(values.entryPrice) ||
-    (needsStopLossPrice && !toNumber(values.stopLossPrice)) ||
+    !entryPrice ||
+    (needsStopLossPrice && !stopLossPrice) ||
     !toNumber(values.totalSeed) ||
     !riskPercent ||
     !leverage;
@@ -152,6 +163,11 @@ export function diagnoseTrade(values: DiagnosisFormValues): DiagnosisResult {
   if (missingRequiredValues) {
     riskScore += 10;
     violations.push("필수 값 부족");
+  }
+
+  if (needsStopLossPrice && !isStopLossDirectionValid(values.direction, entryPrice, stopLossPrice)) {
+    riskScore += 20;
+    violations.push(values.direction === "롱" ? "롱 기준 손절가가 진입가보다 높음" : "숏 기준 손절가가 진입가보다 낮음");
   }
 
   const cappedRiskScore = Math.min(riskScore, 100);

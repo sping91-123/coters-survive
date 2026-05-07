@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 import { scanAllSetups, topSetups, type ScoutRiskProfile, type ScoutSetup } from "@/lib/setupScout";
+import { rateLimit } from "@/lib/server/rateLimit";
 import type { TradingMode } from "@/lib/marketAnalysis";
 
 export const runtime = "nodejs";
@@ -35,6 +36,14 @@ function parseRiskProfile(request: Request): ScoutRiskProfile {
 }
 
 export async function GET(request: Request) {
+  const limit = rateLimit(request, { key: "scout", limit: 20, windowMs: 5 * 60 * 1000 });
+  if (!limit.allowed) {
+    return NextResponse.json(
+        { error: "레이더 요청이 너무 많습니다. 잠시 후 다시 시도하세요." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
+    );
+  }
+
   const mode = parseMode(request);
   const riskProfile = parseRiskProfile(request);
   const cacheKey = `${mode}:${riskProfile}`;
@@ -72,8 +81,8 @@ export async function GET(request: Request) {
       cached: false
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
-    console.error("[api/scout] 스캔 오류:", error);
+    const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
+    console.error("[api/scout] 레이더 오류:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -168,6 +168,38 @@ type MarketBriefingState =
   | { status: "ready"; text: string; model: string; cached: boolean }
   | { status: "error"; message: string };
 
+function BriefingKeyword({ children, tone }: { children: string; tone: "long" | "short" | "warn" | "neutral" }) {
+  const className =
+    tone === "long"
+      ? "rounded bg-signal-success/15 px-1 font-black text-signal-success"
+      : tone === "short"
+        ? "rounded bg-signal-danger/15 px-1 font-black text-signal-danger"
+        : tone === "warn"
+          ? "rounded bg-signal-warning/15 px-1 font-black text-signal-warning"
+          : "rounded bg-accent-blue/15 px-1 font-black text-accent-blue";
+  return <span className={className}>{children}</span>;
+}
+
+function HighlightedBriefing({ text }: { text: string }) {
+  const pattern = /(롱|숏|상승|하락|횡보|주의|리스크|조정|과열|침체|OB|FVG|POC|PD|MSB|CHoCH|Sweep|CISD|강점|약점|대기|관찰)/g;
+  return (
+    <p className="whitespace-pre-line text-sm leading-7 text-slate-200">
+      {text.split(pattern).map((part, index) => {
+        if (!part) return null;
+        if (["롱", "상승"].includes(part)) return <BriefingKeyword key={`${part}-${index}`} tone="long">{part}</BriefingKeyword>;
+        if (["숏", "하락"].includes(part)) return <BriefingKeyword key={`${part}-${index}`} tone="short">{part}</BriefingKeyword>;
+        if (["주의", "리스크", "조정", "과열", "침체", "약점"].includes(part)) {
+          return <BriefingKeyword key={`${part}-${index}`} tone="warn">{part}</BriefingKeyword>;
+        }
+        if (["횡보", "OB", "FVG", "POC", "PD", "MSB", "CHoCH", "Sweep", "CISD", "강점", "대기", "관찰"].includes(part)) {
+          return <BriefingKeyword key={`${part}-${index}`} tone="neutral">{part}</BriefingKeyword>;
+        }
+        return <span key={`${part}-${index}`}>{part}</span>;
+      })}
+    </p>
+  );
+}
+
 function formatPrice(value: number) {
   return new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: value > 100 ? 2 : 5
@@ -296,7 +328,7 @@ function userFacingRiskLabel(analysis: MarketAnalysis | null) {
 }
 
 function userFacingNextStep(analysis: MarketAnalysis | null) {
-  if (!analysis) return "차트 데이터를 불러오는 중";
+    if (!analysis) return "레이더가 차트 데이터를 감지하는 중";
   if (analysis.bias === "neutral") return "진입보다 구조 확인";
   if (analysis.readiness === "high") return "손절/수량 먼저 확인";
   return "반응 확인 후 판단";
@@ -649,7 +681,7 @@ export function LiveMarketChart() {
         setCandles(fallback.candles);
         setAnalysis(fallback.analysis);
         setIsUsingCachedData(true);
-        setError("실시간 데이터를 잠시 불러오지 못해 최근 저장된 판독값을 보여주고 있습니다.");
+        setError("실시간 데이터를 잠시 불러오지 못해 최근 레이더 판독값을 보여주고 있습니다.");
       } else {
         setError(loadError instanceof Error ? loadError.message : "시장 데이터를 불러오지 못했습니다.");
       }
@@ -830,10 +862,11 @@ export function LiveMarketChart() {
       scenario
     };
   }, [activeAnalysis, activeTimeframe, analysis, combinedScoreLimit]);
+  const marketBriefingScopeKey = `${symbol}.${tradingMode}.${activeTimeframe}`;
 
   useEffect(() => {
     setMarketBriefing({ status: "idle" });
-  }, [marketBriefingInput]);
+  }, [marketBriefingScopeKey]);
 
   const loadMarketBriefing = useCallback(async () => {
     if (!marketBriefingInput) return;
@@ -1450,7 +1483,7 @@ export function LiveMarketChart() {
     ];
 
     const payload = {
-      title: `${symbol} ${activeTimeframe} 판독 저장`,
+      title: `${symbol} ${activeTimeframe} 레이더 저장`,
       bias: analysis.bias === "long" ? "롱" : analysis.bias === "short" ? "숏" : "관찰",
       note: noteParts.join("\n"),
       source: "chart",
@@ -1463,7 +1496,7 @@ export function LiveMarketChart() {
     if (session) {
       try {
         await createRemoteJournalEntry(session.accessToken, payload);
-        setSavedMessage("현재 판독을 서버 복기에 저장했습니다.");
+        setSavedMessage("현재 레이더 판독을 서버 복기에 저장했습니다.");
         window.setTimeout(() => setSavedMessage(""), 1800);
         return;
       } catch {
@@ -1473,7 +1506,7 @@ export function LiveMarketChart() {
 
     appendJournalEntry(payload);
 
-    if (!session) setSavedMessage("현재 판독을 복기에 저장했습니다.");
+    if (!session) setSavedMessage("현재 레이더 판독을 복기에 저장했습니다.");
     window.setTimeout(() => setSavedMessage(""), 1800);
   }
 
@@ -1485,7 +1518,7 @@ export function LiveMarketChart() {
             <BarChart3 size={21} aria-hidden />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">차트 판독</h2>
+            <h2 className="text-lg font-bold text-white">차트 레이더</h2>
             <p className="mt-1 text-sm leading-6 text-slate-400">
               방향보다 먼저, 지금 자리가 위험한지 구조와 구간을 점검합니다.
             </p>
@@ -1606,7 +1639,7 @@ export function LiveMarketChart() {
         <div className="mt-3 grid gap-3 rounded-lg border border-surface-line bg-surface-cardSoft p-3 sm:grid-cols-2">
           <div className="rounded-md border border-accent-blue/20 bg-accent-blue/5 p-3 text-xs leading-5 text-slate-300 sm:col-span-2">
             안정형은 실전 판단용 기본값이고, 빠른 감지형과 윅 기준은 차트 미리보기용입니다.
-            AI 셋업 스캐너는 무리한 후보를 줄이기 위해 닫힌 봉 + MSB 종가 기준으로 별도 고정합니다.
+                          차트 레이더 후보는 무리한 감지를 줄이기 위해 닫힌 봉 + MSB 종가 기준으로 별도 고정합니다.
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -1773,7 +1806,7 @@ export function LiveMarketChart() {
             {isLoading && !analysis ? (
               <div className="absolute inset-0 flex items-center justify-center bg-surface-cardSoft/85 backdrop-blur-sm">
                 <div className="rounded-md border border-white/10 bg-black/30 px-4 py-3 text-sm font-semibold text-slate-200">
-                  차트와 판독값을 불러오는 중입니다.
+                  <span className="radar-scan-line inline-flex rounded-md px-1">레이더가 차트 구조를 감지하는 중입니다.</span>
                 </div>
               </div>
             ) : null}
@@ -1807,8 +1840,8 @@ export function LiveMarketChart() {
           <div className={`rounded-lg border p-4 ${biasClasses(analysis?.bias)}`}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-semibold opacity-80">자동 판독</p>
-                <h3 className="mt-1 text-2xl font-black">{analysis?.verdict ?? "데이터 대기 중"}</h3>
+                <p className="text-xs font-semibold opacity-80">레이더 판독</p>
+                <h3 className="mt-1 text-2xl font-black">{analysis?.verdict ?? "레이더 대기 중"}</h3>
               </div>
               <Activity size={26} aria-hidden />
             </div>
@@ -1851,7 +1884,7 @@ export function LiveMarketChart() {
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-white/10 bg-black/20 px-3 text-sm font-bold text-slate-200 hover:border-accent-blue/60 hover:text-white"
                 >
                   <History size={16} aria-hidden />
-                  판독 저장
+                  레이더 저장
                 </button>
               </div>
             ) : null}
@@ -1866,8 +1899,8 @@ export function LiveMarketChart() {
             <div className="rounded-lg border border-accent-blue/25 bg-surface-cardSoft p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">AI 종합 피드백</p>
-                  <h3 className="mt-1 text-lg font-black text-white">현재 데이터 전체를 긴 문장으로 종합합니다</h3>
+                  <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">AI 레이더 브리핑</p>
+                  <h3 className="mt-1 text-lg font-black text-white">감지된 구조 전체를 긴 문장으로 종합합니다</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
                     선택 코인의 MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC와 보조지표를 함께 읽어 시장 해석을 정리합니다.
                   </p>
@@ -1879,25 +1912,44 @@ export function LiveMarketChart() {
                   className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-md bg-accent-blue px-4 text-sm font-extrabold text-slate-950 hover:bg-sky-300 disabled:cursor-wait disabled:opacity-70"
                 >
                   <Bot size={16} aria-hidden />
-                  {marketBriefing.status === "loading" ? "생성 중" : marketBriefing.status === "ready" ? "다시 분석" : "종합 피드백 생성"}
+                  {marketBriefing.status === "loading" ? "레이더 분석 중" : marketBriefing.status === "ready" ? "다시 돌리기" : "레이더 브리핑 생성"}
                 </button>
               </div>
 
               <div className="mt-4 rounded-lg border border-white/10 bg-black/20 p-4">
                 {marketBriefing.status === "idle" ? (
                   <p className="text-sm leading-6 text-slate-400">
-                    버튼을 누르면 현재 화면의 모든 판독값을 기반으로 긴 문장형 피드백을 생성합니다. 이 내용은 매수·매도 신호가 아니라 구조 해석과 리스크 점검용입니다.
+                    버튼을 누르면 현재 화면의 모든 레이더 감지값을 기반으로 긴 문장형 브리핑을 생성합니다. 이 내용은 매수·매도 신호가 아니라 구조 해석과 리스크 점검용입니다.
                   </p>
                 ) : null}
                 {marketBriefing.status === "loading" ? (
                   <div className="flex items-center gap-2 text-sm font-semibold text-accent-blue">
                     <RefreshCcw className="animate-spin" size={16} aria-hidden />
-                    AI가 현재 구조, 타임프레임 정렬, 보조지표, 리스크 플래그를 종합하는 중입니다.
+                    AI 레이더가 현재 구조, 타임프레임 정렬, 보조지표, 리스크 플래그를 종합하는 중입니다.
                   </div>
                 ) : null}
                 {marketBriefing.status === "ready" ? (
                   <>
-                    <p className="whitespace-pre-line text-sm leading-7 text-slate-200">{marketBriefing.text}</p>
+                    <div className="mb-4 grid gap-2 sm:grid-cols-3">
+                      <div className={`rounded-md border px-3 py-2 ${biasClasses(analysis.bias)}`}>
+                        <p className="text-[11px] font-bold opacity-80">방향 결론</p>
+                        <p className="mt-1 text-base font-black">
+                          {analysis.bias === "long" ? "롱 우세" : analysis.bias === "short" ? "숏 우세" : "횡보 관찰"}
+                        </p>
+                      </div>
+                      <div className="rounded-md border border-white/10 bg-black/20 px-3 py-2">
+                        <p className="text-[11px] font-bold text-slate-400">종합 점수</p>
+                        <p className="mt-1 text-base font-black text-white">
+                          {analysis.biasScore}
+                          {combinedScoreLimit ? ` / -${combinedScoreLimit}~+${combinedScoreLimit}` : ""}
+                        </p>
+                      </div>
+                      <div className={`rounded-md border px-3 py-2 ${readinessClasses(analysis.readiness)}`}>
+                        <p className="text-[11px] font-bold opacity-80">검토 준비도</p>
+                        <p className="mt-1 text-base font-black">{readinessLabel(analysis.readiness)}</p>
+                      </div>
+                    </div>
+                    <HighlightedBriefing text={marketBriefing.text} />
                     <p className="mt-3 text-xs text-slate-500">
                       model {marketBriefing.model}
                       {marketBriefing.cached ? " · cached" : ""}

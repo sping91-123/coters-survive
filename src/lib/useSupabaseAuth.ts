@@ -6,6 +6,7 @@ import {
   fetchSupabaseProfile,
   fetchSupabaseUser,
   getSupabaseSession,
+  refreshSupabaseSession,
   type SupabaseProfile,
   type SupabaseSession,
   type SupabaseUser
@@ -18,29 +19,62 @@ export function useSupabaseAuth() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const nextSession = getSupabaseSession();
-    setSession(nextSession);
+    let isMounted = true;
+    const storedSession = getSupabaseSession();
 
-    if (!nextSession) {
+    if (!storedSession) {
       setIsLoading(false);
-      return;
+      return () => {
+        isMounted = false;
+      };
     }
 
-    Promise.all([
-      fetchSupabaseUser(nextSession.accessToken),
-      fetchSupabaseProfile(nextSession.accessToken)
-    ])
-      .then(([nextUser, nextProfile]) => {
+    const baseSession = storedSession;
+
+    async function loadAuth() {
+      const now = Math.floor(Date.now() / 1000);
+      const activeSession =
+        baseSession.expiresAt && baseSession.expiresAt <= now
+          ? await refreshSupabaseSession(baseSession)
+          : baseSession;
+
+      if (!activeSession) {
+        if (isMounted) {
+          setSession(null);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) setSession(activeSession);
+
+      return Promise.all([
+        fetchSupabaseUser(activeSession.accessToken),
+        fetchSupabaseProfile(activeSession.accessToken)
+      ]);
+    }
+
+    loadAuth()
+      .then((result) => {
+        if (!isMounted || !result) return;
+        const [nextUser, nextProfile] = result;
         setUser(nextUser);
-        setProfile(nextProfile);
+        setProfile(nextProfile ?? null);
       })
       .catch(() => {
         clearSupabaseSession();
+        if (!isMounted) return;
         setSession(null);
         setUser(null);
         setProfile(null);
       })
-      .finally(() => setIsLoading(false));
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function signOut() {
