@@ -19,11 +19,8 @@ export function AppFooter() {
             <Link href="/privacy" className="hover:text-white">
               개인정보 처리방침
             </Link>
-            <Link href="/refund" className="hover:text-white">
-              환불정책
-            </Link>
           </nav>
-          <p className="text-slate-600">Research beta. Brand name pending.</p>
+          <p className="text-slate-600">Chart Radar beta.</p>
         </div>
       </div>
     </footer>

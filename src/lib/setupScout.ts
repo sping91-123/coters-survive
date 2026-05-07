@@ -32,7 +32,7 @@ export const watchlistSymbolPool = [
 ] as const;
 export type WatchlistSymbol = (typeof watchlistSymbolPool)[number];
 
-// 스윙/데이트레이딩 핵심 TF만 기본 스캔 — 5m/1d는 노이즈/속도 균형상 제외
+// 레이더 후보 스캔은 내부적으로 빠른 TF와 느린 TF를 나누되 UI에서는 타임프레임 기준으로만 보여준다.
 export const defaultScoutMode: TradingMode = "scalp";
 export type ScoutRiskProfile = "guard" | "radar";
 export const defaultScoutRiskProfile: ScoutRiskProfile = "radar";
@@ -620,7 +620,7 @@ function buildWatchReason(
   if (!shortScoutSetupsEnabled && plan.side === "short") return "숏 후보가 비활성화되어 있습니다";
   if (criticalRiskFlags.some((flag) => hasRiskFlag(market, flag))) return "상위 구조 충돌 또는 반대 CISD 위험이 있습니다";
   if (!hasUsablePlanZone(active, plan)) return "OB/FVG/OTE 중 쓸 만한 반응 구간이 아직 없습니다";
-  if (mode === "scalp" && market.killzone === "off") return "단타 기준 킬존 바깥입니다";
+  if (mode === "scalp" && market.killzone === "off") return "빠른 타임프레임 기준 킬존 바깥입니다";
 
   const direction = planDirection(plan);
   const opposite = plan.side === "long" ? "bearish" : "bullish";
@@ -628,7 +628,7 @@ function buildWatchReason(
   if (active.latestSweep?.direction === opposite && active.latestSweep.age <= 8) return "최근 반대 방향 스윕이 남아 있습니다";
   if (active.latestCisd?.direction === opposite && active.latestCisd.age <= 8) return "최근 반대 방향 CISD가 남아 있습니다";
   if (proximityInfo.proximity === "ready") return "검토 구간 안이라 추격 진입 위험이 있습니다";
-  if (mode === "scalp" && proximityInfo.proximity === "wait") return "단타 기준으로는 검토 구간까지 아직 멉니다";
+  if (mode === "scalp" && proximityInfo.proximity === "wait") return "현재 타임프레임 기준으로는 검토 구간까지 아직 멉니다";
   if (mode === "scalp" && active.volumeProfile?.position === "near") return "POC 근처라 균형 구간 가능성이 큽니다";
   if (plan.side === "long" && active.volumeProfile?.position === "below") return "롱 기준 POC 아래라 매수 우위가 약합니다";
   if (plan.side === "short" && active.volumeProfile?.position === "above") return "숏 기준 POC 위라 매도 우위가 약합니다";
@@ -641,7 +641,7 @@ function buildWatchReason(
     (active.latestSweep?.direction === direction && active.latestSweep.age <= 6) ||
     (active.latestCisd?.direction === direction && active.latestCisd.age <= 6);
   if (mode === "scalp" && !hasHardZone && !hasFreshSameDirectionTrigger) {
-    return "단타에 필요한 OB/FVG 반응 또는 최근 스윕/CISD 트리거가 부족합니다";
+    return "현재 타임프레임에 필요한 OB/FVG 반응 또는 최근 스윕/CISD 트리거가 부족합니다";
   }
 
   return `검토 후보 점수 기준에 못 미칩니다 (${score}점)`;

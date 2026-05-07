@@ -17,7 +17,7 @@ import { appendJournalEntry, type ScoutSnapshot } from "@/lib/journal";
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getSupabaseSession } from "@/lib/supabase";
 import type { CommentaryInput } from "@/lib/ai/types";
-import type { TradingMode } from "@/lib/marketAnalysis";
+import { chartTimeframes, type ChartTimeframe, type TradingMode } from "@/lib/marketAnalysis";
 
 type ScanState =
   | { status: "idle" }
@@ -34,17 +34,18 @@ const numberFormatter = new Intl.NumberFormat("ko-KR", {
   maximumFractionDigits: 4,
   minimumFractionDigits: 2
 });
-const scoutModeStorageKey = "untitledRisk.scoutMode.v1";
 const scoutRiskProfileStorageKey = "untitledRisk.scoutRiskProfile.v1";
-
-function readStoredScoutMode(): TradingMode {
-  if (typeof window === "undefined") return "scalp";
-  return window.localStorage.getItem(scoutModeStorageKey) === "swing" ? "swing" : "scalp";
-}
+const scoutTimeframeStorageKey = "chartRadar.scoutTimeframe.v1";
 
 function readStoredScoutRiskProfile(): ScoutRiskProfile {
   if (typeof window === "undefined") return "radar";
   return window.localStorage.getItem(scoutRiskProfileStorageKey) === "guard" ? "guard" : "radar";
+}
+
+function readStoredScoutTimeframe(): ChartTimeframe {
+  if (typeof window === "undefined") return "15m";
+  const stored = window.localStorage.getItem(scoutTimeframeStorageKey) as ChartTimeframe | null;
+  return stored && chartTimeframes.includes(stored) ? stored : "15m";
 }
 
 function formatCachedAt(ms: number) {
@@ -348,13 +349,21 @@ function SetupCard({
   const SideIcon = isLong ? ArrowUpRight : ArrowDownRight;
   const symbol = setup.symbol.replace("USDT.P", "");
   const modeCardClass =
-    setup.mode === "scalp"
+    setup.timeframe === "5m" || setup.timeframe === "15m"
       ? "border-accent-blue/25 bg-accent-blue/5 hover:border-accent-blue/50"
-      : "border-violet-400/25 bg-violet-400/5 hover:border-violet-400/50";
+      : setup.timeframe === "1h"
+        ? "border-cyan-300/25 bg-cyan-300/5 hover:border-cyan-300/50"
+        : setup.timeframe === "4h"
+          ? "border-violet-400/25 bg-violet-400/5 hover:border-violet-400/50"
+          : "border-emerald-300/25 bg-emerald-300/5 hover:border-emerald-300/50";
   const modeBadgeClass =
-    setup.mode === "scalp"
+    setup.timeframe === "5m" || setup.timeframe === "15m"
       ? "border-accent-blue/25 bg-accent-blue/10 text-accent-blue"
-      : "border-violet-400/25 bg-violet-400/10 text-violet-200";
+      : setup.timeframe === "1h"
+        ? "border-cyan-300/25 bg-cyan-300/10 text-cyan-200"
+        : setup.timeframe === "4h"
+          ? "border-violet-400/25 bg-violet-400/10 text-violet-200"
+          : "border-emerald-300/25 bg-emerald-300/10 text-emerald-200";
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   async function saveSetup() {
@@ -408,7 +417,7 @@ function SetupCard({
               {setup.timeframe}
             </span>
             <span className={`rounded border px-1.5 py-0.5 text-xs font-bold ${modeBadgeClass}`}>
-              {setup.mode === "scalp" ? "단타" : "스윙/데이"}
+              {setup.timeframe} 레이더
             </span>
             <SideIcon className={sideColor} size={16} aria-hidden />
             <span className={`text-xs font-bold ${sideColor}`}>{isLong ? "롱 우세" : "숏 우세"}</span>
@@ -524,12 +533,12 @@ function EmptyState() {
 
 function ScanSummary({
   setups,
-  mode,
-  riskProfile
+  riskProfile,
+  selectedTimeframe
 }: {
   setups: ScoutSetup[];
-  mode: TradingMode;
   riskProfile: ScoutRiskProfile;
+  selectedTimeframe: ChartTimeframe;
 }) {
   const entryCount = setups.filter((setup) => setup.status === "entry").length;
   const activeCount = setups.filter((setup) => setup.status === "active").length;
@@ -544,7 +553,7 @@ function ScanSummary({
         }`}
       >
         <p className={`text-sm font-black ${isRadar ? "text-signal-danger" : "text-accent-blue"}`}>
-          {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 {entryCount}개, 완화 후보 {activeCount}개, 관찰 카드 {watchCount}개
+          {selectedTimeframe} · {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 {entryCount}개, 완화 후보 {activeCount}개, 관찰 카드 {watchCount}개
         </p>
         <p className="mt-1 text-xs leading-5 text-slate-300">
           {isRadar
@@ -565,7 +574,7 @@ function ScanSummary({
         {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 없음, 관찰 카드 {watchCount}개
       </p>
       <p className="mt-1 text-xs leading-5 text-slate-300">
-        {mode === "scalp" ? "단타" : "스윙/데이"} 기준에서 바로 검토할 조건은 부족합니다.
+        {selectedTimeframe} 기준에서 바로 검토할 조건은 부족합니다.
         {isRadar
           ? " 대신 공격적 분석은 완화된 조건으로 움직임 후보를 더 넓게 보여주며, 실제 진입 전에는 보수적 분석 기준으로 다시 걸러야 합니다."
           : " 이 카드는 “매수·매도 자리”가 아니라 가격이 다시 올 때 확인할 체크포인트입니다."}
@@ -576,41 +585,54 @@ function ScanSummary({
 
 export function SetupScoutPanel() {
   const [state, setState] = useState<ScanState>({ status: "idle" });
-  const [scoutMode, setScoutMode] = useState<TradingMode>("scalp");
+  const [selectedTimeframe, setSelectedTimeframe] = useState<ChartTimeframe>("15m");
   const [riskProfile, setRiskProfile] = useState<ScoutRiskProfile>("radar");
   const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
   useEffect(() => {
-    setScoutMode(readStoredScoutMode());
+    setSelectedTimeframe(readStoredScoutTimeframe());
     setRiskProfile(readStoredScoutRiskProfile());
     setHasLoadedPreferences(true);
   }, []);
 
   const runScan = useCallback(async (force = false) => {
-    window.localStorage.setItem(scoutModeStorageKey, scoutMode);
+    window.localStorage.setItem(scoutTimeframeStorageKey, selectedTimeframe);
     window.localStorage.setItem(scoutRiskProfileStorageKey, riskProfile);
     if (!force) {
-      const cached = readScoutCache(scoutMode, riskProfile);
-      if (cached) {
-        setState({ status: "ready", setups: cached.setups, cachedAt: cached.cachedAt });
+      const cachedScalp = readScoutCache("scalp", riskProfile);
+      const cachedSwing = readScoutCache("swing", riskProfile);
+      if (cachedScalp && cachedSwing) {
+        setState({
+          status: "ready",
+          setups: [...cachedScalp.setups, ...cachedSwing.setups],
+          cachedAt: Math.max(cachedScalp.cachedAt, cachedSwing.cachedAt)
+        });
         return;
       }
     }
 
     setState({ status: "loading" });
     try {
-      const res = await fetch(`/api/scout?mode=${scoutMode}&risk=${riskProfile}`, { cache: "no-store" });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? `서버 오류 (${res.status})`);
-      }
-      const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
-      writeScoutCache(data.setups, scoutMode, riskProfile);
-      setState({ status: "ready", setups: data.setups, cachedAt: data.cachedAt });
+      const fetchMode = async (mode: TradingMode) => {
+        const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}`, { cache: "no-store" });
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          throw new Error(data.error ?? `서버 오류 (${res.status})`);
+        }
+        const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
+        writeScoutCache(data.setups, mode, riskProfile);
+        return data;
+      };
+      const [scalp, swing] = await Promise.all([fetchMode("scalp"), fetchMode("swing")]);
+      setState({
+        status: "ready",
+        setups: [...scalp.setups, ...swing.setups],
+        cachedAt: Math.max(scalp.cachedAt, swing.cachedAt)
+      });
     } catch (error) {
       const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setState({ status: "error", message });
     }
-  }, [scoutMode, riskProfile]);
+  }, [riskProfile, selectedTimeframe]);
 
   useEffect(() => {
     if (!hasLoadedPreferences) return;
@@ -623,7 +645,8 @@ export function SetupScoutPanel() {
   }, [state]);
 
   const visibleLimit = riskProfile === "radar" ? 6 : 3;
-  const visibleSetups = state.status === "ready" ? state.setups.slice(0, visibleLimit) : [];
+  const timeframeSetups = state.status === "ready" ? state.setups.filter((setup) => setup.timeframe === selectedTimeframe) : [];
+  const visibleSetups = timeframeSetups.slice(0, visibleLimit);
 
   return (
     <section className="rounded-lg border border-accent-blue/25 bg-surface-card p-4 shadow-glow sm:p-5">
@@ -657,21 +680,21 @@ export function SetupScoutPanel() {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {(["scalp", "swing"] as TradingMode[]).map((mode) => (
+          {chartTimeframes.map((timeframe) => (
             <button
-              key={mode}
+              key={timeframe}
               type="button"
               onClick={() => {
-                setScoutMode(mode);
+                setSelectedTimeframe(timeframe);
                 setState({ status: "idle" });
               }}
               className={`inline-flex min-h-9 items-center rounded-md border px-3 text-xs font-black transition ${
-                scoutMode === mode
+                selectedTimeframe === timeframe
                   ? "border-accent-blue bg-accent-blue text-slate-950"
                   : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/50"
               }`}
             >
-              {mode === "scalp" ? "단타" : "스윙/데이"}
+              {timeframe}
             </button>
           ))}
           <span className="mx-1 hidden h-5 w-px bg-surface-line sm:inline-block" />
@@ -718,11 +741,11 @@ export function SetupScoutPanel() {
             {state.message}
           </div>
         ) : state.status === "ready" ? (
-          state.setups.length === 0 ? (
+          visibleSetups.length === 0 ? (
             <EmptyState />
           ) : (
             <>
-              <ScanSummary setups={state.setups} mode={scoutMode} riskProfile={riskProfile} />
+              <ScanSummary setups={timeframeSetups} riskProfile={riskProfile} selectedTimeframe={selectedTimeframe} />
               <div className="grid gap-3 sm:grid-cols-3">
                 {visibleSetups.map((setup, idx) => (
                   <SetupCard

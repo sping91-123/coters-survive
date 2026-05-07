@@ -64,7 +64,7 @@ function buildMarketBriefingPrompt(input: MarketBriefingInput): string {
 기본.
 종목: ${sym}
 선택 타임프레임: ${input.activeTimeframe}
-분석 모드: ${input.tradingMode === "scalp" ? "단타/스캘핑" : "스윙/데이"}
+레이더 기준: ${input.activeTimeframe} 타임프레임
 현재가: ${input.price}
 판정: ${input.verdict}
 방향: ${input.bias}

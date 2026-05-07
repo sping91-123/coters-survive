@@ -549,7 +549,6 @@ export function LiveMarketChart() {
   const markersRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null);
 
   const [symbol, setSymbol] = useState("BTCUSDT.P");
-  const [tradingMode, setTradingMode] = useState<TradingMode>("scalp");
   const [activeTimeframe, setActiveTimeframe] = useState<ChartTimeframe>("15m");
   const [candles, setCandles] = useState<Candle[]>([]);
   const [analysis, setAnalysis] = useState<MarketAnalysis | null>(null);
@@ -566,9 +565,10 @@ export function LiveMarketChart() {
   const [savedMessage, setSavedMessage] = useState("");
   const [marketBriefing, setMarketBriefing] = useState<MarketBriefingState>({ status: "idle" });
   const [overlaySettings, setOverlaySettings] = useState<OverlaySettings>(defaultOverlaySettings);
-  const modeTimeframes = tradingModeConfigs[tradingMode].activeTimeframes;
+  const effectiveTradingMode: TradingMode = activeTimeframe === "5m" || activeTimeframe === "15m" ? "scalp" : "swing";
+  const modeTimeframes = chartTimeframes;
 
-  const cacheKey = `${storagePrefix}.marketCache.${symbol}.${tradingMode}.${analysisMode}.${msbMode}`;
+  const cacheKey = `${storagePrefix}.marketCache.${symbol}.${activeTimeframe}.${analysisMode}.${msbMode}`;
 
   useEffect(() => {
     setOverlaySettings(readOverlaySettings());
@@ -577,16 +577,13 @@ export function LiveMarketChart() {
   useEffect(() => {
     const storedSymbol = readLocalStorageWithLegacy(storageKey("symbol"), legacyStorageKey("symbol"));
     const storedTimeframe = readLocalStorageWithLegacy(storageKey("timeframe"), legacyStorageKey("timeframe")) as ChartTimeframe | null;
-    const storedTradingMode = readLocalStorageWithLegacy(storageKey("tradingMode"), legacyStorageKey("tradingMode")) as TradingMode | null;
     const storedMode = readLocalStorageWithLegacy(storageKey("analysisMode"), legacyStorageKey("analysisMode")) as "confirmed" | "aggressive" | null;
     const storedMsbMode = readLocalStorageWithLegacy(storageKey("msbMode"), legacyStorageKey("msbMode")) as "close" | "wick" | null;
-    const nextTradingMode: TradingMode = storedTradingMode === "swing" ? "swing" : "scalp";
 
     if (storedSymbol && symbols.includes(storedSymbol)) {
       setSymbol(storedSymbol);
     }
-    setTradingMode(nextTradingMode);
-    if (storedTimeframe && tradingModeConfigs[nextTradingMode].activeTimeframes.includes(storedTimeframe)) {
+    if (storedTimeframe && chartTimeframes.includes(storedTimeframe)) {
       setActiveTimeframe(storedTimeframe);
     }
     if (storedMode === "confirmed" || storedMode === "aggressive") {
@@ -600,13 +597,6 @@ export function LiveMarketChart() {
   useEffect(() => {
     writeLocalStorage(storageKey("symbol"), legacyStorageKey("symbol"), symbol);
   }, [symbol]);
-
-  useEffect(() => {
-    writeLocalStorage(storageKey("tradingMode"), legacyStorageKey("tradingMode"), tradingMode);
-    if (!tradingModeConfigs[tradingMode].activeTimeframes.includes(activeTimeframe)) {
-      setActiveTimeframe(tradingModeConfigs[tradingMode].activeTimeframes[0]);
-    }
-  }, [activeTimeframe, tradingMode]);
 
   useEffect(() => {
     writeLocalStorage(storageKey("timeframe"), legacyStorageKey("timeframe"), activeTimeframe);
@@ -663,7 +653,7 @@ export function LiveMarketChart() {
       const latestPrice = (analysisMode === "confirmed" && activeCandles.length > 50 ? activeCandles[activeCandles.length - 2] : activeCandles[activeCandles.length - 1])?.close ?? 0;
 
       setCandles(activeCandles);
-      const nextAnalysis = summarizeMarket(symbol, activeTimeframe, analyses, latestPrice, tradingMode);
+      const nextAnalysis = summarizeMarket(symbol, activeTimeframe, analyses, latestPrice, effectiveTradingMode);
       setAnalysis(nextAnalysis);
       setIsUsingCachedData(false);
 
@@ -688,7 +678,7 @@ export function LiveMarketChart() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeTimeframe, analysisMode, cacheKey, msbMode, symbol, tradingMode]);
+  }, [activeTimeframe, analysisMode, cacheKey, effectiveTradingMode, msbMode, symbol]);
 
   useEffect(() => {
     loadMarket();
@@ -784,7 +774,7 @@ export function LiveMarketChart() {
   const hasAnyOverlay = useMemo(() => Object.values(overlaySettings).some(Boolean), [overlaySettings]);
   const combinedScoreLimit = useMemo(() => {
     if (!analysis) return null;
-    const config = tradingModeConfigs[tradingMode];
+    const config = tradingModeConfigs[effectiveTradingMode];
     const weightedTimeframes = new Set<ChartTimeframe>([activeTimeframe, ...config.contextTimeframes]);
     const max = analysis.timeframeAnalyses.reduce((sum, item) => {
       if (!weightedTimeframes.has(item.timeframe)) return sum;
@@ -793,7 +783,7 @@ export function LiveMarketChart() {
       return sum + timeframeScoreLimit * weight;
     }, 0);
     return Number(max.toFixed(2));
-  }, [activeTimeframe, analysis, tradingMode]);
+  }, [activeTimeframe, analysis, effectiveTradingMode]);
 
   const marketBriefingInput = useMemo<MarketBriefingInput | null>(() => {
     if (!analysis || !activeAnalysis) return null;
@@ -862,7 +852,7 @@ export function LiveMarketChart() {
       scenario
     };
   }, [activeAnalysis, activeTimeframe, analysis, combinedScoreLimit]);
-  const marketBriefingScopeKey = `${symbol}.${tradingMode}.${activeTimeframe}`;
+  const marketBriefingScopeKey = `${symbol}.${activeTimeframe}`;
 
   useEffect(() => {
     setMarketBriefing({ status: "idle" });
@@ -1563,23 +1553,7 @@ export function LiveMarketChart() {
         </div>
 
         <div className="grid gap-2">
-          <div className="grid grid-cols-2 gap-2">
-            {(["scalp", "swing"] as TradingMode[]).map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setTradingMode(mode)}
-                className={`min-h-10 rounded-md border px-3 text-sm font-black transition ${
-                  tradingMode === mode
-                    ? "border-accent-blue bg-accent-blue text-slate-950"
-                    : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
-                }`}
-              >
-                {mode === "scalp" ? "단타/스캘핑" : "스윙/데이"}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-5 gap-2">
           {modeTimeframes.map((timeframe) => (
             <button
               key={timeframe}
@@ -1916,17 +1890,23 @@ export function LiveMarketChart() {
                 </button>
               </div>
 
+              {marketBriefing.status === "loading" ? (
+                <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 px-4 backdrop-blur-sm">
+                  <div className="w-full max-w-sm rounded-2xl border border-accent-blue/25 bg-slate-950/95 p-6 text-center shadow-[0_0_90px_rgba(56,189,248,0.22)]">
+                    <div className="radar-mark-lg mx-auto h-36 w-36 border border-accent-blue/30" />
+                    <p className="mt-5 text-base font-black text-white">AI 레이더 스캔 중</p>
+                    <p className="mt-2 text-sm leading-6 text-slate-400">
+                      MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC와 보조지표를 한 번에 훑고 있습니다.
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="mt-4 rounded-lg border border-white/10 bg-black/20 p-4">
                 {marketBriefing.status === "idle" ? (
                   <p className="text-sm leading-6 text-slate-400">
                     버튼을 누르면 현재 화면의 모든 레이더 감지값을 기반으로 긴 문장형 브리핑을 생성합니다. 이 내용은 매수·매도 신호가 아니라 구조 해석과 리스크 점검용입니다.
                   </p>
-                ) : null}
-                {marketBriefing.status === "loading" ? (
-                  <div className="flex items-center gap-2 text-sm font-semibold text-accent-blue">
-                    <RefreshCcw className="animate-spin" size={16} aria-hidden />
-                    AI 레이더가 현재 구조, 타임프레임 정렬, 보조지표, 리스크 플래그를 종합하는 중입니다.
-                  </div>
                 ) : null}
                 {marketBriefing.status === "ready" ? (
                   <>
@@ -2434,7 +2414,7 @@ export function LiveMarketChart() {
                 <MiniMetric label="PD 기준" value="4시간 프리미엄/디스카운트" />
                 <MiniMetric label="POC 기준" value="현재 TF 최근 180봉 VP" />
                 <MiniMetric label="스윕 기준" value="확정 pivot 이후" />
-                <MiniMetric label="매매 타입" value={tradingMode === "scalp" ? "단타/스캘핑" : "스윙/데이"} />
+                <MiniMetric label="레이더 기준" value={`${activeTimeframe} 타임프레임`} />
                 <MiniMetric label="판독 모드" value={analysisMode === "confirmed" ? "닫힌 봉 기준" : "진행 중 봉 포함"} />
                 <MiniMetric label="4H EMA200" value={fourHourAnalysis ? stateLabel(fourHourAnalysis.ema200Side) : "-"} />
                 <MiniMetric label="현재 킬존" value={killzoneLabel(analysis.killzone)} />

@@ -437,7 +437,7 @@ export default function JournalPage() {
                   <p className="mt-1 text-xs leading-5 text-slate-400">
                     {session
                       ? "Supabase 계정에 연결되어 복기 기록을 서버에 저장합니다."
-                      : "구글/카카오 로그인을 연결하면 기기 변경, 모바일 앱 출시 후에도 기록을 이어갈 수 있습니다."}
+                      : "구글 로그인을 연결하면 기기 변경, 모바일 앱 출시 후에도 기록을 이어갈 수 있습니다."}
                   </p>
                 </div>
               </div>

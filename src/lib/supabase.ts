@@ -37,7 +37,7 @@ export function isSupabaseConfigured() {
   return Boolean(supabaseUrl && supabasePublishableKey);
 }
 
-export function getOAuthUrl(provider: "google" | "kakao", redirectPath = "/auth/callback") {
+export function getOAuthUrl(provider: "google", redirectPath = "/auth/callback") {
   if (!isSupabaseConfigured() || typeof window === "undefined") return "";
 
   const redirectTo = new URL(redirectPath, window.location.origin).toString();

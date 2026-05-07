@@ -123,7 +123,7 @@ export const latestBacktestReport: BacktestReport = {
       entryRate: 86.6,
       winRateAll: 30.2
     }),
-    byMode: [s("스윙/데이", 4, 3, 0, 1, 100, 1.13, 75, 1.36, 0.77)],
+    byMode: [s("1h·4h·1d", 4, 3, 0, 1, 100, 1.13, 75, 1.36, 0.77)],
     byRegime: [
       s("횡보장", 3, 2, 0, 1, 100, 1, 75, 0.99, 0.31),
       s("하락장", 1, 1, 0, 0, 100, 1.5, 75, 2.45, 2.15)
@@ -213,13 +213,13 @@ export const latestBacktestReport: BacktestReport = {
       winRateAll: 48.7
     }),
     byMode: [
-      s("단타 레이더", 179, 88, 22, 23, 80, 0.142, 43.4, 0.398, 0.517, {
+      s("5m·15m 레이더", 179, 88, 22, 23, 80, 0.142, 43.4, 0.398, 0.517, {
         timeouts: 32,
         ambiguous: 14,
         entryRate: 87.2,
         winRateAll: 49.2
       }),
-      s("스윙/데이 레이더", 49, 23, 9, 9, 71.9, 0.567, 60.8, 2.17, 1.19, {
+      s("1h·4h·1d 레이더", 49, 23, 9, 9, 71.9, 0.567, 60.8, 2.17, 1.19, {
         timeouts: 8,
         entryRate: 81.6,
         winRateAll: 46.9
@@ -293,7 +293,7 @@ export const latestBacktestReport: BacktestReport = {
     },
     {
       title: "현재 유효한 축은 스윙 1H 숏 중심이다",
-      body: "현 기준에서 살아남은 후보는 모두 스윙/데이 모드의 1H 숏입니다. 단타/롱/4H는 아직 별도 기준을 더 검증하기 전까지 강하게 보수적으로 운용해야 합니다.",
+      body: "현 기준에서 살아남은 후보는 대부분 1H 숏 구조에 몰려 있습니다. 다른 타임프레임과 롱 구조는 별도 기준을 더 검증하기 전까지 강하게 보수적으로 운용해야 합니다.",
       tone: "neutral"
     },
     {
@@ -343,5 +343,5 @@ export const latestBacktestReport: BacktestReport = {
 };
 
 export function modeLabel(mode: TradingMode) {
-  return mode === "scalp" ? "단타/스캘핑" : "스윙/데이";
+  return mode === "scalp" ? "5m·15m" : "1h·4h·1d";
 }
