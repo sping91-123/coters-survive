@@ -23,7 +23,6 @@ import {
   Calculator,
   ClipboardCheck,
   Copy,
-  Crown,
   Grid2X2,
   History,
   LayoutDashboard,
@@ -195,8 +194,7 @@ const radarProductTabs = [
   { label: "기본코인", icon: Grid2X2, href: "#basic-coins", active: true },
   { label: "관심코인", icon: Star, href: "#watchlist", active: false },
   { label: "대시보드", icon: LayoutDashboard, href: "#radar-dashboard", active: false },
-  { label: "AI 브리핑", icon: Newspaper, href: "#ai-briefing", active: false },
-  { label: "프리미엄", icon: Crown, href: "#premium-preview", active: false }
+  { label: "AI 브리핑", icon: Newspaper, href: "#ai-briefing", active: false }
 ] as const;
 
 type MarketBriefingState =
@@ -401,6 +399,62 @@ function userFacingNextStep(analysis: MarketAnalysis | null) {
   if (analysis.bias === "neutral") return "진입보다 구조 확인";
   if (analysis.readiness === "high") return "손절/수량 먼저 확인";
   return "반응 확인 후 판단";
+}
+
+type RadarPulseTone = "long" | "short" | "warn" | "neutral";
+
+interface RadarPulseItem {
+  label: string;
+  title: string;
+  text: string;
+  tone: RadarPulseTone;
+}
+
+function buildRadarPulse(analysis: MarketAnalysis, active?: TimeframeAnalysis): RadarPulseItem[] {
+  const directionTitle =
+    analysis.bias === "long" ? "롱 우세" : analysis.bias === "short" ? "숏 우세" : "횡보 관찰";
+  const directionTone: RadarPulseTone =
+    analysis.bias === "long" ? "long" : analysis.bias === "short" ? "short" : "warn";
+  const riskText =
+    analysis.riskFlags[0] ??
+    (active?.condition.rsiState === "overbought"
+      ? "과열권에 가까워 추격 진입은 피하는 편이 좋습니다."
+      : active?.condition.volatilityState === "expanded"
+        ? "변동성이 커져 손절폭과 포지션 크기를 먼저 줄여야 합니다."
+        : "뚜렷한 위험 플래그는 적지만, 손절 기준 없이 들어가면 판독 의미가 없습니다.");
+  const nextText =
+    analysis.checkpoints[0] ??
+    (analysis.bias === "neutral"
+      ? "MSB와 CHoCH가 같은 방향으로 다시 정렬되는지 확인하세요."
+      : analysis.actionGuide);
+
+  return [
+    {
+      label: "핵심",
+      title: directionTitle,
+      text: analysis.summaryLine,
+      tone: directionTone
+    },
+    {
+      label: "위험",
+      title: userFacingRiskLabel(analysis),
+      text: riskText,
+      tone: analysis.riskFlags.length > 0 ? "warn" : "neutral"
+    },
+    {
+      label: "다음 확인",
+      title: userFacingNextStep(analysis),
+      text: nextText,
+      tone: "neutral"
+    }
+  ];
+}
+
+function radarPulseClasses(tone: RadarPulseTone) {
+  if (tone === "long") return "border-signal-success/25 bg-signal-success/10 text-signal-success";
+  if (tone === "short") return "border-signal-danger/25 bg-signal-danger/10 text-signal-danger";
+  if (tone === "warn") return "border-signal-warning/25 bg-signal-warning/10 text-signal-warning";
+  return "border-accent-blue/25 bg-accent-blue/10 text-accent-blue";
 }
 
 function decisionTone(value: string) {
@@ -839,6 +893,10 @@ export function LiveMarketChart() {
   const activeAnalysis = useMemo(
     () => analysis?.timeframeAnalyses.find((item) => item.timeframe === activeTimeframe),
     [analysis, activeTimeframe]
+  );
+  const radarPulseItems = useMemo(
+    () => (analysis ? buildRadarPulse(analysis, activeAnalysis) : []),
+    [activeAnalysis, analysis]
   );
   const hasAnyOverlay = useMemo(() => Object.values(overlaySettings).some(Boolean), [overlaySettings]);
   const combinedScoreLimit = useMemo(() => {
@@ -1583,10 +1641,14 @@ export function LiveMarketChart() {
               <BarChart3 size={21} aria-hidden />
             </div>
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">Chart Radar Beta</p>
-              <h2 className="mt-1 text-xl font-black text-white">기본코인 레이더</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-black text-white">코인 레이더</h2>
+                <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-accent-blue">
+                  Beta
+                </span>
+              </div>
               <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">
-                ICT 구조를 먼저 보고, 보조지표는 과열과 추격 위험을 확인하는 참고값으로만 씁니다.
+                ICT 구조를 먼저 보고, 보조지표는 과열과 추격 위험만 참고합니다.
               </p>
             </div>
           </div>
@@ -1596,22 +1658,22 @@ export function LiveMarketChart() {
             className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-bold text-slate-300 hover:border-accent-blue/60 hover:text-white"
           >
             <RefreshCcw size={16} className={isLoading ? "animate-spin" : ""} aria-hidden />
-            새로고침
+            갱신
           </button>
         </div>
 
-        <nav className="grid grid-cols-5 gap-1.5 rounded-lg border border-surface-line bg-black/20 p-1.5">
+        <nav className="grid grid-cols-4 gap-1.5 rounded-lg border border-surface-line bg-black/20 p-1.5">
           {radarProductTabs.map(({ label, icon: Icon, href, active }) => (
             <a
               key={label}
               href={href}
-              className={`flex min-h-14 flex-col items-center justify-center gap-1 rounded-md px-1 text-[10px] font-black transition sm:text-xs ${
+              className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-md px-1 text-[10px] font-black transition sm:text-xs ${
                 active
                   ? "bg-accent-blue/15 text-accent-blue"
                   : "text-slate-400 hover:bg-white/5 hover:text-white"
               }`}
             >
-              <Icon size={18} aria-hidden />
+              <Icon size={16} aria-hidden />
               <span className="whitespace-nowrap">{label}</span>
             </a>
           ))}
@@ -1624,7 +1686,7 @@ export function LiveMarketChart() {
             key={item}
             type="button"
             onClick={() => setSymbol(item)}
-            className={`min-h-11 min-w-[76px] whitespace-nowrap rounded-md border px-4 text-sm font-black transition ${
+            className={`min-h-10 min-w-[68px] whitespace-nowrap rounded-md border px-3 text-sm font-black transition ${
               symbol === item
                 ? "border-accent-blue bg-accent-blue text-slate-950"
                 : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
@@ -1656,15 +1718,27 @@ export function LiveMarketChart() {
         <div className={`mt-4 rounded-lg border p-4 ${biasClasses(analysis.bias)}`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs font-black opacity-80">{symbolLabel(symbol)} · {activeTimeframe} 레이더 결론</p>
-              <h3 className="mt-2 text-3xl font-black">{analysis.verdict}</h3>
-              <p className="mt-2 text-sm leading-6 text-slate-200 [word-break:keep-all]">
+              <p className="text-xs font-black opacity-80">{symbolLabel(symbol)} · {activeTimeframe} 오늘의 레이더 브리프</p>
+              <h3 className="mt-2 text-2xl font-black sm:text-3xl">{analysis.verdict}</h3>
+              <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-200 [word-break:keep-all]">
                 {analysis.summaryLine}
               </p>
             </div>
-            <div className="grid h-28 w-28 shrink-0 place-items-center rounded-full border border-current/30 bg-current/10 text-center">
+            <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full border border-current/30 bg-current/10 text-center sm:h-28 sm:w-28">
               <span className="px-3 text-base font-black">{biasLabel(analysis.bias)}</span>
             </div>
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            {radarPulseItems.map((item) => (
+              <div key={item.label} className={`rounded-md border p-3 ${radarPulseClasses(item.tone)}`}>
+                <p className="text-[11px] font-black opacity-80">{item.label}</p>
+                <p className="mt-1 text-base font-black">{item.title}</p>
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-200 [word-break:keep-all]">
+                  {item.text}
+                </p>
+              </div>
+            ))}
           </div>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
@@ -2772,7 +2846,7 @@ export function LiveMarketChart() {
           ) : null}
 
           {showDetailedReadout && analysis ? (
-            <div id="premium-preview" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
+            <div id="beta-notice" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
               <div className="flex items-start gap-3">
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-accent-blue/25 bg-black/20 text-accent-blue">
                   <LockKeyhole size={17} aria-hidden />

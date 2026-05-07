@@ -87,7 +87,7 @@ function StatusBadge({ setup, riskProfile }: { setup: ScoutSetup; riskProfile: S
   if (setup.status === "active") {
     return (
       <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-orange-400/40 bg-orange-400/15 px-2 py-1 text-[11px] font-black text-orange-300">
-        공격적 분석
+        강한 감지
       </span>
     );
   }
@@ -118,7 +118,7 @@ function StatusBadge({ setup, riskProfile }: { setup: ScoutSetup; riskProfile: S
 
   return (
     <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-signal-success/40 bg-signal-success/15 px-2 py-1 text-[11px] font-black text-signal-success">
-      분석 후보
+      레이더 감지
     </span>
   );
 }
@@ -136,14 +136,14 @@ function ProximityBadge({ setup }: { setup: ScoutSetup }) {
     const direction = setup.plan.side === "long" ? "내려오면" : "올라오면";
     return (
       <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-accent-blue/40 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
-        {formatDistance(setup.distancePercent)}% {direction} 검토 구간
+        {formatDistance(setup.distancePercent)}% {direction} 관찰 구간
       </span>
     );
   }
 
   return (
     <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-slate-600/40 bg-slate-600/10 px-2 py-1 text-[11px] font-bold text-slate-400">
-      대기 · 검토 구간까지 {formatDistance(setup.distancePercent)}%
+      대기 · 관찰 구간까지 {formatDistance(setup.distancePercent)}%
     </span>
   );
 }
@@ -253,7 +253,7 @@ function buildEvidence(setup: ScoutSetup) {
 
   const evidence = [
     `상위 추세 정렬 ${higherAlignedCount}/2`,
-    `${setup.plan.quality}급 후보`,
+    `${setup.plan.quality}급 감지`,
     killzoneLabel(setup.analysis.killzone)
   ];
 
@@ -311,9 +311,9 @@ function buildJournalNote(setup: ScoutSetup) {
   return [
     `차트 레이더 저장: ${setup.headline}`,
     `현재가: ${formatPriceWithSymbol(setup.currentPrice)}`,
-    `검토 구간: ${formatPriceWithSymbol(setup.plan.entryLow)} ~ ${formatPriceWithSymbol(setup.plan.entryHigh)}`,
-    `리스크 기준: ${formatPriceWithSymbol(setup.plan.invalidation)}`,
-    `참고 목표: ${formatPriceWithSymbol(setup.plan.target1)} / ${formatPriceWithSymbol(setup.plan.target2)}`,
+    `관찰 구간: ${formatPriceWithSymbol(setup.plan.entryLow)} ~ ${formatPriceWithSymbol(setup.plan.entryHigh)}`,
+    `깨지면 무효 기준: ${formatPriceWithSymbol(setup.plan.invalidation)}`,
+    `다음 레벨: ${formatPriceWithSymbol(setup.plan.target1)} / ${formatPriceWithSymbol(setup.plan.target2)}`,
     "",
     "검토 근거:",
     ...evidence.map((item) => `- ${item}`),
@@ -324,7 +324,7 @@ function buildJournalNote(setup: ScoutSetup) {
     "기회 신호:",
     ...(opportunities.length ? opportunities.map((item) => `- ${item}`) : ["- 별도 기회 신호 없음"]),
     "",
-    "주의: 이 기록은 매수·매도 추천이 아니라, 매매 전 검토 후보를 저장한 것입니다."
+    "주의: 이 기록은 매수·매도 추천이 아니라, 시장 구조 관찰 기록입니다."
   ].join("\n");
 }
 
@@ -380,7 +380,7 @@ function SetupCard({
       source: "scout" as const,
       symbol: setup.symbol,
       timeframe: setup.timeframe,
-      verdict: `${setup.score}점 · ${setup.plan.quality}급 · ${setup.proximity === "ready" ? "검토 구간 내부" : "대기 후보"}`,
+      verdict: `${setup.score}점 · ${setup.plan.quality}급 · ${setup.proximity === "ready" ? "관찰 구간 내부" : "대기 감지"}`,
       scoutSnapshot: snapshot
     };
 
@@ -441,7 +441,7 @@ function SetupCard({
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.currentPrice)}</p>
         </div>
         <div className="rounded border border-accent-blue/20 bg-accent-blue/5 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">검토 구간</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">관찰 구간</p>
           <p className="mt-1 text-xs font-bold text-white">
             {formatPriceWithSymbol(setup.plan.entryLow)} ~ {formatPriceWithSymbol(setup.plan.entryHigh)}
           </p>
@@ -450,11 +450,11 @@ function SetupCard({
 
       <div className="mt-2 grid grid-cols-2 gap-2 text-center">
         <div className="rounded border border-signal-danger/20 bg-signal-danger/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">리스크 기준</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">무효 기준</p>
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.invalidation)}</p>
         </div>
         <div className="rounded border border-signal-success/20 bg-signal-success/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">참고 목표 1</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">다음 레벨</p>
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.target1)}</p>
         </div>
       </div>
@@ -463,7 +463,7 @@ function SetupCard({
         <span className="inline-flex items-center gap-1 whitespace-nowrap">
           <Target size={12} aria-hidden /> 구조 신뢰도 {setup.plan.confidence}%
         </span>
-        <span className="font-bold text-slate-400">참고 목표 2 {formatPriceWithSymbol(setup.plan.target2)}</span>
+        <span className="font-bold text-slate-400">다음 레벨 2 {formatPriceWithSymbol(setup.plan.target2)}</span>
       </div>
 
       <CommentaryLine setup={setup} />
@@ -487,7 +487,7 @@ function SetupCard({
             ? "복기에 저장됨"
             : saveState === "error"
               ? "저장 실패"
-              : "검토 후보 저장"}
+              : "레이더 저장"}
       </button>
 
       {setup.plan.cautions.length > 0 ? (
@@ -502,9 +502,9 @@ function SetupCard({
 function EmptyState() {
   return (
     <div className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-5">
-      <p className="text-sm font-black text-signal-warning">현재는 검토 후보도, 관찰 후보도 없습니다.</p>
+      <p className="text-sm font-black text-signal-warning">현재 강하게 감지된 코인이 없습니다.</p>
       <p className="mt-2 text-xs leading-5 text-slate-300">
-        이 상태는 오류가 아니라 “매매하지 않을 근거”입니다. 구조가 애매하거나 검토 구간에서 너무 멀어진 상태라
+        이 상태는 오류가 아니라 “매매하지 않을 근거”입니다. 구조가 애매하거나 관찰 구간에서 너무 멀어진 상태라
         무리해서 찾기보다 다음 레이더 판독을 기다리는 편이 낫습니다.
       </p>
       <div className="mt-3 grid gap-2 text-left text-[11px] leading-5 text-slate-400 sm:grid-cols-3">
@@ -536,12 +536,12 @@ function ScanSummary({
         }`}
       >
         <p className={`text-sm font-black ${isRadar ? "text-signal-danger" : "text-accent-blue"}`}>
-          전체 TF 점수순 · {isRadar ? "공격적 분석" : "보수적 분석"} · 후보 {entryCount + activeCount}개 · 관찰 {watchCount}개
+          전체 TF 점수순 · {isRadar ? "공격적 분석" : "보수적 분석"} · 강한 감지 {entryCount + activeCount}개 · 관찰 {watchCount}개
         </p>
         <p className="mt-1 text-xs leading-5 text-slate-300 [word-break:keep-all]">
           {isRadar
-            ? "공격적 분석은 정확도가 조금 떨어질 수 있지만 완화된 조건으로 더 많은 후보를 보고 싶은 사용자를 위한 모드입니다."
-            : "분석 후보도 자동 매수·매도 신호가 아닙니다. 검토 구간, 리스크 기준, 포지션 크기를 확인한 뒤에만 판단하세요."}
+            ? "공격적 분석은 정확도가 조금 떨어질 수 있지만 완화된 조건으로 더 많은 감지 결과를 보고 싶은 사용자를 위한 모드입니다."
+            : "강한 감지도 자동 매수·매도 신호가 아닙니다. 관찰 구간, 무효 기준, 포지션 크기를 확인한 뒤에만 판단하세요."}
         </p>
       </div>
     );
@@ -554,12 +554,12 @@ function ScanSummary({
       }`}
     >
       <p className={`text-sm font-black ${isRadar ? "text-signal-danger" : "text-accent-blue"}`}>
-        {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 없음 · 관찰 {watchCount}개
+        {isRadar ? "공격적 분석" : "보수적 분석"} · 강한 감지 없음 · 관찰 {watchCount}개
       </p>
       <p className="mt-1 text-xs leading-5 text-slate-300 [word-break:keep-all]">
         전체 타임프레임을 통틀어 바로 검토할 조건은 부족합니다.
         {isRadar
-          ? " 대신 공격적 분석은 완화된 조건으로 움직임 후보를 더 넓게 보여주며, 실제 진입 전에는 보수적 분석 기준으로 다시 걸러야 합니다."
+          ? " 대신 공격적 분석은 완화된 조건으로 움직임 감지를 더 넓게 보여주며, 실제 진입 전에는 보수적 분석 기준으로 다시 걸러야 합니다."
           : " 이 카드는 “매수·매도 자리”가 아니라 가격이 다시 올 때 확인할 체크포인트입니다."}
       </p>
     </div>
@@ -659,13 +659,13 @@ export function SetupScoutPanel() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-white">차트 레이더 후보</h2>
+              <h2 className="text-lg font-black text-white">시장 레이더 TOP</h2>
               <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-blue">
                 Beta
               </span>
             </div>
             <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">
-              전체 타임프레임에서 점수 높은 코인만 추립니다. 신호가 아니라 구조 점검용입니다.
+              전체 타임프레임에서 구조 변화가 선명한 코인만 추립니다. 신호가 아니라 시장 관찰용입니다.
             </p>
             <div className="mt-2 flex flex-wrap gap-2 text-[11px] font-bold text-slate-300">
               <span className="whitespace-nowrap rounded-md border border-signal-warning/25 bg-signal-warning/10 px-2 py-1 text-signal-warning">
@@ -675,7 +675,7 @@ export function SetupScoutPanel() {
                 관찰은 대기 조건
               </span>
               <span className="whitespace-nowrap rounded-md border border-orange-400/20 bg-orange-400/10 px-2 py-1 text-orange-200">
-                공격적 분석은 후보를 넓게 표시
+                공격적 분석은 감지 범위를 넓힘
               </span>
             </div>
           </div>
@@ -722,7 +722,7 @@ export function SetupScoutPanel() {
         {state.status === "loading" ? (
           <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-line bg-surface-cardSoft p-8 text-sm text-slate-400">
             <Loader2 size={18} className="animate-spin" aria-hidden />
-            레이더가 후보 조합을 감지하는 중...
+            레이더가 시장 구조를 훑는 중...
           </div>
         ) : state.status === "error" ? (
           <div className="rounded-lg border border-signal-danger/30 bg-signal-danger/10 p-4 text-sm text-signal-danger">
@@ -750,8 +750,8 @@ export function SetupScoutPanel() {
       </div>
 
       <p className="mt-3 text-[11px] leading-5 text-slate-500">
-        레이더 결과는 5분 단위로 갱신됩니다. 제공되는 후보는 구조 기반 분석 결과이며 매수·매도
-        추천이 아닙니다. 검토 구간과 리스크 기준은 반드시 본인의 차트 판독, 손절 원칙,
+        레이더 결과는 5분 단위로 갱신됩니다. 표시되는 감지는 구조 기반 분석 결과이며 매수·매도
+        추천이 아닙니다. 관찰 구간과 무효 기준은 반드시 본인의 차트 판독, 손절 원칙,
         포지션 크기 기준으로 다시 확인하세요.
       </p>
     </section>
