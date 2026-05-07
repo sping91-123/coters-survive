@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     "Chart Radar",
     "포지션 계산",
     "매매 복기",
-    "선물 거래",
+    "코인 분석",
     "MSB",
     "CHoCH",
     "FVG",
