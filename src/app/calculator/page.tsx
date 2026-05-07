@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { Calculator, ShieldAlert } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
@@ -79,6 +80,12 @@ export default function CalculatorPage() {
         <Header />
         <TabMenu />
 
+        <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
+          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>에서 관찰 구간과 리스크 기준을 확인한 뒤,
+          여기서 시드·손절폭 기준 포지션 크기와 손익비를 계산해보세요.
+          진입 점검은 <Link href="/diagnosis" className="font-bold text-accent-blue underline underline-offset-2">진입 점검</Link>에서 확인할 수 있습니다.
+        </div>
+
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
@@ -87,7 +94,7 @@ export default function CalculatorPage() {
             <div>
               <h2 className="text-lg font-bold text-white">포지션 계산</h2>
               <p className="mt-1 text-sm leading-6 text-slate-400">
-                손절 기준으로 적정 포지션 크기, 필요 증거금, 손익비 예시를 빠르게 계산합니다.
+                리스크 기준 손절폭으로 적정 포지션 크기, 필요 증거금, 손익비 예시를 빠르게 계산합니다.
               </p>
             </div>
           </div>

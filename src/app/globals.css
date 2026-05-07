@@ -12,11 +12,15 @@
 
 html {
   background: #050608;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
   background:
     radial-gradient(circle at top left, rgba(14, 165, 233, 0.18), transparent 32rem),
     linear-gradient(180deg, #050608 0%, #080a0f 48%, #050608 100%);
@@ -39,6 +43,11 @@ textarea {
 
 button {
   -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  touch-action: manipulation;
 }
 
 ::selection {

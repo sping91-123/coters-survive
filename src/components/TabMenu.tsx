@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, BookOpen, Calculator, ClipboardCheck, Crown, History } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  Calculator,
+  ClipboardCheck,
+  History
+} from "lucide-react";
 
 const pageLinks = [
   { href: "/survival", label: "차트 판독", icon: BarChart3 },
   { href: "/diagnosis", label: "진입 진단", icon: ClipboardCheck },
   { href: "/calculator", label: "계산", icon: Calculator },
   { href: "/journal", label: "복기", icon: History },
-  { href: "/learn", label: "학습", icon: BookOpen },
-  { href: "/pro", label: "PRO", icon: Crown }
+  { href: "/learn", label: "학습", icon: BookOpen }
 ] as const;
 
 export function TabMenu() {
@@ -18,7 +23,7 @@ export function TabMenu() {
 
   return (
     <nav className="rounded-lg border border-surface-line bg-surface-card p-2">
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-6">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
         {pageLinks.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href || (pathname === "/" && href === "/survival");
 
@@ -37,7 +42,6 @@ export function TabMenu() {
             </Link>
           );
         })}
-
       </div>
     </nav>
   );

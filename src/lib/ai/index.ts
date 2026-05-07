@@ -24,5 +24,5 @@ export function getAIProvider(): AIProvider {
   );
 }
 
-export type { CommentaryInput, CommentaryOutput, AIProvider } from "./types";
+export type { CommentaryInput, CommentaryOutput, MarketBriefingInput, MarketBriefingOutput, AIProvider } from "./types";
 export { AIProviderError } from "./types";

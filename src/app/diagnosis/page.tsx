@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { AdviceCard } from "@/components/AdviceCard";
 import { AppFooter } from "@/components/AppFooter";
 import { DiagnosisForm } from "@/components/DiagnosisForm";
@@ -58,6 +59,12 @@ export default function DiagnosisPage() {
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
         <TabMenu />
+
+        <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
+          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>에서 후보를 확인한 뒤,
+          지금 보려는 자리가 원칙에 맞는지 이 진입 점검으로 검토해보세요.
+          점검 후 포지션 크기는 <Link href="/calculator" className="font-bold text-accent-blue underline underline-offset-2">계산기</Link>에서 확인할 수 있습니다.
+        </div>
 
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           최대한 빠르게 판단할 수 있게 입력 항목을 줄였습니다. 지금 손대려는 자리가 위험한지,

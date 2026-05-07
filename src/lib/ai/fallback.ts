@@ -1,60 +1,58 @@
-/**
- * 규칙 기반 폴백 코멘터리.
- * Gemini API 할당량 초과 / 오류 시 대신 사용.
- * 실제 입력 데이터를 바탕으로 한국어 한 줄 생성.
- */
-
-import type { CommentaryInput } from "./types";
+// AI 호출 실패 시 실제 판독 데이터로 대체 문장을 만드는 유틸리티
+import type { CommentaryInput, MarketBriefingInput } from "./types";
 
 export function generateFallbackCommentary(input: CommentaryInput): string {
   const parts: string[] = [];
 
-  // 1. 근접도 상태
   if (input.proximity === "ready") {
-    parts.push("현재가 검토 영역 내 위치");
+    parts.push("현재가가 검토 구간 안에 있습니다");
   } else if (input.proximity === "near") {
-    parts.push(`검토 영역까지 ${Math.abs(input.distancePercent).toFixed(2)}% 차이`);
+    parts.push(`검토 구간까지 ${Math.abs(input.distancePercent).toFixed(2)}% 차이입니다`);
   } else {
-    parts.push(`검토 대기 (${Math.abs(input.distancePercent).toFixed(2)}% 이격)`);
+    parts.push(`검토 구간과 ${Math.abs(input.distancePercent).toFixed(2)}% 떨어져 있습니다`);
   }
 
-  // 2. 상위 TF 정합
   if (input.context.higherTfAlignedCount >= 2) {
-    parts.push("상위 TF 2개 정합");
+    parts.push("상위 시간대 정렬은 양호합니다");
   } else if (input.context.higherTfAlignedCount === 1) {
-    parts.push("상위 TF 부분 정합");
+    parts.push("상위 시간대 정렬은 일부만 맞습니다");
   } else {
-    parts.push("상위 TF 미정합");
+    parts.push("상위 시간대 정렬은 약합니다");
   }
 
-  // 3. 핵심 컨텍스트 (OTE/OB/FVG 중 가장 중요한 것 1개)
-  if (input.context.inOte) {
-    parts.push("OTE 영역 일치");
-  } else if (input.context.inOb) {
-    parts.push("OB 내부 검토 구간");
-  } else if (input.context.inFvg) {
-    parts.push("FVG 채움 구간");
-  }
+  if (input.context.inOte) parts.push("OTE와 겹칩니다");
+  else if (input.context.inOb) parts.push("OB 반응 구간입니다");
+  else if (input.context.inFvg) parts.push("FVG 반응 구간입니다");
 
-  // 4. POC 균형 구간은 휩쏘 리스크로 우선 표시
-  if (input.context.pocPosition === "near") {
-    parts.push("POC 근처 휩쏘 주의");
-  }
-
-  // 5. 주요 리스크 (있을 때만)
   if (input.context.riskFlags.length > 0) {
-    const risk = input.context.riskFlags[0];
-    // 너무 긴 경우 자르기
-    parts.push(risk.length > 15 ? risk.slice(0, 15) : risk);
+    parts.push(input.context.riskFlags[0]);
   }
 
-  // 6. 킬존 보정
-  if (input.context.killzone === "off") {
-    parts.push("킬존 외 구간 주의");
-  }
-
-  // 조합 → 최대 80자
-  let text = parts.join(", ") + ".";
-  if (text.length > 80) text = text.slice(0, 77) + "...";
+  let text = `${parts.slice(0, 4).join(", ")}.`;
+  if (text.length > 90) text = text.slice(0, 87) + "...";
   return text;
+}
+
+export function generateFallbackMarketBriefing(input: MarketBriefingInput): string {
+  const direction =
+    input.bias === "long" ? "롱 쪽 구조가 조금 더 우세합니다" : input.bias === "short" ? "숏 쪽 구조가 조금 더 우세합니다" : "방향은 아직 횡보에 가깝습니다";
+  const active = input.active;
+  const opportunity = input.opportunityFlags.slice(0, 3).join(", ") || "뚜렷한 강점 신호는 제한적입니다";
+  const risk = input.riskFlags.slice(0, 3).join(", ") || "큰 리스크 플래그는 많지 않습니다";
+  const aligned = input.timeframes
+    .filter((item) => item.msb === active.msb || item.choch === active.choch)
+    .map((item) => item.timeframe)
+    .join(", ");
+
+  const first =
+    `${input.symbol.replace("USDT.P", "")} ${input.activeTimeframe} 기준 현재 판독은 ${input.verdict}이며, 종합 점수는 ${input.biasScore} / ${input.scoreRange}입니다. ` +
+    `${direction}. 선택 타임프레임에서는 MSB가 ${active.msb}, CHoCH가 ${active.choch}로 잡히고, OB는 ${active.ob}, FVG는 ${active.fvg}, POC는 ${active.poc}, PD는 ${active.pd}로 해석됩니다. ` +
+    `${aligned ? `${aligned} 시간대가 현재 구조와 일부 정렬되어 있습니다.` : "다중 시간대 정렬은 아직 강하게 확인되지 않습니다."}`;
+
+  const second =
+    `강점으로는 ${opportunity}를 볼 수 있고, 주의할 점은 ${risk}입니다. RSI는 ${active.rsi}, MACD는 ${active.macd}, 변동성은 ${active.volatility}, 거래량은 ${active.volume} 상태라 보조지표는 방향 신호라기보다 추세 과열과 변동성 확인용으로 참고하는 편이 좋습니다. ` +
+    `${input.scenario ? `현재 분석 시나리오는 ${input.scenario.title}이며 관찰 구간은 ${input.scenario.entry}, 리스크 기준은 ${input.scenario.invalidation}입니다. ` : "아직 명확한 분석 시나리오는 생성되지 않았습니다. "}` +
+    `이 피드백은 매수·매도 신호가 아니라 구조 해석용이므로, 다음 캔들에서 MSB·CHoCH 변화와 OB/FVG 반응이 유지되는지 확인하는 쪽이 안전합니다.`;
+
+  return `${first}\n\n${second}`;
 }

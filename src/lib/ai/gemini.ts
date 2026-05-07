@@ -1,74 +1,110 @@
-import type { AIProvider, CommentaryInput } from "./types";
+// Gemini API로 셋업 코멘트와 시장 종합 피드백을 생성하는 Provider
+import type { AIProvider, CommentaryInput, MarketBriefingInput } from "./types";
 import { AIProviderError } from "./types";
 
 const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
-const SYSTEM_INSTRUCTION = `당신은 한국 트레이더용 리스크 점검 코치입니다.
+const COMMENTARY_SYSTEM_INSTRUCTION = `당신은 한국어 트레이더를 돕는 리스크 중심 코치입니다.
 
-규칙:
-- 60자 이내 한 줄로 답합니다. 줄바꿈 없음.
-- 단호하고 사실 기반 톤. 매수/매도 권유 금지.
-- "들어가세요", "사세요", "팔으세요" 같은 직접 행동 지시 금지.
-- 셋업의 핵심 강점 1개와 주의할 리스크 1개를 한 문장에 압축.
-- 이모지 사용 금지. 마침표 1개로 끝낼 것.
-- 입력 데이터에 명시되지 않은 가격이나 수치는 절대 추측하지 마세요.
+규칙.
+- 60자 이내 한 문장으로 답합니다.
+- 매수·매도 지시, 수익 보장, 확정 표현은 금지합니다.
+- 입력 데이터에 없는 가격이나 수치는 만들지 않습니다.
+- 셋업의 강점 1개와 주의점 1개를 함께 담습니다.`;
 
-출력 예시:
-- "4H 상위 추세 정합 + OTE 일치, 다만 뉴욕 세션 외라 변동성 약함."
-- "현재가가 OB 영역 안, 검토 구간이지만 무효 폭이 좁음."
-- "가격이 OB까지 1.8% 떨어져야 하므로 단기 구조 변동 주시 필요."`;
+const BRIEFING_SYSTEM_INSTRUCTION = `당신은 코인 시장 구조를 설명하는 한국어 분석 코치입니다.
 
-function buildUserPrompt(input: CommentaryInput): string {
+역할.
+- 사용자가 제공한 코인, 타임프레임, ICT 구조, POC/PD, 보조지표, 리스크 플래그를 종합해 긴 문장형 피드백을 작성합니다.
+- 앱의 성격은 타점 추천이 아니라 시장 구조 분석과 리스크 점검입니다.
+
+출력 규칙.
+- 500자에서 900자 사이의 한국어 문단 2개로 작성합니다.
+- 첫 문단은 현재 시장 해석과 롱/숏/횡보 중 무엇이 우세한지 설명합니다.
+- 둘째 문단은 조심할 점, 다음에 확인할 조건, 보조지표를 어떻게 참고할지 설명합니다.
+- 직접적인 진입 지시, 매수·매도 신호, 수익 보장, 확정적 표현은 금지합니다.
+- 손절가·익절가를 지시하지 말고, 입력된 시나리오는 참고 구간으로만 설명합니다.
+- 입력 데이터에 없는 지표나 가격은 추측하지 않습니다.`;
+
+function buildCommentaryPrompt(input: CommentaryInput): string {
   const sym = input.symbol.replace("USDT.P", "");
-  const sideLabel = input.side === "long" ? "롱" : input.side === "short" ? "숏" : "관망";
+  const sideLabel = input.side === "long" ? "롱" : input.side === "short" ? "숏" : "관찰";
   const proximityLabel =
     input.proximity === "ready"
-      ? "현재가가 검토 영역 내부"
+      ? "현재가가 검토 구간 내부"
       : input.proximity === "near"
-        ? `현재가가 검토 영역까지 ${Math.abs(input.distancePercent).toFixed(2)}% 차이 (근접)`
-        : `현재가가 검토 영역까지 ${Math.abs(input.distancePercent).toFixed(2)}% 차이 (대기)`;
+        ? `검토 구간까지 ${Math.abs(input.distancePercent).toFixed(2)}% 차이`
+        : `검토 구간까지 ${Math.abs(input.distancePercent).toFixed(2)}% 이격`;
 
-  const killzoneLabel =
-    input.context.killzone === "asia"
-      ? "아시아 세션"
-      : input.context.killzone === "london"
-        ? "런던 세션"
-        : input.context.killzone === "newyork"
-          ? "뉴욕 세션"
-          : "킬존 외";
+  return `종목 ${sym} ${input.timeframe}
+방향 ${sideLabel}
+점수 ${input.score}
+근접도 ${proximityLabel}
+상위 TF 정렬 ${input.context.higherTfAlignedCount}개
+OTE ${input.context.inOte ? "일치" : "아님"}
+OB ${input.context.inOb ? "내부" : "아님"}
+FVG ${input.context.inFvg ? "내부" : "아님"}
+POC ${input.context.pocPosition}
+강점 ${input.context.opportunityFlags.slice(0, 3).join(", ") || "없음"}
+주의 ${input.context.riskFlags.slice(0, 3).join(", ") || "없음"}`;
+}
 
-  const opportunities = input.context.opportunityFlags.length
-    ? input.context.opportunityFlags.slice(0, 3).join(", ")
-    : "없음";
-  const risks = input.context.riskFlags.length
-    ? input.context.riskFlags.slice(0, 3).join(", ")
-    : "없음";
-  const pocLabel =
-    input.context.pocPosition === "near"
-      ? "POC 근처"
-      : input.context.pocPosition === "above"
-        ? "POC 위"
-        : input.context.pocPosition === "below"
-          ? "POC 아래"
-          : "미확인";
+function buildMarketBriefingPrompt(input: MarketBriefingInput): string {
+  const sym = input.symbol.replace("USDT.P", "");
+  const tfLines = input.timeframes
+    .map((item) => `${item.timeframe}: MSB ${item.msb}, CHoCH ${item.choch}, 점수 ${item.score}, ${item.summary}`)
+    .join("\n");
+  const scenario = input.scenario
+    ? `분석 시나리오: ${input.scenario.title}, ${input.scenario.reason}, 관찰 구간 ${input.scenario.entry}, 리스크 기준 ${input.scenario.invalidation}, 참고 목표 ${input.scenario.targets}, 검토 ${input.scenario.confidence}%`
+    : "분석 시나리오: 명확한 관찰 구간 없음";
 
-  return `다음 셋업에 대한 한 줄 코멘트를 60자 이내로 작성하세요.
+  return `다음 데이터를 종합해 시장 구조 피드백을 작성하세요.
 
-종목: ${sym} ${input.timeframe}
-방향: ${sideLabel}
-품질: ${input.context.quality}급 (점수 ${input.score})
-근접도: ${proximityLabel}
-킬존: ${killzoneLabel}
-상위 TF 정합: ${input.context.higherTfAlignedCount}개
-OTE 영역 일치: ${input.context.inOte ? "예" : "아니오"}
-OB 내부: ${input.context.inOb ? "예" : "아니오"}
-FVG 내부: ${input.context.inFvg ? "예" : "아니오"}
-POC 위치: ${pocLabel}
-강점 신호: ${opportunities}
-리스크 신호: ${risks}
+기본.
+종목: ${sym}
+선택 타임프레임: ${input.activeTimeframe}
+분석 모드: ${input.tradingMode === "scalp" ? "단타/스캘핑" : "스윙/데이"}
+현재가: ${input.price}
+판정: ${input.verdict}
+방향: ${input.bias}
+종합 점수: ${input.biasScore} / ${input.scoreRange}
+준비도: ${input.readiness}
+요약: ${input.summaryLine}
+행동 가이드: ${input.actionGuide}
+현재 위치: ${input.currentLocationLabel}
+킬존: ${input.killzone}
 
-답변 (60자 이내, 한 문장, 마침표 1개):`;
+선택 TF 구조.
+MSB: ${input.active.msb}
+CHoCH: ${input.active.choch}
+OB: ${input.active.ob}
+FVG: ${input.active.fvg}
+Sweep: ${input.active.sweep}
+CISD: ${input.active.cisd}
+PD: ${input.active.pd}
+POC: ${input.active.poc}
+
+보조지표.
+RSI: ${input.active.rsi}
+MACD: ${input.active.macd}
+변동성: ${input.active.volatility}
+거래량: ${input.active.volume}
+볼린저밴드: ${input.active.bollinger}
+
+타임프레임별 구조.
+${tfLines}
+
+강점 근거.
+${input.opportunityFlags.join("\n") || "없음"}
+
+리스크 근거.
+${input.riskFlags.join("\n") || "없음"}
+
+판독 근거.
+${input.reasons.map((item) => `${item.tone}: ${item.text}`).join("\n") || "없음"}
+
+${scenario}`;
 }
 
 export class GeminiProvider implements AIProvider {
@@ -81,21 +117,31 @@ export class GeminiProvider implements AIProvider {
   }
 
   async generateCommentary(input: CommentaryInput): Promise<string> {
+    const text = await this.generateText(COMMENTARY_SYSTEM_INSTRUCTION, buildCommentaryPrompt(input), 2048, 0.3);
+    return sanitizeShortCommentary(text);
+  }
+
+  async generateMarketBriefing(input: MarketBriefingInput): Promise<string> {
+    const text = await this.generateText(BRIEFING_SYSTEM_INSTRUCTION, buildMarketBriefingPrompt(input), 4096, 0.35);
+    return sanitizeBriefing(text);
+  }
+
+  private async generateText(systemInstruction: string, prompt: string, maxOutputTokens: number, temperature: number) {
     const url = `${GEMINI_ENDPOINT}?key=${this.apiKey}`;
     const body = {
       systemInstruction: {
-        parts: [{ text: SYSTEM_INSTRUCTION }]
+        parts: [{ text: systemInstruction }]
       },
       contents: [
         {
           role: "user",
-          parts: [{ text: buildUserPrompt(input) }]
+          parts: [{ text: prompt }]
         }
       ],
       generationConfig: {
-        temperature: 0.3,
+        temperature,
         topP: 0.9,
-        maxOutputTokens: 2048,
+        maxOutputTokens,
         candidateCount: 1
       },
       safetySettings: [
@@ -119,10 +165,7 @@ export class GeminiProvider implements AIProvider {
 
     if (!response.ok) {
       const text = await response.text().catch(() => "");
-      throw new AIProviderError(
-        `Gemini API ${response.status}: ${text.slice(0, 200)}`,
-        "gemini"
-      );
+      throw new AIProviderError(`Gemini API ${response.status}: ${text.slice(0, 200)}`, "gemini");
     }
 
     let payload: unknown;
@@ -136,8 +179,7 @@ export class GeminiProvider implements AIProvider {
     if (!text) {
       throw new AIProviderError("Gemini 응답에 텍스트가 없습니다.", "gemini");
     }
-
-    return sanitizeCommentary(text);
+    return text;
   }
 }
 
@@ -148,21 +190,25 @@ function extractText(payload: unknown): string | null {
   const first = candidates[0] as { content?: { parts?: Array<{ text?: string; thought?: boolean }> } };
   const parts = first?.content?.parts;
   if (!Array.isArray(parts) || parts.length === 0) return null;
-  // thought 파트 제외 (Gemini 2.5/3 thinking 모델의 내부 추론 토큰)
   const text = parts
-    .filter((p) => !p.thought)
-    .map((p) => p.text ?? "")
+    .filter((part) => !part.thought)
+    .map((part) => part.text ?? "")
     .join("")
     .trim();
   return text || null;
 }
 
-/** 모델이 가끔 줄바꿈/따옴표/이모지를 섞어 보내는 걸 정리. 80자에서 절단. */
-function sanitizeCommentary(raw: string): string {
+function sanitizeShortCommentary(raw: string): string {
   let text = raw.replace(/[\r\n]+/g, " ").trim();
-  // 양쪽 따옴표 제거
   text = text.replace(/^["'`]+|["'`]+$/g, "");
-  // 길이 제한
   if (text.length > 90) text = text.slice(0, 87) + "...";
+  return text;
+}
+
+function sanitizeBriefing(raw: string): string {
+  let text = raw.replace(/\r/g, "").trim();
+  text = text.replace(/^["'`]+|["'`]+$/g, "");
+  text = text.replace(/\n{3,}/g, "\n\n");
+  if (text.length > 1200) text = text.slice(0, 1197) + "...";
   return text;
 }

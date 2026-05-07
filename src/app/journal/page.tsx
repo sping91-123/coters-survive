@@ -41,7 +41,7 @@ const promptChips = [
   "손절 기준은 지켰는가?",
   "다음엔 무엇 하나만 고칠까?"
 ];
-const filters = ["전체", "Scout 저장", "직접 기록"] as const;
+const filters = ["전체", "스캐너 저장", "직접 기록"] as const;
 
 /** 30일 Scout 결과 통계 */
 function useScoutStats(entries: JournalEntry[]) {
@@ -157,7 +157,7 @@ function SourceBadge({ entry }: { entry: JournalEntry }) {
       </span>
       {entry.source === "scout" ? (
         <span className="rounded-md border border-accent-blue/30 bg-accent-blue/10 px-2 py-1 text-[11px] font-bold text-accent-blue">
-          AI Scout
+          AI 스캐너
         </span>
       ) : entry.source === "chart" ? (
         <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-bold text-slate-300">
@@ -326,7 +326,7 @@ export default function JournalPage() {
   }, [isLoadingAuth, session, shouldAutoSync, localEntries, migrateLocalEntries]);
 
   const filteredEntries = useMemo(() => {
-    if (activeFilter === "Scout 저장") return entries.filter((entry) => entry.source === "scout");
+    if (activeFilter === "스캐너 저장") return entries.filter((entry) => entry.source === "scout");
     if (activeFilter === "직접 기록") return entries.filter((entry) => entry.source !== "chart" && entry.source !== "scout");
     return entries;
   }, [activeFilter, entries]);
@@ -368,13 +368,16 @@ export default function JournalPage() {
               <p className="mt-1 text-sm leading-6 text-slate-400">
                 결과보다 원칙을 지켰는지 기록하는 공간입니다. 로그인하면 기록이 서버에 저장되어 나중에 모바일 앱에서도 이어갈 수 있습니다.
               </p>
+              <p className="mt-2 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
+                베타 기간의 복기 데이터는 정식 서비스 오픈 과정에서 보존되지 않을 수 있습니다.
+              </p>
             </div>
           </div>
 
-          {/* Scout 30일 통계 카드 */}
+          {/* 스캐너 30일 통계 카드 */}
           {stats.scoutEntries.length > 0 && (
             <div className="mt-5 rounded-lg border border-accent-blue/20 bg-accent-blue/5 p-4">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-accent-blue">Scout 30일 결과</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-accent-blue">스캐너 후보 · 30일 결과</p>
               <div className="grid grid-cols-4 gap-2 text-center">
                 <div className="rounded-md border border-signal-success/20 bg-signal-success/10 px-2 py-2">
                   <p className="text-lg font-black text-signal-success">{stats.win}</p>
@@ -599,7 +602,7 @@ export default function JournalPage() {
                         <div className="mt-4 rounded-md border border-white/10 bg-black/20 p-3">
                           <div className="mb-2 flex items-center gap-2 text-xs font-bold text-slate-500">
                             <Rows3 size={14} aria-hidden />
-                            {isScout ? "AI Scout 분석" : "직접 기록"}
+                            {isScout ? "AI 스캐너 분석" : "직접 기록"}
                           </div>
                           <p className="whitespace-pre-wrap text-sm leading-7 text-slate-300">{entry.note}</p>
                         </div>

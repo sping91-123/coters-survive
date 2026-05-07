@@ -1,18 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownRight, ArrowUpRight, Bot, CheckCircle2, Loader2, RefreshCw, Save, Sparkles, Target } from "lucide-react";
 import {
-  readScoutCache,
-  scanAllSetups,
-  topSetups,
-  writeScoutCache,
-  type ScoutSetup
-} from "@/lib/setupScout";
+  ArrowDownRight,
+  ArrowUpRight,
+  Bot,
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+  Save,
+  Sparkles,
+  Target
+} from "lucide-react";
+import { readScoutCache, writeScoutCache, type ScoutRiskProfile, type ScoutSetup } from "@/lib/setupScout";
 import { appendJournalEntry, type ScoutSnapshot } from "@/lib/journal";
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getSupabaseSession } from "@/lib/supabase";
 import type { CommentaryInput } from "@/lib/ai/types";
+import type { TradingMode } from "@/lib/marketAnalysis";
 
 type ScanState =
   | { status: "idle" }
@@ -20,15 +25,26 @@ type ScanState =
   | { status: "ready"; setups: ScoutSetup[]; cachedAt: number }
   | { status: "error"; message: string };
 
+type CommentaryState =
+  | { status: "loading" }
+  | { status: "ready"; text: string; cached: boolean }
+  | { status: "error" };
+
 const numberFormatter = new Intl.NumberFormat("ko-KR", {
   maximumFractionDigits: 4,
   minimumFractionDigits: 2
 });
+const scoutModeStorageKey = "untitledRisk.scoutMode.v1";
+const scoutRiskProfileStorageKey = "untitledRisk.scoutRiskProfile.v1";
 
-function formatPrice(value: number) {
-  if (!Number.isFinite(value)) return "-";
-  if (value >= 100) return numberFormatter.format(Math.round(value * 100) / 100);
-  return numberFormatter.format(value);
+function readStoredScoutMode(): TradingMode {
+  if (typeof window === "undefined") return "scalp";
+  return window.localStorage.getItem(scoutModeStorageKey) === "swing" ? "swing" : "scalp";
+}
+
+function readStoredScoutRiskProfile(): ScoutRiskProfile {
+  if (typeof window === "undefined") return "radar";
+  return window.localStorage.getItem(scoutRiskProfileStorageKey) === "guard" ? "guard" : "radar";
 }
 
 function formatCachedAt(ms: number) {
@@ -40,6 +56,24 @@ function formatCachedAt(ms: number) {
   return `${hr}시간 전`;
 }
 
+function formatPriceWithSymbol(price: number) {
+  if (!Number.isFinite(price) || price <= 0) return "-";
+  let decimals = 2;
+  if (price < 0.01) decimals = 6;
+  else if (price < 1) decimals = 5;
+  else if (price < 10) decimals = 4;
+  else if (price < 100) decimals = 3;
+
+  return new Intl.NumberFormat("ko-KR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(price);
+}
+
+function formatDistance(value: number) {
+  return numberFormatter.format(Math.abs(value));
+}
+
 function ScoreBadge({ score }: { score: number }) {
   const tone =
     score >= 80
@@ -47,9 +81,50 @@ function ScoreBadge({ score }: { score: number }) {
       : score >= 65
         ? "border-accent-blue/40 bg-accent-blue/15 text-accent-blue"
         : "border-signal-warning/40 bg-signal-warning/15 text-signal-warning";
+
   return (
     <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-black ${tone}`}>
       {score}점
+    </span>
+  );
+}
+
+function StatusBadge({ setup, riskProfile }: { setup: ScoutSetup; riskProfile: ScoutRiskProfile }) {
+  if (setup.status === "active") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-orange-400/40 bg-orange-400/15 px-2 py-1 text-[11px] font-black text-orange-300">
+        공격적 분석
+      </span>
+    );
+  }
+
+  if (setup.status === "watch" && setup.watchKind === "counter") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-orange-400/40 bg-orange-400/15 px-2 py-1 text-[11px] font-black text-orange-300">
+        반대 구간 감시
+      </span>
+    );
+  }
+
+  if (setup.status === "watch") {
+    if (riskProfile === "radar") {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-md border border-accent-blue/40 bg-accent-blue/15 px-2 py-1 text-[11px] font-black text-accent-blue">
+          공격적 관찰
+        </span>
+      );
+    }
+
+    return (
+      <span className="inline-flex items-center gap-1 rounded-md border border-signal-warning/40 bg-signal-warning/15 px-2 py-1 text-[11px] font-black text-signal-warning">
+        관찰 카드
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md border border-signal-success/40 bg-signal-success/15 px-2 py-1 text-[11px] font-black text-signal-success">
+      분석 후보
     </span>
   );
 }
@@ -58,46 +133,32 @@ function ProximityBadge({ setup }: { setup: ScoutSetup }) {
   if (setup.proximity === "ready") {
     return (
       <span className="inline-flex items-center gap-1 rounded-md border border-signal-warning/40 bg-signal-warning/15 px-2 py-1 text-[11px] font-black text-signal-warning">
-        검토 영역 내부 · 확인 필요
+        검토 구간 내부 · 즉시 진입 신호 아님
       </span>
     );
   }
+
   if (setup.proximity === "near") {
     const direction = setup.plan.side === "long" ? "내려오면" : "올라오면";
     return (
       <span className="inline-flex items-center gap-1 rounded-md border border-accent-blue/40 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
-        {Math.abs(setup.distancePercent).toFixed(2)}% {direction} 검토
+        {formatDistance(setup.distancePercent)}% {direction} 검토 구간
       </span>
     );
   }
+
   return (
     <span className="inline-flex items-center gap-1 rounded-md border border-slate-600/40 bg-slate-600/10 px-2 py-1 text-[11px] font-bold text-slate-400">
-      대기 — {Math.abs(setup.distancePercent).toFixed(2)}% 차이
+      대기 · 검토 구간까지 {formatDistance(setup.distancePercent)}%
     </span>
   );
 }
 
 function killzoneLabel(value: ScoutSetup["analysis"]["killzone"]) {
-  if (value === "asia") return "아시아 킬존";
-  if (value === "london") return "런던 킬존";
-  if (value === "newyork") return "뉴욕 킬존";
-  return "킬존 외";
-}
-
-function formatPriceWithSymbol(price: number) {
-  // 가격 크기에 따라 소수점 자리 자동 조정 (XRP/DOGE 같은 저가 코인 위해)
-  if (!Number.isFinite(price) || price <= 0) return "-";
-  let decimals = 2;
-  if (price < 0.01) decimals = 6;
-  else if (price < 1) decimals = 5;
-  else if (price < 10) decimals = 4;
-  else if (price < 100) decimals = 3;
-  else decimals = 2;
-
-  return new Intl.NumberFormat("ko-KR", {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  }).format(price);
+  if (value === "asia") return "아시아 세션";
+  if (value === "london") return "런던 세션";
+  if (value === "newyork") return "뉴욕 세션";
+  return "세션 외";
 }
 
 function buildCommentaryInput(setup: ScoutSetup): CommentaryInput {
@@ -106,6 +167,7 @@ function buildCommentaryInput(setup: ScoutSetup): CommentaryInput {
   const higherTfAlignedCount = setup.analysis.timeframeAnalyses
     .filter((a) => a.timeframe === "4h" || a.timeframe === "1d")
     .filter((a) => a.msb === direction).length;
+
   return {
     symbol: setup.symbol,
     timeframe: setup.timeframe,
@@ -133,36 +195,28 @@ function buildCommentaryInput(setup: ScoutSetup): CommentaryInput {
   };
 }
 
-type CommentaryState =
-  | { status: "loading" }
-  | { status: "ready"; text: string; cached: boolean }
-  | { status: "error" };
-
 function useCommentary(setup: ScoutSetup): CommentaryState {
   const [state, setState] = useState<CommentaryState>({ status: "loading" });
-  const cacheKey = `${setup.symbol}|${setup.timeframe}|${setup.scannedAt}|${Math.round(setup.currentPrice * 100)}`;
+  const cacheKey = `${setup.symbol}|${setup.mode}|${setup.timeframe}|${setup.scannedAt}|${Math.round(setup.currentPrice * 100)}`;
 
   useEffect(() => {
     let cancelled = false;
     setState({ status: "loading" });
 
-    const input = buildCommentaryInput(setup);
     fetch("/api/ai/commentary", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input)
+      body: JSON.stringify(buildCommentaryInput(setup))
     })
       .then(async (res) => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<{ commentary: string; cached: boolean }>;
       })
       .then((payload) => {
-        if (cancelled) return;
-        setState({ status: "ready", text: payload.commentary, cached: payload.cached });
+        if (!cancelled) setState({ status: "ready", text: payload.commentary, cached: payload.cached });
       })
       .catch(() => {
-        if (cancelled) return;
-        setState({ status: "error" });
+        if (!cancelled) setState({ status: "error" });
       });
 
     return () => {
@@ -181,10 +235,11 @@ function CommentaryLine({ setup }: { setup: ScoutSetup }) {
     return (
       <div className="mt-3 flex items-center gap-2 rounded-md border border-accent-blue/20 bg-accent-blue/5 px-3 py-2 text-[11px] leading-5 text-slate-400">
         <Loader2 size={12} className="animate-spin text-accent-blue" aria-hidden />
-        <span>AI 코멘트 생성 중...</span>
+        <span>AI 구조 코멘트 생성 중...</span>
       </div>
     );
   }
+
   if (state.status === "error") return null;
 
   return (
@@ -203,19 +258,20 @@ function buildEvidence(setup: ScoutSetup) {
     .filter((a) => a.msb === direction).length;
 
   const evidence = [
-    `상위 TF 정합 ${higherAlignedCount}/2`,
+    `상위 추세 정렬 ${higherAlignedCount}/2`,
     `${setup.plan.quality}급 후보`,
     killzoneLabel(setup.analysis.killzone)
   ];
 
-  if (active?.oteZone === setup.plan.side) evidence.push("OTE 일치");
+  if (active?.oteZone === setup.plan.side) evidence.push("OTE 영역 일치");
   if (active?.inOb) evidence.push("OB 내부");
   if (active?.inFvg) evidence.push("FVG 내부");
+  if (active?.volumeProfile?.position === "near") evidence.push("POC 근접");
   if (active?.volumeProfile?.position === "above" && setup.plan.side === "long") {
-    evidence.push("POC 위 유지");
+    evidence.push("POC 위 롱 우위");
   }
   if (active?.volumeProfile?.position === "below" && setup.plan.side === "short") {
-    evidence.push("POC 아래 유지");
+    evidence.push("POC 아래 숏 우위");
   }
 
   return evidence;
@@ -242,7 +298,7 @@ function EvidenceChips({ setup }: { setup: ScoutSetup }) {
           {risks.map((item) => (
             <span
               key={item}
-              className="rounded-md border border-signal-warning/20 bg-signal-warning/10 px-2 py-1 text-[11px] font-bold text-signal-warning"
+              className="rounded-md border border-signal-danger/20 bg-signal-danger/10 px-2 py-1 text-[11px] font-bold text-signal-danger"
             >
               {item}
             </span>
@@ -259,28 +315,46 @@ function buildJournalNote(setup: ScoutSetup) {
   const opportunities = setup.analysis.opportunityFlags.slice(0, 5);
 
   return [
-    `Setup Scout 저장: ${setup.headline}`,
+    `AI 셋업 스캐너 저장: ${setup.headline}`,
     `현재가: ${formatPriceWithSymbol(setup.currentPrice)}`,
-    `검토 영역: ${formatPriceWithSymbol(setup.plan.entryLow)} ~ ${formatPriceWithSymbol(setup.plan.entryHigh)}`,
-    `무효화 기준 후보: ${formatPriceWithSymbol(setup.plan.invalidation)}`,
-    `목표 후보: ${formatPriceWithSymbol(setup.plan.target1)} / ${formatPriceWithSymbol(setup.plan.target2)}`,
+    `검토 구간: ${formatPriceWithSymbol(setup.plan.entryLow)} ~ ${formatPriceWithSymbol(setup.plan.entryHigh)}`,
+    `리스크 기준: ${formatPriceWithSymbol(setup.plan.invalidation)}`,
+    `참고 목표: ${formatPriceWithSymbol(setup.plan.target1)} / ${formatPriceWithSymbol(setup.plan.target2)}`,
     "",
-    "체크포인트:",
+    "검토 근거:",
     ...evidence.map((item) => `- ${item}`),
     "",
     "위험 신호:",
     ...(risks.length ? risks.map((item) => `- ${item}`) : ["- 별도 위험 신호 없음"]),
     "",
     "기회 신호:",
-    ...(opportunities.length ? opportunities.map((item) => `- ${item}`) : ["- 별도 기회 신호 없음"])
+    ...(opportunities.length ? opportunities.map((item) => `- ${item}`) : ["- 별도 기회 신호 없음"]),
+    "",
+    "주의: 이 기록은 매수·매도 추천이 아니라, 매매 전 검토 후보를 저장한 것입니다."
   ].join("\n");
 }
 
-function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
+function SetupCard({
+  setup,
+  rank,
+  riskProfile
+}: {
+  setup: ScoutSetup;
+  rank: number;
+  riskProfile: ScoutRiskProfile;
+}) {
   const isLong = setup.plan.side === "long";
   const sideColor = isLong ? "text-signal-success" : "text-signal-danger";
   const SideIcon = isLong ? ArrowUpRight : ArrowDownRight;
-  const sym = setup.symbol.replace("USDT.P", "");
+  const symbol = setup.symbol.replace("USDT.P", "");
+  const modeCardClass =
+    setup.mode === "scalp"
+      ? "border-accent-blue/25 bg-accent-blue/5 hover:border-accent-blue/50"
+      : "border-violet-400/25 bg-violet-400/5 hover:border-violet-400/50";
+  const modeBadgeClass =
+    setup.mode === "scalp"
+      ? "border-accent-blue/25 bg-accent-blue/10 text-accent-blue"
+      : "border-violet-400/25 bg-violet-400/10 text-violet-200";
   const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
   async function saveSetup() {
@@ -296,6 +370,7 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
       quality: setup.plan.quality,
       scannedAt: setup.scannedAt
     };
+
     const payload = {
       title: setup.headline,
       bias: isLong ? "롱" : "숏",
@@ -303,7 +378,7 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
       source: "scout" as const,
       symbol: setup.symbol,
       timeframe: setup.timeframe,
-      verdict: `${setup.score}점 · ${setup.plan.quality}급 · ${setup.proximity === "ready" ? "영역 내부" : "검토 대기"}`,
+      verdict: `${setup.score}점 · ${setup.plan.quality}급 · ${setup.proximity === "ready" ? "검토 구간 내부" : "대기 후보"}`,
       scoutSnapshot: snapshot
     };
 
@@ -323,23 +398,29 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
   }
 
   return (
-    <article className="rounded-lg border border-surface-line bg-surface-cardSoft p-4 transition hover:border-accent-blue/40">
+    <article className={`rounded-lg border p-4 transition ${modeCardClass}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold text-slate-500">TOP {rank}</p>
-          <div className="mt-1 flex items-center gap-2">
-            <h3 className="text-base font-black text-white">{sym}</h3>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <h3 className="text-base font-black text-white">{symbol}</h3>
             <span className="rounded border border-white/10 bg-black/20 px-1.5 py-0.5 text-xs font-bold text-slate-300">
               {setup.timeframe}
             </span>
+            <span className={`rounded border px-1.5 py-0.5 text-xs font-bold ${modeBadgeClass}`}>
+              {setup.mode === "scalp" ? "단타" : "스윙/데이"}
+            </span>
             <SideIcon className={sideColor} size={16} aria-hidden />
-            <span className={`text-xs font-bold ${sideColor}`}>{isLong ? "롱" : "숏"}</span>
+            <span className={`text-xs font-bold ${sideColor}`}>{isLong ? "롱 우세" : "숏 우세"}</span>
             <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-xs font-bold text-accent-blue">
               {setup.plan.quality}급
             </span>
           </div>
         </div>
-        <ScoreBadge score={setup.score} />
+        <div className="flex flex-col items-end gap-1">
+          <StatusBadge setup={setup} riskProfile={riskProfile} />
+          <ScoreBadge score={setup.score} />
+        </div>
       </div>
 
       <div className="mt-3">
@@ -347,7 +428,12 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
       </div>
 
       <p className="mt-3 text-sm leading-6 text-slate-300">{setup.plan.entryLabel}</p>
-
+      {setup.status === "watch" && setup.watchReason ? (
+        <p className="mt-3 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-[11px] leading-5 text-signal-warning">
+          관찰 사유: {setup.watchReason}. 이 카드는 진입 신호가 아니라, 기다리거나 제외할 이유를 보여주는 카드입니다.
+          {setup.watchKind === "counter" ? " 반대 방향 구간을 감시하는 카드라 방향 추천으로 보면 안 됩니다." : ""}
+        </p>
+      ) : null}
       <EvidenceChips setup={setup} />
 
       <div className="mt-3 grid grid-cols-2 gap-2 text-center">
@@ -356,7 +442,7 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.currentPrice)}</p>
         </div>
         <div className="rounded border border-accent-blue/20 bg-accent-blue/5 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">검토 영역</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-accent-blue">검토 구간</p>
           <p className="mt-1 text-xs font-bold text-white">
             {formatPriceWithSymbol(setup.plan.entryLow)} ~ {formatPriceWithSymbol(setup.plan.entryHigh)}
           </p>
@@ -365,21 +451,26 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
 
       <div className="mt-2 grid grid-cols-2 gap-2 text-center">
         <div className="rounded border border-signal-danger/20 bg-signal-danger/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">무효화 기준 후보</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-danger">리스크 기준</p>
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.invalidation)}</p>
         </div>
         <div className="rounded border border-signal-success/20 bg-signal-success/10 px-2 py-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">1차 목표 후보</p>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-signal-success">참고 목표 1</p>
           <p className="mt-1 text-xs font-bold text-white">{formatPriceWithSymbol(setup.plan.target1)}</p>
         </div>
       </div>
 
       <div className="mt-3 flex items-center justify-between text-xs text-slate-500">
         <span className="inline-flex items-center gap-1">
-          <Target size={12} aria-hidden /> 검토 점수 {setup.plan.confidence}%
+          <Target size={12} aria-hidden /> 준비도 {setup.plan.confidence}%
         </span>
-        <span className="font-bold text-slate-400">2차 후보 {formatPriceWithSymbol(setup.plan.target2)}</span>
+        <span className="font-bold text-slate-400">참고 목표 2 {formatPriceWithSymbol(setup.plan.target2)}</span>
       </div>
+
+      <p className="mt-3 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-[11px] leading-5 text-signal-warning">
+        검토 구간 내부여도 바로 진입하라는 뜻이 아닙니다. 손절폭 기준 포지션 크기, 레버리지,
+        리스크 기준을 먼저 확인하세요.
+      </p>
 
       <CommentaryLine setup={setup} />
 
@@ -389,13 +480,25 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
         disabled={saveState === "saving"}
         className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-accent-blue/30 bg-accent-blue/10 px-3 text-xs font-black text-accent-blue transition hover:bg-accent-blue hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {saveState === "saving" ? <Loader2 size={14} className="animate-spin" aria-hidden /> : saveState === "saved" ? <CheckCircle2 size={14} aria-hidden /> : <Save size={14} aria-hidden />}
-        {saveState === "saving" ? "저장 중" : saveState === "saved" ? "복기에 저장됨" : saveState === "error" ? "저장 실패" : "이 셋업 복기 저장"}
+        {saveState === "saving" ? (
+          <Loader2 size={14} className="animate-spin" aria-hidden />
+        ) : saveState === "saved" ? (
+          <CheckCircle2 size={14} aria-hidden />
+        ) : (
+          <Save size={14} aria-hidden />
+        )}
+        {saveState === "saving"
+          ? "저장 중"
+          : saveState === "saved"
+            ? "복기에 저장됨"
+            : saveState === "error"
+              ? "저장 실패"
+              : "검토 후보 저장"}
       </button>
 
       {setup.plan.cautions.length > 0 ? (
         <p className="mt-2 line-clamp-2 text-[11px] leading-5 text-slate-500">
-          ⚠ {setup.plan.cautions[0]}
+          주의: {setup.plan.cautions[0]}
         </p>
       ) : null}
     </article>
@@ -404,10 +507,68 @@ function SetupCard({ setup, rank }: { setup: ScoutSetup; rank: number }) {
 
 function EmptyState() {
   return (
-    <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-5 text-center">
-      <p className="text-sm font-bold text-slate-300">현재 검토할 셋업이 없습니다.</p>
-      <p className="mt-2 text-xs leading-5 text-slate-500">
-        시장이 관망 구간이거나 구조가 명확하지 않은 시점입니다. 잠시 후 다시 스캔해보세요.
+    <div className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-5">
+      <p className="text-sm font-black text-signal-warning">현재는 검토 후보도, 관찰 후보도 없습니다.</p>
+      <p className="mt-2 text-xs leading-5 text-slate-300">
+        이 상태는 오류가 아니라 “매매하지 않을 근거”입니다. 구조가 애매하거나 검토 구간에서 너무 멀어진 상태라
+        무리해서 찾기보다 다음 스캔을 기다리는 편이 낫습니다.
+      </p>
+      <div className="mt-3 grid gap-2 text-left text-[11px] leading-5 text-slate-400 sm:grid-cols-3">
+        <span className="rounded-md border border-surface-line bg-black/20 px-3 py-2">1. 킬존/세션 재진입 대기</span>
+        <span className="rounded-md border border-surface-line bg-black/20 px-3 py-2">2. MSB·CHoCH 재정렬 대기</span>
+        <span className="rounded-md border border-surface-line bg-black/20 px-3 py-2">3. OB/FVG/OTE 근처 재접근 대기</span>
+      </div>
+    </div>
+  );
+}
+
+function ScanSummary({
+  setups,
+  mode,
+  riskProfile
+}: {
+  setups: ScoutSetup[];
+  mode: TradingMode;
+  riskProfile: ScoutRiskProfile;
+}) {
+  const entryCount = setups.filter((setup) => setup.status === "entry").length;
+  const activeCount = setups.filter((setup) => setup.status === "active").length;
+  const watchCount = setups.filter((setup) => setup.status === "watch").length;
+  const isRadar = riskProfile === "radar";
+
+  if (entryCount > 0 || activeCount > 0) {
+    return (
+      <div
+        className={`mb-3 rounded-lg border px-4 py-3 ${
+          isRadar ? "border-signal-danger/25 bg-signal-danger/10" : "border-accent-blue/25 bg-accent-blue/10"
+        }`}
+      >
+        <p className={`text-sm font-black ${isRadar ? "text-signal-danger" : "text-accent-blue"}`}>
+          {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 {entryCount}개, 완화 후보 {activeCount}개, 관찰 카드 {watchCount}개
+        </p>
+        <p className="mt-1 text-xs leading-5 text-slate-300">
+          {isRadar
+            ? "공격적 분석은 정확도가 조금 떨어질 수 있지만 완화된 조건으로 더 많은 후보를 보고 싶은 사용자를 위한 모드입니다."
+            : "분석 후보도 자동 매수·매도 신호가 아닙니다. 검토 구간, 리스크 기준, 포지션 크기를 확인한 뒤에만 판단하세요."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`mb-3 rounded-lg border px-4 py-3 ${
+        isRadar ? "border-signal-danger/25 bg-signal-danger/10" : "border-accent-blue/25 bg-accent-blue/10"
+      }`}
+    >
+      <p className={`text-sm font-black ${isRadar ? "text-signal-danger" : "text-accent-blue"}`}>
+        {isRadar ? "공격적 분석" : "보수적 분석"} · 분석 후보 없음, 관찰 카드 {watchCount}개
+      </p>
+      <p className="mt-1 text-xs leading-5 text-slate-300">
+        {mode === "scalp" ? "단타" : "스윙/데이"} 기준에서 바로 검토할 조건은 부족합니다.
+        {isRadar
+          ? " 대신 공격적 분석은 완화된 조건으로 움직임 후보를 더 넓게 보여주며, 실제 진입 전에는 보수적 분석 기준으로 다시 걸러야 합니다."
+          : " 이 카드는 “매수·매도 자리”가 아니라 가격이 다시 올 때 확인할 체크포인트입니다."}
       </p>
     </div>
   );
@@ -415,10 +576,20 @@ function EmptyState() {
 
 export function SetupScoutPanel() {
   const [state, setState] = useState<ScanState>({ status: "idle" });
+  const [scoutMode, setScoutMode] = useState<TradingMode>("scalp");
+  const [riskProfile, setRiskProfile] = useState<ScoutRiskProfile>("radar");
+  const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
+  useEffect(() => {
+    setScoutMode(readStoredScoutMode());
+    setRiskProfile(readStoredScoutRiskProfile());
+    setHasLoadedPreferences(true);
+  }, []);
 
   const runScan = useCallback(async (force = false) => {
+    window.localStorage.setItem(scoutModeStorageKey, scoutMode);
+    window.localStorage.setItem(scoutRiskProfileStorageKey, riskProfile);
     if (!force) {
-      const cached = readScoutCache();
+      const cached = readScoutCache(scoutMode, riskProfile);
       if (cached) {
         setState({ status: "ready", setups: cached.setups, cachedAt: cached.cachedAt });
         return;
@@ -427,24 +598,32 @@ export function SetupScoutPanel() {
 
     setState({ status: "loading" });
     try {
-      const setups = await scanAllSetups();
-      const top = topSetups(setups, 3);
-      writeScoutCache(top);
-      setState({ status: "ready", setups: top, cachedAt: Date.now() });
+      const res = await fetch(`/api/scout?mode=${scoutMode}&risk=${riskProfile}`, { cache: "no-store" });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? `서버 오류 (${res.status})`);
+      }
+      const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
+      writeScoutCache(data.setups, scoutMode, riskProfile);
+      setState({ status: "ready", setups: data.setups, cachedAt: data.cachedAt });
     } catch (error) {
       const message = error instanceof Error ? error.message : "스캔에 실패했습니다.";
       setState({ status: "error", message });
     }
-  }, []);
+  }, [scoutMode, riskProfile]);
 
   useEffect(() => {
+    if (!hasLoadedPreferences) return;
     runScan(false);
-  }, [runScan]);
+  }, [hasLoadedPreferences, runScan]);
 
   const cacheLabel = useMemo(() => {
     if (state.status !== "ready") return null;
     return formatCachedAt(state.cachedAt);
   }, [state]);
+
+  const visibleLimit = riskProfile === "radar" ? 6 : 3;
+  const visibleSetups = state.status === "ready" ? state.setups.slice(0, visibleLimit) : [];
 
   return (
     <section className="rounded-lg border border-accent-blue/25 bg-surface-card p-4 shadow-glow sm:p-5">
@@ -455,21 +634,67 @@ export function SetupScoutPanel() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-black text-white">AI Setup Scout</h2>
+              <h2 className="text-lg font-black text-white">AI 셋업 스캐너</h2>
               <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-blue">
                 Beta
               </span>
             </div>
             <p className="mt-1 text-sm leading-6 text-slate-400">
-              주요 종목 × 활성 TF를 자동 스캔해 오늘 검토할 만한 셋업 TOP 3를 보여줍니다.
+              현재 베타버전은 코인 데이터를 우선 분석합니다. 결과는 진입 추천이 아니라,
+              검토할 가치가 있는 후보와 위험 조건을 정리한 것입니다.
             </p>
             <p className="mt-2 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-              영역 내부는 진입 신호가 아니라 검토 상태입니다. 특히 고배율은 작은 흔들림도 손실을 크게 만들 수 있습니다.
+              “검토 구간”은 매수·매도 신호가 아닙니다. 리스크 기준, 손절폭, 레버리지, 포지션 크기를
+              먼저 확인하지 않으면 후보가 좋아 보여도 손실이 커질 수 있습니다.
+            </p>
+            <p className="mt-2 rounded-md border border-surface-line bg-black/20 px-3 py-2 text-xs leading-5 text-slate-400">
+              화면에 표시되는 관찰 카드는 진입 추천이 아니라 “조건이 더 필요하다”는 대기 카드입니다.
+            </p>
+            <p className="mt-2 rounded-md border border-orange-400/20 bg-orange-400/10 px-3 py-2 text-xs leading-5 text-orange-200">
+              공격적 분석은 정확도가 조금 떨어질 수 있지만, 완화된 조건으로 더 많은 후보를 보고 싶은 사용자를 위한 모드입니다.
+              실제 진입 판단은 반드시 보수적 분석과 리스크 기준으로 다시 확인해야 합니다.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {cacheLabel ? <span className="text-xs text-slate-500">{cacheLabel} 갱신</span> : null}
+        <div className="flex flex-wrap items-center gap-2">
+          {(["scalp", "swing"] as TradingMode[]).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => {
+                setScoutMode(mode);
+                setState({ status: "idle" });
+              }}
+              className={`inline-flex min-h-9 items-center rounded-md border px-3 text-xs font-black transition ${
+                scoutMode === mode
+                  ? "border-accent-blue bg-accent-blue text-slate-950"
+                  : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/50"
+              }`}
+            >
+              {mode === "scalp" ? "단타" : "스윙/데이"}
+            </button>
+          ))}
+          <span className="mx-1 hidden h-5 w-px bg-surface-line sm:inline-block" />
+          {(["guard", "radar"] as ScoutRiskProfile[]).map((profile) => (
+            <button
+              key={profile}
+              type="button"
+              onClick={() => {
+                setRiskProfile(profile);
+                setState({ status: "idle" });
+              }}
+              className={`inline-flex min-h-9 items-center rounded-md border px-3 text-xs font-black transition ${
+                riskProfile === profile
+                  ? profile === "radar"
+                    ? "border-signal-danger bg-signal-danger text-white"
+                    : "border-accent-blue bg-accent-blue text-slate-950"
+                  : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/50"
+              }`}
+            >
+              {profile === "guard" ? "보수적 분석" : "공격적 분석"}
+            </button>
+          ))}
+          {cacheLabel ? <span className="text-xs text-slate-500">{cacheLabel} 스캔</span> : null}
           <button
             type="button"
             onClick={() => runScan(true)}
@@ -477,7 +702,7 @@ export function SetupScoutPanel() {
             className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-bold text-slate-200 hover:border-accent-blue/50 hover:text-white disabled:opacity-50"
           >
             <RefreshCw size={13} className={state.status === "loading" ? "animate-spin" : ""} aria-hidden />
-            새로 스캔
+            다시 스캔
           </button>
         </div>
       </div>
@@ -486,7 +711,7 @@ export function SetupScoutPanel() {
         {state.status === "loading" ? (
           <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-line bg-surface-cardSoft p-8 text-sm text-slate-400">
             <Loader2 size={18} className="animate-spin" aria-hidden />
-            15개 조합 분석 중...
+            후보 조합을 분석하는 중...
           </div>
         ) : state.status === "error" ? (
           <div className="rounded-lg border border-signal-danger/30 bg-signal-danger/10 p-4 text-sm text-signal-danger">
@@ -496,17 +721,27 @@ export function SetupScoutPanel() {
           state.setups.length === 0 ? (
             <EmptyState />
           ) : (
-            <div className="grid gap-3 sm:grid-cols-3">
-              {state.setups.map((setup, idx) => (
-                <SetupCard key={`${setup.symbol}-${setup.timeframe}`} setup={setup} rank={idx + 1} />
-              ))}
-            </div>
+            <>
+              <ScanSummary setups={state.setups} mode={scoutMode} riskProfile={riskProfile} />
+              <div className="grid gap-3 sm:grid-cols-3">
+                {visibleSetups.map((setup, idx) => (
+                  <SetupCard
+                    key={`${setup.symbol}-${setup.mode}-${setup.timeframe}`}
+                    setup={setup}
+                    rank={idx + 1}
+                    riskProfile={riskProfile}
+                  />
+                ))}
+              </div>
+            </>
           )
         ) : null}
       </div>
 
       <p className="mt-3 text-[11px] leading-5 text-slate-500">
-        스캔 결과는 5분 단위 캐시됩니다. 이 값은 매수·매도 신호가 아니며, 검토 영역과 무효화 기준 후보는 반드시 본인의 차트 판독과 매매 원칙으로 다시 확인하세요.
+        스캔 결과는 5분 단위로 갱신됩니다. 제공되는 후보는 구조 기반 분석 결과이며 매수·매도
+        추천이 아닙니다. 검토 구간과 리스크 기준은 반드시 본인의 차트 판독, 손절 원칙,
+        포지션 크기 기준으로 다시 확인하세요.
       </p>
     </section>
   );

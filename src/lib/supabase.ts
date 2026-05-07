@@ -1,7 +1,8 @@
 export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 
-export const supabaseSessionStorageKey = "positionguard.supabase.session";
+export const supabaseSessionStorageKey = "untitledRisk.supabase.session";
+const legacyPositionGuardSupabaseSessionStorageKey = "positionguard.supabase.session";
 const legacySupabaseSessionStorageKey = "co" + "ters.supabase.session";
 
 export interface SupabaseSession {
@@ -70,6 +71,7 @@ export function parseSessionFromHash(hash: string): SupabaseSession | null {
 export function saveSupabaseSession(session: SupabaseSession) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(session));
+  window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 
@@ -77,9 +79,13 @@ export function getSupabaseSession(): SupabaseSession | null {
   if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.localStorage.getItem(supabaseSessionStorageKey) ?? window.localStorage.getItem(legacySupabaseSessionStorageKey);
+    const raw =
+      window.localStorage.getItem(supabaseSessionStorageKey) ??
+      window.localStorage.getItem(legacyPositionGuardSupabaseSessionStorageKey) ??
+      window.localStorage.getItem(legacySupabaseSessionStorageKey);
     if (!raw) return null;
     window.localStorage.setItem(supabaseSessionStorageKey, raw);
+    window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
     window.localStorage.removeItem(legacySupabaseSessionStorageKey);
     const session = JSON.parse(raw) as SupabaseSession;
     if (!session.accessToken) return null;
@@ -96,6 +102,7 @@ export function getSupabaseSession(): SupabaseSession | null {
 export function clearSupabaseSession() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(supabaseSessionStorageKey);
+  window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 

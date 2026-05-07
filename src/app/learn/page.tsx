@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BookOpen, CheckCircle2 } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
@@ -37,6 +38,12 @@ export default function LearnPage() {
         <Header />
         <TabMenu />
 
+        <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
+          <span className="font-bold text-accent-blue">AI 셋업 스캐너</span>가 찾아준 후보의 근거를 직접 이해하고 싶다면 여기서 핵심 개념을 확인하세요.
+          스캐너 결과를 볼 줄 알아야 자기 판단이 가능합니다.{" "}
+          <Link href="/survival" className="font-bold text-accent-blue underline underline-offset-2">스캐너 보러 가기 →</Link>
+        </div>
+
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
@@ -45,7 +52,7 @@ export default function LearnPage() {
             <div>
               <h2 className="text-lg font-bold text-white">학습 노트</h2>
               <p className="mt-1 text-sm leading-6 text-slate-400">
-                차트 판독 결과를 어떻게 읽어야 하는지 최소 기준만 정리했습니다.
+                AI 셋업 스캐너가 사용하는 ICT·구조매매 핵심 개념을 최소한으로 정리했습니다.
               </p>
             </div>
           </div>

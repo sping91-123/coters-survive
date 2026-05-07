@@ -1,12 +1,13 @@
 {
-  "name": "positionguard",
+  "name": "untitled-trading-risk-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "backtest:btc": "npx tsc -p tsconfig.verify.json && node .verify-dist/scripts/backtest-btc-regimes.js"
   },
   "dependencies": {
     "lightweight-charts": "^5.2.0",

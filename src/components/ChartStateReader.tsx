@@ -58,9 +58,9 @@ function directionLabel(value?: string) {
     return "하락";
   }
   if (value === "neutral") {
-    return "중립";
+    return "횡보";
   }
-  return "미확인";
+  return "데이터 부족";
 }
 
 function getBiasMeta(payload: AppStatePayload | null) {
@@ -92,7 +92,7 @@ function getBiasMeta(payload: AppStatePayload | null) {
   }
 
   return {
-    label: "중립",
+    label: "횡보",
     color: "text-signal-warning",
     border: "border-signal-warning/30",
     bg: "bg-signal-warning/10"
@@ -190,7 +190,7 @@ export function ChartStateReader() {
         <div className={`rounded-lg border ${meta.border} ${meta.bg} p-4`}>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold text-slate-400">무료 판독 결과</p>
+              <p className="text-xs font-semibold text-slate-400">판독 결과</p>
               <h3 className={`mt-1 text-2xl font-black ${meta.color}`}>{meta.label}</h3>
             </div>
             <Activity className={meta.color} size={28} aria-hidden />
@@ -199,11 +199,11 @@ export function ChartStateReader() {
           {payload ? (
             <>
               <div className="mt-4 grid grid-cols-2 gap-3">
-                <Metric label="심볼" value={payload.symbol ?? "미확인"} />
-                <Metric label="차트 TF" value={payload.chartTf ?? "미확인"} />
-                <Metric label="모드" value={payload.mode ?? "미확인"} />
-                <Metric label="Bias 점수" value={String(payload.biasScore ?? "미확인")} />
-                <Metric label="4H EMA200" value={payload.ema200Side === "above" ? "위" : payload.ema200Side === "below" ? "아래" : "미확인"} />
+                <Metric label="심볼" value={payload.symbol ?? "데이터 부족"} />
+                <Metric label="차트 TF" value={payload.chartTf ?? "데이터 부족"} />
+                <Metric label="모드" value={payload.mode ?? "데이터 부족"} />
+                <Metric label="Bias 점수" value={String(payload.biasScore ?? "데이터 부족")} />
+                <Metric label="4H EMA200" value={payload.ema200Side === "above" ? "위" : payload.ema200Side === "below" ? "아래" : "데이터 부족"} />
                 <Metric label="FVG" value={payload.inFvg ? `${payload.fvgTf ?? ""} ${payload.fvgIsIfvg ? "iFVG" : "FVG"}` : "없음"} />
               </div>
 

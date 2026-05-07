@@ -2,6 +2,9 @@
 node_modules
 out
 dist
+.backtest-cache
+reports
+.verify-dist
 .env
 .env.local
 .tools

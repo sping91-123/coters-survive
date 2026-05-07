@@ -2,6 +2,7 @@ export type ChartTimeframe = "5m" | "15m" | "1h" | "4h" | "1d";
 export type DirectionState = "bullish" | "bearish" | "neutral" | "unknown";
 export type BiasSide = "long" | "short" | "neutral";
 export type ReasonTone = "bullish" | "bearish" | "neutral";
+export type TradingMode = "swing" | "scalp";
 
 export interface Candle {
   time: number;
@@ -91,6 +92,24 @@ export interface StructureDebug {
   choch: 1 | -1 | 0;
 }
 
+export interface MarketCondition {
+  rsi14: number | null;
+  rsiState: "overbought" | "neutral" | "oversold" | "unknown";
+  macdLine: number | null;
+  macdSignal: number | null;
+  macdHistogram: number | null;
+  macdState: "rising" | "falling" | "neutral" | "unknown";
+  atr14: number | null;
+  atrPercent: number | null;
+  volatilityState: "expanded" | "normal" | "compressed" | "unknown";
+  volumeRatio: number | null;
+  volumeState: "high" | "normal" | "low" | "unknown";
+  bollingerMiddle: number | null;
+  bollingerUpper: number | null;
+  bollingerLower: number | null;
+  bollingerPosition: "upper" | "middle" | "lower" | "outsideUpper" | "outsideLower" | "unknown";
+}
+
 export interface TimeframeAnalysis {
   timeframe: ChartTimeframe;
   msb: DirectionState;
@@ -111,6 +130,7 @@ export interface TimeframeAnalysis {
   oteZone: "long" | "short" | "none";
   oteLevels: OteLevels | null;
   premiumDiscount: "premium" | "discount" | "equilibrium" | "unknown";
+  condition: MarketCondition;
   score: number;
   debug: StructureDebug;
 }
@@ -127,6 +147,7 @@ export interface ScenarioCard {
 }
 
 export interface TradePlanCandidate {
+  mode: TradingMode;
   side: Exclude<BiasSide, "neutral">;
   quality: "A" | "B" | "C";
   title: string;
@@ -146,6 +167,7 @@ export interface TradePlanCandidate {
 export interface MarketAnalysis {
   symbol: string;
   activeTimeframe: ChartTimeframe;
+  tradingMode: TradingMode;
   price: number;
   bias: BiasSide;
   killzone: "asia" | "london" | "newyork" | "off";
@@ -189,6 +211,35 @@ interface AnalysisContext {
 }
 
 export const chartTimeframes: ChartTimeframe[] = ["5m", "15m", "1h", "4h", "1d"];
+
+export const tradingModeConfigs: Record<
+  TradingMode,
+  {
+    activeTimeframes: ChartTimeframe[];
+    contextTimeframes: ChartTimeframe[];
+    targetR1: number;
+    targetR2: number;
+    scoutLimit: number;
+    minimumScoutScore: number;
+  }
+> = {
+  scalp: {
+    activeTimeframes: ["5m", "15m"],
+    contextTimeframes: ["1h", "4h"],
+    targetR1: 0.7,
+    targetR2: 1.0,
+    scoutLimit: 500,
+    minimumScoutScore: 66
+  },
+  swing: {
+    activeTimeframes: ["1h", "4h", "1d"],
+    contextTimeframes: ["4h", "1d"],
+    targetR1: 2.0,
+    targetR2: 2.5,
+    scoutLimit: 360,
+    minimumScoutScore: 72
+  }
+};
 
 const intervalMap: Record<ChartTimeframe, string> = {
   "5m": "5m",
@@ -255,6 +306,224 @@ function ema(values: number[], length: number): number | null {
   return result;
 }
 
+function emaSeries(values: number[], length: number): Array<number | null> {
+  const result: Array<number | null> = Array(values.length).fill(null);
+  if (values.length < length) return result;
+
+  const multiplier = 2 / (length + 1);
+  let current = values.slice(0, length).reduce((sum, value) => sum + value, 0) / length;
+  result[length - 1] = current;
+
+  for (let index = length; index < values.length; index += 1) {
+    current = (values[index] - current) * multiplier + current;
+    result[index] = current;
+  }
+
+  return result;
+}
+
+function smaSeries(values: number[], length: number): Array<number | null> {
+  const result: Array<number | null> = Array(values.length).fill(null);
+  let sum = 0;
+
+  for (let index = 0; index < values.length; index += 1) {
+    sum += values[index];
+    if (index >= length) sum -= values[index - length];
+    if (index >= length - 1) result[index] = sum / length;
+  }
+
+  return result;
+}
+
+function lastNumber(values: Array<number | null | undefined>): number | null {
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    const value = values[index];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+  }
+  return null;
+}
+
+function average(values: number[]) {
+  if (!values.length) return null;
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function roundMetric(value: number | null, digits = 2) {
+  if (value === null || !Number.isFinite(value)) return null;
+  const factor = 10 ** digits;
+  return Math.round(value * factor) / factor;
+}
+
+function atrSeries(candles: Candle[], length: number): Array<number | null> {
+  const trueRanges = candles.map((candle, index) => {
+    if (index === 0) return candle.high - candle.low;
+    const previousClose = candles[index - 1].close;
+    return Math.max(
+      candle.high - candle.low,
+      Math.abs(candle.high - previousClose),
+      Math.abs(candle.low - previousClose)
+    );
+  });
+
+  const result: Array<number | null> = Array(candles.length).fill(null);
+  let seed = 0;
+
+  for (let index = 0; index < trueRanges.length; index += 1) {
+    if (index < length) {
+      seed += trueRanges[index];
+      if (index === length - 1) result[index] = seed / length;
+      continue;
+    }
+
+    const previous = result[index - 1];
+    result[index] = previous === null ? null : (previous * (length - 1) + trueRanges[index]) / length;
+  }
+
+  return result;
+}
+
+function calculateRsi(values: number[], length = 14): number | null {
+  if (values.length <= length) return null;
+
+  let avgGain = 0;
+  let avgLoss = 0;
+
+  for (let index = 1; index <= length; index += 1) {
+    const diff = values[index] - values[index - 1];
+    if (diff >= 0) avgGain += diff;
+    else avgLoss += Math.abs(diff);
+  }
+
+  avgGain /= length;
+  avgLoss /= length;
+
+  for (let index = length + 1; index < values.length; index += 1) {
+    const diff = values[index] - values[index - 1];
+    const gain = diff > 0 ? diff : 0;
+    const loss = diff < 0 ? Math.abs(diff) : 0;
+    avgGain = (avgGain * (length - 1) + gain) / length;
+    avgLoss = (avgLoss * (length - 1) + loss) / length;
+  }
+
+  if (avgLoss === 0) return 100;
+  const rs = avgGain / avgLoss;
+  return 100 - 100 / (1 + rs);
+}
+
+function calculateMacd(values: number[]) {
+  const fast = emaSeries(values, 12);
+  const slow = emaSeries(values, 26);
+  const compactLine: number[] = [];
+
+  for (let index = 0; index < values.length; index += 1) {
+    if (fast[index] !== null && slow[index] !== null) {
+      compactLine.push(Number(fast[index]) - Number(slow[index]));
+    }
+  }
+
+  const signalSeries = emaSeries(compactLine, 9);
+  const line = compactLine.length ? compactLine[compactLine.length - 1] : null;
+  const signal = lastNumber(signalSeries);
+  const previousSignal = signalSeries.length >= 2 ? lastNumber(signalSeries.slice(0, -1)) : null;
+  const previousLine = compactLine.length >= 2 ? compactLine[compactLine.length - 2] : null;
+  const histogram = line !== null && signal !== null ? line - signal : null;
+  const previousHistogram = previousLine !== null && previousSignal !== null ? previousLine - previousSignal : null;
+
+  let state: MarketCondition["macdState"] = "unknown";
+  if (histogram !== null && previousHistogram !== null) {
+    const delta = histogram - previousHistogram;
+    if (Math.abs(delta) < Math.max(Math.abs(histogram) * 0.05, 1e-8)) state = "neutral";
+    else state = delta > 0 ? "rising" : "falling";
+  }
+
+  return {
+    line,
+    signal,
+    histogram,
+    state
+  };
+}
+
+function calculateBollinger(values: number[], length = 20, multiplier = 2) {
+  if (values.length < length) {
+    return {
+      middle: null,
+      upper: null,
+      lower: null,
+      position: "unknown" as MarketCondition["bollingerPosition"]
+    };
+  }
+
+  const latest = values[values.length - 1];
+  const window = values.slice(-length);
+  const middle = Number(average(window));
+  const variance = average(window.map((value) => (value - middle) ** 2)) ?? 0;
+  const stdev = Math.sqrt(variance);
+  const upper = middle + stdev * multiplier;
+  const lower = middle - stdev * multiplier;
+  const width = upper - lower;
+
+  if (width <= 0) {
+    return {
+      middle,
+      upper,
+      lower,
+      position: "unknown" as MarketCondition["bollingerPosition"]
+    };
+  }
+
+  const ratio = (latest - lower) / width;
+  let position: MarketCondition["bollingerPosition"] = "middle";
+  if (ratio > 1) position = "outsideUpper";
+  else if (ratio < 0) position = "outsideLower";
+  else if (ratio >= 0.66) position = "upper";
+  else if (ratio <= 0.34) position = "lower";
+
+  return { middle, upper, lower, position };
+}
+
+function buildMarketCondition(candles: Candle[], closes: number[]): MarketCondition {
+  const latest = candles[candles.length - 1];
+  const volumes = candles.map((candle) => candle.volume);
+  const volumeSma = lastNumber(smaSeries(volumes, 20));
+  const atrValues = atrSeries(candles, 14);
+  const atr14 = lastNumber(atrValues);
+  const recentAtr = atrValues.filter((value): value is number => typeof value === "number").slice(-40);
+  const atrBaseline = average(recentAtr);
+  const rsi14 = calculateRsi(closes, 14);
+  const macd = calculateMacd(closes);
+  const bollinger = calculateBollinger(closes, 20, 2);
+
+  const atrPercent = atr14 !== null && latest?.close ? (atr14 / latest.close) * 100 : null;
+  const atrRatio = atr14 !== null && atrBaseline ? atr14 / atrBaseline : null;
+  const volumeRatio = volumeSma && latest?.volume ? latest.volume / volumeSma : null;
+
+  const rsiState: MarketCondition["rsiState"] =
+    rsi14 === null ? "unknown" : rsi14 >= 70 ? "overbought" : rsi14 <= 30 ? "oversold" : "neutral";
+  const volatilityState: MarketCondition["volatilityState"] =
+    atrRatio === null ? "unknown" : atrRatio >= 1.2 ? "expanded" : atrRatio <= 0.75 ? "compressed" : "normal";
+  const volumeState: MarketCondition["volumeState"] =
+    volumeRatio === null ? "unknown" : volumeRatio >= 1.5 ? "high" : volumeRatio <= 0.7 ? "low" : "normal";
+
+  return {
+    rsi14: roundMetric(rsi14, 1),
+    rsiState,
+    macdLine: roundMetric(macd.line, 5),
+    macdSignal: roundMetric(macd.signal, 5),
+    macdHistogram: roundMetric(macd.histogram, 5),
+    macdState: macd.state,
+    atr14: roundMetric(atr14, 5),
+    atrPercent: roundMetric(atrPercent, 2),
+    volatilityState,
+    volumeRatio: roundMetric(volumeRatio, 2),
+    volumeState,
+    bollingerMiddle: roundMetric(bollinger.middle, 5),
+    bollingerUpper: roundMetric(bollinger.upper, 5),
+    bollingerLower: roundMetric(bollinger.lower, 5),
+    bollingerPosition: bollinger.position
+  };
+}
+
 function highestClose(candles: Candle[], start: number, end: number) {
   let value = -Infinity;
   for (let index = start; index <= end; index += 1) {
@@ -276,15 +545,29 @@ function pointFromEnd(points: PivotPoint[], offset: number) {
   return index >= 0 ? points[index] : null;
 }
 
-function formatBarsAgo(age: number) {
+function formatBarsAgo(age: number, timeframe: ChartTimeframe = "15m") {
   if (age <= 0) return "방금";
-  return `${age}봉 전`;
+  const minutesByTimeframe: Record<ChartTimeframe, number> = {
+    "5m": 5,
+    "15m": 15,
+    "1h": 60,
+    "4h": 240,
+    "1d": 1440
+  };
+  const minutes = age * minutesByTimeframe[timeframe];
+  if (minutes < 60) return `${minutes}분 전`;
+  if (minutes < 1440) {
+    const hours = minutes / 60;
+    return Number.isInteger(hours) ? `${hours}시간 전` : `${hours.toFixed(1)}시간 전`;
+  }
+  const days = minutes / 1440;
+  return Number.isInteger(days) ? `${days}일 전` : `${days.toFixed(1)}일 전`;
 }
 
 function directionKorean(direction: DirectionState) {
   if (direction === "bullish") return "상승";
   if (direction === "bearish") return "하락";
-  if (direction === "neutral") return "중립";
+  if (direction === "neutral") return "횡보";
   return "미확인";
 }
 
@@ -395,13 +678,13 @@ function findBearishOb(candles: Candle[], fromIndex: number, toIndex: number) {
 }
 
 function findInstantBullishOb(candles: Candle[], fromIndex: number, toIndex: number) {
-  const safeFrom = Math.max(0, fromIndex);
+  const safeFrom = Math.max(0, Math.max(fromIndex, toIndex - 200));
   const safeTo = Math.max(safeFrom, toIndex);
 
-  let lowestPrice = candles[safeFrom].low;
-  let lowestIndex = safeFrom;
+  let lowestPrice = candles[safeTo].low;
+  let lowestIndex = safeTo;
 
-  for (let index = safeFrom; index <= safeTo; index += 1) {
+  for (let index = safeTo; index >= safeFrom; index -= 1) {
     if (candles[index].low < lowestPrice) {
       lowestPrice = candles[index].low;
       lowestIndex = index;
@@ -422,13 +705,13 @@ function findInstantBullishOb(candles: Candle[], fromIndex: number, toIndex: num
 }
 
 function findInstantBearishOb(candles: Candle[], fromIndex: number, toIndex: number) {
-  const safeFrom = Math.max(0, fromIndex);
+  const safeFrom = Math.max(0, Math.max(fromIndex, toIndex - 200));
   const safeTo = Math.max(safeFrom, toIndex);
 
-  let highestPrice = candles[safeFrom].high;
-  let highestIndex = safeFrom;
+  let highestPrice = candles[safeTo].high;
+  let highestIndex = safeTo;
 
-  for (let index = safeFrom; index <= safeTo; index += 1) {
+  for (let index = safeTo; index >= safeFrom; index -= 1) {
     if (candles[index].high > highestPrice) {
       highestPrice = candles[index].high;
       highestIndex = index;
@@ -490,6 +773,46 @@ function buildBreakerBlock(
   };
 }
 
+function isValidStructureBox(
+  candles: Candle[],
+  originIndex: number,
+  currentIndex: number,
+  volumeSma20: Array<number | null>,
+  atr14: Array<number | null>
+) {
+  const since = currentIndex - originIndex;
+  if (since <= 0) return false;
+
+  const candle = candles[originIndex];
+  const averageVolume = volumeSma20[originIndex];
+  const atrValue = atr14[originIndex];
+  const volumeSpike = averageVolume !== null && candle.volume > averageVolume * 1.5;
+  const largeCandle = atrValue !== null && Math.abs(candle.close - candle.open) > atrValue;
+
+  return volumeSpike || largeCandle;
+}
+
+function pruneStructureBoxes(candle: Candle, bullishBoxes: OrderBlockZone[], bearishBoxes: OrderBlockZone[]) {
+  for (let index = bullishBoxes.length - 1; index >= 0; index -= 1) {
+    if (candle.close < bullishBoxes[index].bottom) bullishBoxes.splice(index, 1);
+  }
+
+  for (let index = bearishBoxes.length - 1; index >= 0; index -= 1) {
+    if (candle.close > bearishBoxes[index].top) bearishBoxes.splice(index, 1);
+  }
+}
+
+function getLatestStructureBox(bullishBoxes: OrderBlockZone[], bearishBoxes: OrderBlockZone[]) {
+  const bullish = bullishBoxes[bullishBoxes.length - 1];
+  const bearish = bearishBoxes[bearishBoxes.length - 1];
+
+  if (bullish && bearish) {
+    return bullish.originIndex >= bearish.originIndex ? bullish : bearish;
+  }
+
+  return bullish ?? bearish ?? null;
+}
+
 function buildStructureState(
   candles: Candle[],
   timeframe: ChartTimeframe,
@@ -497,14 +820,17 @@ function buildStructureState(
   useCloseForMsb = true
 ): StructureState {
   const { hiPoints, loPoints } = buildPivotArrays(candles, zigLen);
+  const volumeSma20 = smaSeries(candles.map((candle) => candle.volume), 20);
+  const atr14 = atrSeries(candles, 14);
 
   let market: 1 | -1 = 1;
   let chochDir: 1 | -1 = 1;
   let latestMsbEvent: StructureEvent | null = null;
   let latestChochEvent: StructureEvent | null = null;
-  let latestOb: OrderBlockZone | null = null;
   let latestBb: OrderBlockZone | null = null;
   let latestCisd: CisdSignal | null = null;
+  const bullishObBoxes: OrderBlockZone[] = [];
+  const bearishObBoxes: OrderBlockZone[] = [];
 
   for (let index = 0; index < candles.length; index += 1) {
     const validHighs = hiPoints.filter((point) => point.confirmedIndex <= index);
@@ -531,21 +857,25 @@ function buildStructureState(
         level: h0.price
       };
 
-      if (h1 && l0) {
+      if (h0 && h1 && l0 && l1) {
         const fromIndex = Math.max(0, h1.index);
         const toIndex = index;
         const originIndex = findInstantBullishOb(candles, fromIndex, toIndex);
-        latestOb = {
-          timeframe,
-          direction: "bullish",
-          top: candles[originIndex].high,
-          bottom: candles[originIndex].low,
-          age: candles.length - 1 - originIndex,
-          isInside: false,
-          originIndex
-        };
+        if (isValidStructureBox(candles, originIndex, index, volumeSma20, atr14)) {
+          bullishObBoxes.push({
+            timeframe,
+            direction: "bullish",
+            top: candles[originIndex].high,
+            bottom: candles[originIndex].low,
+            age: candles.length - 1 - originIndex,
+            isInside: false,
+            originIndex
+          });
+          if (bullishObBoxes.length > 30) bullishObBoxes.shift();
+        }
       }
 
+      pruneStructureBoxes(candles[index], bullishObBoxes, bearishObBoxes);
       continue;
     }
 
@@ -560,21 +890,25 @@ function buildStructureState(
         level: l0.price
       };
 
-      if (l1 && h0) {
+      if (h0 && h1 && l0 && l1) {
         const fromIndex = Math.max(0, l1.index);
         const toIndex = index;
         const originIndex = findInstantBearishOb(candles, fromIndex, toIndex);
-        latestOb = {
-          timeframe,
-          direction: "bearish",
-          top: candles[originIndex].high,
-          bottom: candles[originIndex].low,
-          age: candles.length - 1 - originIndex,
-          isInside: false,
-          originIndex
-        };
+        if (isValidStructureBox(candles, originIndex, index, volumeSma20, atr14)) {
+          bearishObBoxes.push({
+            timeframe,
+            direction: "bearish",
+            top: candles[originIndex].high,
+            bottom: candles[originIndex].low,
+            age: candles.length - 1 - originIndex,
+            isInside: false,
+            originIndex
+          });
+          if (bearishObBoxes.length > 30) bearishObBoxes.shift();
+        }
       }
 
+      pruneStructureBoxes(candles[index], bullishObBoxes, bearishObBoxes);
       continue;
     }
 
@@ -606,30 +940,34 @@ function buildStructureState(
       }
     }
 
-    if (chochDir !== previousChoch && latestOb) {
-      const isInsideOb =
-        candles[index].close <= latestOb.top && candles[index].close >= latestOb.bottom;
+    pruneStructureBoxes(candles[index], bullishObBoxes, bearishObBoxes);
 
-      if (isInsideOb) {
-        if (chochDir === 1 && latestOb.direction === "bullish") {
-          latestCisd = {
-            timeframe,
-            direction: "bullish",
-            age: candles.length - 1 - index,
-            index,
-            level: latestOb.bottom
-          };
-        }
+    if (chochDir !== previousChoch) {
+      const isInsideBullishOb = bullishObBoxes.some(
+        (box) => candles[index].close <= box.top && candles[index].close >= box.bottom
+      );
+      const isInsideBearishOb = bearishObBoxes.some(
+        (box) => candles[index].close <= box.top && candles[index].close >= box.bottom
+      );
 
-        if (chochDir === -1 && latestOb.direction === "bearish") {
-          latestCisd = {
-            timeframe,
-            direction: "bearish",
-            age: candles.length - 1 - index,
-            index,
-            level: latestOb.top
-          };
-        }
+      if (chochDir === 1 && isInsideBullishOb) {
+        latestCisd = {
+          timeframe,
+          direction: "bullish",
+          age: candles.length - 1 - index,
+          index,
+          level: bullishObBoxes[bullishObBoxes.length - 1]?.bottom ?? candles[index].low
+        };
+      }
+
+      if (chochDir === -1 && isInsideBearishOb) {
+        latestCisd = {
+          timeframe,
+          direction: "bearish",
+          age: candles.length - 1 - index,
+          index,
+          level: bearishObBoxes[bearishObBoxes.length - 1]?.top ?? candles[index].high
+        };
       }
     }
   }
@@ -638,6 +976,8 @@ function buildStructureState(
   const h1 = pointFromEnd(hiPoints, 1);
   const l0 = pointFromEnd(loPoints, 0);
   const l1 = pointFromEnd(loPoints, 1);
+
+  let latestOb = getLatestStructureBox(bullishObBoxes, bearishObBoxes);
 
   if (latestOb) {
     const latestPrice = candles[candles.length - 1]?.close ?? 0;
@@ -718,57 +1058,90 @@ function detectLatestSweep(
   return best;
 }
 
-function detectLatestFvg(candles: Candle[], timeframe: ChartTimeframe): FvgZone | null {
+interface FvgRecord {
+  direction: "bullish" | "bearish";
+  top: number;
+  bottom: number;
+  isIfvg: boolean;
+  originIndex: number;
+}
+
+function detectLatestFvg(candles: Candle[], timeframe: ChartTimeframe, ifvgEnabled = false): FvgZone | null {
   const latestPrice = candles[candles.length - 1]?.close;
   if (!latestPrice || candles.length < 5) return null;
 
-  for (let index = candles.length - 1; index >= 2; index -= 1) {
+  const records: FvgRecord[] = [];
+
+  for (let index = 2; index < candles.length; index += 1) {
     const current = candles[index];
     const middle = candles[index - 1];
     const previous = candles[index - 2];
 
     const bullish = current.low > previous.high && middle.close > previous.high;
     if (bullish) {
-      const top = current.low;
-      const bottom = previous.high;
-      const fullyBroken = candles
-        .slice(index + 1)
-        .some((candle) => candle.low < bottom);
-
-      return {
-        timeframe,
-        direction: fullyBroken ? "bearish" : "bullish",
-        state: fullyBroken ? "ifvg" : "fvg",
-        top,
-        bottom,
-        age: candles.length - 1 - index,
-        isInside: latestPrice <= top && latestPrice >= bottom,
+      records.unshift({
+        direction: "bullish",
+        top: current.low,
+        bottom: previous.high,
+        isIfvg: false,
         originIndex: index
-      };
+      });
     }
 
     const bearish = current.high < previous.low && middle.close < previous.low;
     if (bearish) {
-      const top = previous.low;
-      const bottom = current.high;
-      const fullyBroken = candles
-        .slice(index + 1)
-        .some((candle) => candle.high > top);
-
-      return {
-        timeframe,
-        direction: fullyBroken ? "bullish" : "bearish",
-        state: fullyBroken ? "ifvg" : "fvg",
-        top,
-        bottom,
-        age: candles.length - 1 - index,
-        isInside: latestPrice <= top && latestPrice >= bottom,
+      records.unshift({
+        direction: "bearish",
+        top: previous.low,
+        bottom: current.high,
+        isIfvg: false,
         originIndex: index
-      };
+      });
+    }
+
+    while (records.length > 40) records.pop();
+
+    for (let recordIndex = records.length - 1; recordIndex >= 0; recordIndex -= 1) {
+      const record = records[recordIndex];
+
+      if (!record.isIfvg) {
+        const fullyBroken =
+          record.direction === "bullish"
+            ? current.low < record.bottom
+            : current.high > record.top;
+
+        if (fullyBroken) {
+          if (ifvgEnabled) {
+            record.direction = record.direction === "bullish" ? "bearish" : "bullish";
+            record.isIfvg = true;
+          } else {
+            records.splice(recordIndex, 1);
+          }
+        }
+      } else {
+        const ifvgDone =
+          record.direction === "bullish"
+            ? current.high > record.top
+            : current.low < record.bottom;
+        if (ifvgDone) records.splice(recordIndex, 1);
+      }
     }
   }
 
-  return null;
+  const insideRecord = records.find((record) => latestPrice <= record.top && latestPrice >= record.bottom);
+  const selected = insideRecord ?? records[0];
+  if (!selected) return null;
+
+  return {
+    timeframe,
+    direction: selected.direction,
+    state: selected.isIfvg ? "ifvg" : "fvg",
+    top: selected.top,
+    bottom: selected.bottom,
+    age: candles.length - 1 - selected.originIndex,
+    isInside: Boolean(insideRecord),
+    originIndex: selected.originIndex
+  };
 }
 
 function calculateVolumeProfile(candles: Candle[], lookback = 180, bins = 96): VolumeProfileLevels | null {
@@ -991,7 +1364,7 @@ function buildActionGuide(bias: BiasSide, active: TimeframeAnalysis | undefined,
     return "지금은 방향보다 관찰이 우선입니다. 억지로 롱이나 숏을 정하기보다 구조가 더 또렷해질 때까지 기다리는 편이 낫습니다.";
   }
 
-  return "구조는 보이지만 바로 진입하기엔 아직 성급할 수 있습니다. 자리, 반응, 무효화 기준을 먼저 확인하세요.";
+  return "구조는 보이지만 바로 진입하기엔 아직 성급할 수 있습니다. 자리, 반응, 리스크 기준을 먼저 확인하세요.";
 }
 
 function buildCheckpoints(active: TimeframeAnalysis | undefined) {
@@ -1001,31 +1374,31 @@ function buildCheckpoints(active: TimeframeAnalysis | undefined) {
 
   if (active.latestOb) {
     checkpoints.push(
-      `${active.timeframe} ${active.latestOb.direction === "bullish" ? "상승" : "하락"} OB: ${active.latestOb.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestOb.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestOb.age)})`
+      `${active.timeframe} ${active.latestOb.direction === "bullish" ? "상승" : "하락"} OB: ${active.latestOb.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestOb.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestOb.age, active.timeframe)})`
     );
   }
 
   if (active.latestBb) {
     checkpoints.push(
-      `${active.timeframe} ${active.latestBb.direction === "bullish" ? "상승" : "하락"} BB 후보: ${active.latestBb.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestBb.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestBb.age)})`
+      `${active.timeframe} ${active.latestBb.direction === "bullish" ? "상승" : "하락"} BB 후보: ${active.latestBb.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestBb.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestBb.age, active.timeframe)})`
     );
   }
 
   if (active.latestFvg) {
     checkpoints.push(
-      `${active.timeframe} ${active.latestFvg.direction === "bullish" ? "상승" : "하락"} ${active.latestFvg.state === "ifvg" ? "iFVG" : "FVG"}: ${active.latestFvg.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestFvg.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestFvg.age)})`
+      `${active.timeframe} ${active.latestFvg.direction === "bullish" ? "상승" : "하락"} ${active.latestFvg.state === "ifvg" ? "iFVG" : "FVG"}: ${active.latestFvg.bottom.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} - ${active.latestFvg.top.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestFvg.age, active.timeframe)})`
     );
   }
 
   if (active.latestSweep) {
     checkpoints.push(
-      `${active.timeframe} ${active.latestSweep.direction === "bullish" ? "저점 스윕" : "고점 스윕"}: ${active.latestSweep.level.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestSweep.age)})`
+      `${active.timeframe} ${active.latestSweep.direction === "bullish" ? "저점 스윕" : "고점 스윕"}: ${active.latestSweep.level.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} (${formatBarsAgo(active.latestSweep.age, active.timeframe)})`
     );
   }
 
   if (active.latestCisd) {
     checkpoints.push(
-      `${active.timeframe} ${active.latestCisd.direction === "bullish" ? "상승" : "하락"} CISD: ${formatBarsAgo(active.latestCisd.age)}`
+      `${active.timeframe} ${active.latestCisd.direction === "bullish" ? "상승" : "하락"} CISD: ${formatBarsAgo(active.latestCisd.age, active.timeframe)}`
     );
   }
 
@@ -1181,6 +1554,13 @@ function buildScenarioCard(
   };
 }
 
+interface PlanZone {
+  label: string;
+  top: number;
+  bottom: number;
+  kind: "active_ob" | "active_fvg" | "revisit_ob" | "revisit_fvg" | "ote" | "fallback";
+}
+
 function zoneMid(zone: { top: number; bottom: number }) {
   return (zone.top + zone.bottom) / 2;
 }
@@ -1192,30 +1572,58 @@ function clampZoneAroundPrice(price: number, side: "long" | "short") {
     : { bottom: price, top: price + width };
 }
 
-function pickPlanZone(side: "long" | "short", active: TimeframeAnalysis, price: number) {
+function pickPlanZone(side: "long" | "short", active: TimeframeAnalysis, price: number): PlanZone {
   const direction: DirectionState = side === "long" ? "bullish" : "bearish";
 
   if (active.inOb && active.latestOb?.direction === direction) {
-    return { label: `${active.timeframe} ${side === "long" ? "상승" : "하락"} OB`, top: active.latestOb.top, bottom: active.latestOb.bottom };
+    return {
+      label: `${active.timeframe} ${side === "long" ? "상승" : "하락"} OB`,
+      top: active.latestOb.top,
+      bottom: active.latestOb.bottom,
+      kind: "active_ob"
+    };
   }
 
   if (active.inFvg && active.latestFvg?.direction === direction) {
     return {
       label: `${active.timeframe} ${active.latestFvg.state === "ifvg" ? "iFVG" : "FVG"}`,
       top: active.latestFvg.top,
-      bottom: active.latestFvg.bottom
+      bottom: active.latestFvg.bottom,
+      kind: "active_fvg"
     };
   }
 
+  if (active.oteZone === side && active.oteLevels) {
+    return side === "long"
+      ? {
+          label: `${active.timeframe} 롱 OTE`,
+          top: active.oteLevels.longHigh,
+          bottom: active.oteLevels.longLow,
+          kind: "ote"
+        }
+      : {
+          label: `${active.timeframe} 숏 OTE`,
+          top: active.oteLevels.shortHigh,
+          bottom: active.oteLevels.shortLow,
+          kind: "ote"
+        };
+  }
+
   if (active.latestOb?.direction === direction) {
-    return { label: `${active.timeframe} ${side === "long" ? "상승" : "하락"} OB 재방문`, top: active.latestOb.top, bottom: active.latestOb.bottom };
+    return {
+      label: `${active.timeframe} ${side === "long" ? "상승" : "하락"} OB 재방문`,
+      top: active.latestOb.top,
+      bottom: active.latestOb.bottom,
+      kind: "revisit_ob"
+    };
   }
 
   if (active.latestFvg?.direction === direction) {
     return {
       label: `${active.timeframe} ${active.latestFvg.state === "ifvg" ? "iFVG" : "FVG"} 재방문`,
       top: active.latestFvg.top,
-      bottom: active.latestFvg.bottom
+      bottom: active.latestFvg.bottom,
+      kind: "revisit_fvg"
     };
   }
 
@@ -1227,7 +1635,8 @@ function pickPlanZone(side: "long" | "short", active: TimeframeAnalysis, price: 
   return {
     label: `${active.timeframe} 현재가 근처 관찰`,
     top: fallback.top,
-    bottom: fallback.bottom
+    bottom: fallback.bottom,
+    kind: "fallback"
   };
 }
 
@@ -1238,13 +1647,17 @@ function buildTradePlanCandidate(
   price: number,
   readiness: MarketAnalysis["readiness"],
   killzone: MarketAnalysis["killzone"],
-  riskFlags: string[]
+  riskFlags: string[],
+  tradingMode: TradingMode
 ): TradePlanCandidate | null {
   if (!active || bias === "neutral" || price <= 0) return null;
 
   const side = bias;
   const direction: DirectionState = side === "long" ? "bullish" : "bearish";
+  const modeConfig = tradingModeConfigs[tradingMode];
   const zone = pickPlanZone(side, active, price);
+  if (zone.kind === "fallback") return null;
+
   const entryLow = Math.min(zone.bottom, zone.top);
   const entryHigh = Math.max(zone.bottom, zone.top);
   const entry = side === "long" ? entryHigh : entryLow;
@@ -1253,16 +1666,17 @@ function buildTradePlanCandidate(
     side === "long"
       ? Math.min(active.debug.l0 ?? entryLow, entryLow)
       : Math.max(active.debug.h0 ?? entryHigh, entryHigh);
-  const buffer = Math.max(zoneSize * 0.25, price * 0.001);
+  const atrBuffer = active.condition.atr14 !== null ? active.condition.atr14 * 0.35 : 0;
+  const buffer = Math.max(zoneSize * 0.35, price * 0.0018, atrBuffer);
   const invalidation = side === "long" ? structureLevel - buffer : structureLevel + buffer;
   const risk = Math.abs(entry - invalidation);
 
   if (!Number.isFinite(risk) || risk <= 0) return null;
 
-  const target1 = side === "long" ? entry + risk * 1.5 : entry - risk * 1.5;
-  const target2 = side === "long" ? entry + risk * 2.5 : entry - risk * 2.5;
+  const target1 = side === "long" ? entry + risk * modeConfig.targetR1 : entry - risk * modeConfig.targetR1;
+  const target2 = side === "long" ? entry + risk * modeConfig.targetR2 : entry - risk * modeConfig.targetR2;
   const alignedHigher = analyses
-    .filter((item) => item.timeframe === "4h" || item.timeframe === "1d")
+    .filter((item) => modeConfig.contextTimeframes.includes(item.timeframe))
     .filter((item) => item.msb === direction).length;
   const confirmationCount = [
     active.msb === direction,
@@ -1274,9 +1688,22 @@ function buildTradePlanCandidate(
     side === "long" ? active.premiumDiscount === "discount" : active.premiumDiscount === "premium",
     killzone !== "off"
   ].filter(Boolean).length;
+  const freshTriggerAge = tradingMode === "scalp" ? 6 : 12;
+  const hasFreshTrigger =
+    active.latestSweep?.direction === direction && active.latestSweep.age <= freshTriggerAge;
+  const hasFreshCisd =
+    active.latestCisd?.direction === direction && active.latestCisd.age <= freshTriggerAge;
   const confidence = Math.max(
     35,
-    Math.min(92, 38 + confirmationCount * 6 + alignedHigher * 7 + (readiness === "high" ? 10 : readiness === "medium" ? 4 : -4) - riskFlags.length * 4)
+    Math.min(
+      92,
+      38 +
+        confirmationCount * 6 +
+        alignedHigher * 7 +
+        (readiness === "high" ? 10 : readiness === "medium" ? 4 : -4) -
+        riskFlags.length * 4 -
+        (tradingMode === "scalp" && !hasFreshTrigger && !hasFreshCisd ? 6 : 0)
+    )
   );
   const quality: TradePlanCandidate["quality"] = confidence >= 78 ? "A" : confidence >= 62 ? "B" : "C";
   const cautions = [
@@ -1286,19 +1713,20 @@ function buildTradePlanCandidate(
   ];
 
   return {
+    mode: tradingMode,
     side,
     quality,
-    title: `${side === "long" ? "롱" : "숏"} PRO 시나리오 후보`,
+    title: `${side === "long" ? "롱" : "숏"} 분석 시나리오`,
     entryLabel: zone.label,
     entryLow,
     entryHigh,
     invalidation,
     target1,
     target2,
-    rr1: 1.5,
-    rr2: 2.5,
+    rr1: modeConfig.targetR1,
+    rr2: modeConfig.targetR2,
     confidence,
-    reason: `${zone.label}을 기준으로 무효화 가격과 1차/2차 목표 후보를 계산했습니다.`,
+    reason: `${zone.label}을 기준으로 리스크 기준과 참고 목표를 계산했습니다.`,
     cautions: Array.from(new Set(cautions)).slice(0, 5)
   };
 }
@@ -1387,6 +1815,7 @@ export function analyzeTimeframe(
   const latestCisd = structure.latestCisd;
   const volumeProfile = calculateVolumeProfile(candles);
   const { oteZone, premiumDiscount, oteLevels } = detectOteAndPd(candles, context?.oteAnchorCandles);
+  const condition = buildMarketCondition(candles, closes);
 
   const msb: DirectionState = structure.market === 1 ? "bullish" : "bearish";
   const choch: DirectionState = structure.chochDir === 1 ? "bullish" : "bearish";
@@ -1431,6 +1860,7 @@ export function analyzeTimeframe(
     oteZone,
     oteLevels,
     premiumDiscount,
+    condition,
     score: Number(score.toFixed(2)),
     debug: {
       h0: structure.h0?.price ?? null,
@@ -1449,12 +1879,16 @@ export function summarizeMarket(
   symbol: string,
   activeTimeframe: ChartTimeframe,
   analyses: TimeframeAnalysis[],
-  price: number
+  price: number,
+  tradingMode: TradingMode = "swing"
 ): MarketAnalysis {
   const killzone = getCurrentKillzone();
+  const modeConfig = tradingModeConfigs[tradingMode];
+  const weightedTimeframes = new Set<ChartTimeframe>([activeTimeframe, ...modeConfig.contextTimeframes]);
   const weightedScore = analyses.reduce((sum, item) => {
+    if (!weightedTimeframes.has(item.timeframe)) return sum;
     const weight =
-      item.timeframe === "4h" || item.timeframe === "1d" ? 1.4 : item.timeframe === activeTimeframe ? 1.2 : 1;
+      modeConfig.contextTimeframes.includes(item.timeframe) ? 1.35 : item.timeframe === activeTimeframe ? 1.25 : 1;
     return sum + item.score * weight;
   }, 0);
 
@@ -1463,7 +1897,7 @@ export function summarizeMarket(
   const reasons: AnalysisReason[] = [];
   const warnings: string[] = [];
   const active = analyses.find((item) => item.timeframe === activeTimeframe);
-  const htf = analyses.filter((item) => item.timeframe === "4h" || item.timeframe === "1d");
+  const htf = analyses.filter((item) => modeConfig.contextTimeframes.includes(item.timeframe));
   const fastTf = analyses.filter((item) => item.timeframe === "5m" || item.timeframe === "15m");
 
   for (const item of fastTf) {
@@ -1527,7 +1961,7 @@ export function summarizeMarket(
   if (active?.latestSweep) {
     appendReason(
       reasons,
-      `${active.timeframe} ${active.latestSweep.direction === "bullish" ? "저점 스윕" : "고점 스윕"} ${formatBarsAgo(active.latestSweep.age)}`,
+      `${active.timeframe} ${active.latestSweep.direction === "bullish" ? "저점 스윕" : "고점 스윕"} ${formatBarsAgo(active.latestSweep.age, active.timeframe)}`,
       active.latestSweep.direction === "bullish" ? "bullish" : "bearish"
     );
   }
@@ -1535,7 +1969,7 @@ export function summarizeMarket(
   if (active?.latestCisd) {
     appendReason(
       reasons,
-      `${active.timeframe} ${active.latestCisd.direction === "bullish" ? "상승" : "하락"} CISD ${formatBarsAgo(active.latestCisd.age)}`,
+      `${active.timeframe} ${active.latestCisd.direction === "bullish" ? "상승" : "하락"} CISD ${formatBarsAgo(active.latestCisd.age, active.timeframe)}`,
       active.latestCisd.direction === "bullish" ? "bullish" : "bearish"
     );
   }
@@ -1617,7 +2051,7 @@ export function summarizeMarket(
   if (bias !== "neutral") readinessScore += 1;
   if (active && active.msb === biasDirection) readinessScore += 1;
   if (active && active.choch === biasDirection) readinessScore += 0.5;
-  if (biasDirection !== "neutral" && htf.every((item) => item.msb === biasDirection)) readinessScore += 1;
+  if (biasDirection !== "neutral" && htf.length > 0 && htf.every((item) => item.msb === biasDirection)) readinessScore += 1;
   if (killzone !== "off") readinessScore += 0.5;
 
   if (active?.latestSweep && active.latestSweep.age <= 8 && active.latestSweep.direction === biasDirection) {
@@ -1633,21 +2067,34 @@ export function summarizeMarket(
   if (active?.premiumDiscount === "premium" && bias === "long") readinessScore -= 0.5;
   if (active?.premiumDiscount === "discount" && bias === "short") readinessScore -= 0.5;
 
+  const hasDirectionalReactionZone = Boolean(
+    active &&
+      biasDirection !== "neutral" &&
+      ((active.inOb && active.latestOb?.direction === biasDirection) ||
+        (active.inFvg && active.latestFvg?.direction === biasDirection) ||
+        (bias === "long" && active.oteZone === "long") ||
+        (bias === "short" && active.oteZone === "short"))
+  );
+
+  if (hasDirectionalReactionZone) readinessScore += 0.75;
+  else if (bias !== "neutral") readinessScore -= 0.75;
+
   const readiness: MarketAnalysis["readiness"] =
-    readinessScore >= 3.5 ? "high" : readinessScore >= 2 ? "medium" : "low";
+    readinessScore >= 4 ? "high" : readinessScore >= 2.25 ? "medium" : "low";
   const opportunityFlags = buildOpportunityFlags(bias, active, analyses, killzone);
   const riskFlags = buildRiskFlags(bias, active, analyses, killzone);
-  const proPlan = buildTradePlanCandidate(bias, active, analyses, price, readiness, killzone, riskFlags);
+  const proPlan = buildTradePlanCandidate(bias, active, analyses, price, readiness, killzone, riskFlags, tradingMode);
 
   return {
     symbol,
     activeTimeframe,
+    tradingMode,
     price,
     bias,
     killzone,
     biasScore: Number(weightedScore.toFixed(2)),
     readiness,
-    verdict: bias === "long" ? "롱 시나리오 우세" : bias === "short" ? "숏 시나리오 우세" : "중립 / 관찰",
+    verdict: bias === "long" ? "롱 시나리오 우세" : bias === "short" ? "숏 시나리오 우세" : "횡보 / 관찰",
     summaryLine: buildSummaryLine(bias, active, htf, killzone),
     actionGuide: buildActionGuide(bias, active, readiness),
     currentLocationLabel: buildCurrentLocationLabel(active, bias),
