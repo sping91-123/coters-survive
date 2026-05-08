@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Radar } from "lucide-react";
 import { AuthStatus } from "@/components/AuthStatus";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Header() {
   return (
@@ -23,6 +24,7 @@ export function Header() {
           <span className="rounded-md border border-accent-blue/30 bg-accent-blue/10 px-2.5 py-1 text-xs font-semibold text-accent-blue">
             Chart Radar Beta
           </span>
+          <ThemeToggle />
           <AuthStatus />
         </div>
       </div>
