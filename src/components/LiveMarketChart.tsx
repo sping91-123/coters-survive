@@ -1665,7 +1665,7 @@ export function LiveMarketChart() {
 
       </div>
 
-      <div className="mt-4 -mx-1 hidden gap-2 overflow-x-auto px-1 pb-1 sm:flex">
+      <div className="mt-4 -mx-1 hidden gap-2 overflow-x-auto px-1 pb-1">
         {symbols.map((item) => (
           <button
             key={item}
@@ -1682,7 +1682,7 @@ export function LiveMarketChart() {
         ))}
       </div>
 
-      <div className="mt-3 hidden grid-cols-5 gap-2 sm:grid">
+      <div className="mt-3 hidden grid-cols-5 gap-2">
         {modeTimeframes.map((timeframe) => (
           <button
             key={timeframe}
@@ -1699,7 +1699,7 @@ export function LiveMarketChart() {
         ))}
       </div>
 
-      <div className="mt-3 hidden grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1 sm:grid">
+      <div className="mt-3 hidden grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
         {[
           { key: "combined", label: "종합", description: "구조와 지표를 함께 요약" },
           { key: "ict", label: "ICT 구조", description: "MSB, CHoCH, OB, FVG 중심" },
@@ -2943,8 +2943,8 @@ export function LiveMarketChart() {
           ) : null}
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur sm:hidden">
-        <div className="mx-auto max-w-5xl">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur">
+        <div className="mx-auto max-w-6xl space-y-2 sm:grid sm:grid-cols-[minmax(0,1fr)_260px] sm:items-center sm:gap-2 sm:space-y-0 lg:grid-cols-[minmax(0,1fr)_220px_330px_260px]">
           <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
             {symbols.map((item) => (
               <button
@@ -2962,7 +2962,7 @@ export function LiveMarketChart() {
             ))}
           </div>
 
-          <div className="mt-2 grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
+          <div className="grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
             {[
               { key: "combined", label: "종합" },
               { key: "ict", label: "ICT" },
@@ -2990,7 +2990,7 @@ export function LiveMarketChart() {
             ))}
           </div>
 
-          <div className="mt-2 grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-5 gap-2">
             {modeTimeframes.map((timeframe) => (
               <button
                 key={timeframe}
@@ -3006,7 +3006,7 @@ export function LiveMarketChart() {
               </button>
             ))}
           </div>
-          <div className="mt-2 grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={loadMarketBriefing}
