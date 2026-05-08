@@ -48,6 +48,7 @@ import type { MarketBriefingInput } from "@/lib/ai/types";
 import { normalizePineDirection, parsePineSnapshot, pineDirectionForTimeframe, type PineSnapshot } from "@/lib/pineParity";
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getSupabaseSession } from "@/lib/supabase";
+import { TechnicalRadarPanel } from "@/components/TechnicalRadarPanel";
 
 const symbols = [
   "BTCUSDT.P",
@@ -191,6 +192,8 @@ type MarketBriefingState =
   | { status: "loading" }
   | { status: "ready"; text: string; model: string; cached: boolean }
   | { status: "error"; message: string };
+
+type RadarProfile = "combined" | "ict" | "technical";
 
 function BriefingKeyword({ children, tone }: { children: string; tone: "long" | "short" | "warn" | "neutral" }) {
   const className =
@@ -669,6 +672,7 @@ export function LiveMarketChart() {
   const [copied, setCopied] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
   const [analysisMode, setAnalysisMode] = useState<"confirmed" | "aggressive">("confirmed");
+  const [radarProfile, setRadarProfile] = useState<RadarProfile>("combined");
   const [msbMode, setMsbMode] = useState<"close" | "wick">("close");
   const [isUsingCachedData, setIsUsingCachedData] = useState(false);
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
@@ -690,6 +694,7 @@ export function LiveMarketChart() {
     const storedSymbol = readLocalStorageWithLegacy(storageKey("symbol"), legacyStorageKey("symbol"));
     const storedTimeframe = readLocalStorageWithLegacy(storageKey("timeframe"), legacyStorageKey("timeframe")) as ChartTimeframe | null;
     const storedMode = readLocalStorageWithLegacy(storageKey("analysisMode"), legacyStorageKey("analysisMode")) as "confirmed" | "aggressive" | null;
+    const storedRadarProfile = readLocalStorageWithLegacy(storageKey("radarProfile"), legacyStorageKey("radarProfile")) as RadarProfile | null;
     const storedMsbMode = readLocalStorageWithLegacy(storageKey("msbMode"), legacyStorageKey("msbMode")) as "close" | "wick" | null;
 
     if (storedSymbol && symbols.includes(storedSymbol)) {
@@ -700,6 +705,9 @@ export function LiveMarketChart() {
     }
     if (storedMode === "confirmed" || storedMode === "aggressive") {
       setAnalysisMode(storedMode);
+    }
+    if (storedRadarProfile === "combined" || storedRadarProfile === "ict" || storedRadarProfile === "technical") {
+      setRadarProfile(storedRadarProfile);
     }
     if (storedMsbMode === "close" || storedMsbMode === "wick") {
       setMsbMode(storedMsbMode);
@@ -717,6 +725,10 @@ export function LiveMarketChart() {
   useEffect(() => {
     writeLocalStorage(storageKey("analysisMode"), legacyStorageKey("analysisMode"), analysisMode);
   }, [analysisMode]);
+
+  useEffect(() => {
+    writeLocalStorage(storageKey("radarProfile"), legacyStorageKey("radarProfile"), radarProfile);
+  }, [radarProfile]);
 
   useEffect(() => {
     writeLocalStorage(storageKey("msbMode"), legacyStorageKey("msbMode"), msbMode);
@@ -1687,6 +1699,28 @@ export function LiveMarketChart() {
         ))}
       </div>
 
+      <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
+        {[
+          { key: "combined", label: "종합", description: "구조와 지표를 함께 요약" },
+          { key: "ict", label: "ICT 구조", description: "MSB, CHoCH, OB, FVG 중심" },
+          { key: "technical", label: "기술지표", description: "RSI, MACD, 거래량 중심" }
+        ].map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => setRadarProfile(item.key as RadarProfile)}
+            className={`min-h-12 rounded-md border px-2 text-center transition ${
+              radarProfile === item.key
+                ? "border-accent-blue bg-accent-blue text-slate-950"
+                : "border-transparent bg-transparent text-slate-300 hover:border-accent-blue/40 hover:bg-white/5"
+            }`}
+          >
+            <span className="block text-sm font-black">{item.label}</span>
+            <span className="mt-0.5 hidden text-[10px] font-semibold opacity-80 sm:block">{item.description}</span>
+          </button>
+        ))}
+      </div>
+
       {analysis ? (
         <div className={`mt-4 rounded-lg border p-4 ${biasClasses(analysis.bias)}`}>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -2117,7 +2151,72 @@ export function LiveMarketChart() {
             </div>
           ) : null}
 
-          {analysis && activeAnalysis && activeAnalysis.condition ? (
+          {analysis && activeAnalysis && activeAnalysis.condition && radarProfile === "ict" ? (
+            <div id="ict-radar" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">ICT 구조 기준</p>
+                  <h3 className="mt-1 text-lg font-black text-white">구조 레이더</h3>
+                  <p className="mt-2 text-sm leading-6 text-slate-400">
+                    이 화면은 기술지표를 섞지 않고 MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC만 따로 봅니다.
+                  </p>
+                </div>
+                <span className="inline-flex w-fit rounded-md border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-bold text-slate-300">
+                  {activeTimeframe} 기준
+                </span>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                <SignalMetric label="MSB" value={stateLabel(activeAnalysis.msb)} direction={activeAnalysis.msb} />
+                <SignalMetric label="CHoCH" value={stateLabel(activeAnalysis.choch)} direction={activeAnalysis.choch} />
+                <SignalMetric
+                  label="OB"
+                  value={activeAnalysis.latestOb ? stateLabel(activeAnalysis.latestOb.direction) : "없음"}
+                  direction={activeAnalysis.latestOb?.direction}
+                  isActive={activeAnalysis.inOb}
+                />
+                <SignalMetric
+                  label="FVG"
+                  value={activeAnalysis.latestFvg ? `${stateLabel(activeAnalysis.latestFvg.direction)} ${activeAnalysis.latestFvg.state === "ifvg" ? "iFVG" : "FVG"}` : "없음"}
+                  direction={activeAnalysis.latestFvg?.direction}
+                  isActive={activeAnalysis.inFvg}
+                />
+                <SignalMetric
+                  label="Sweep"
+                  value={activeAnalysis.latestSweep ? `${eventDirectionLabel(activeAnalysis.latestSweep.direction)} · ${barsAgoLabel(activeAnalysis.latestSweep.age, activeTimeframe)}` : "없음"}
+                  direction={activeAnalysis.latestSweep?.direction}
+                />
+                <SignalMetric
+                  label="CISD"
+                  value={activeAnalysis.latestCisd ? `${eventDirectionLabel(activeAnalysis.latestCisd.direction)} · ${barsAgoLabel(activeAnalysis.latestCisd.age, activeTimeframe)}` : "없음"}
+                  direction={activeAnalysis.latestCisd?.direction}
+                />
+                <SignalMetric label="PD" value={stateLabel(activeAnalysis.premiumDiscount)} direction="neutral" />
+                <SignalMetric
+                  label="POC"
+                  value={activeAnalysis.volumeProfile ? `${stateLabel(activeAnalysis.volumeProfile.position)} · ${Math.abs(activeAnalysis.volumeProfile.distancePercent).toFixed(2)}%` : "없음"}
+                  direction="neutral"
+                />
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-white/10 bg-black/20 p-4">
+                  <h4 className="text-base font-black text-white">핵심 해석</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{analysis.summaryLine}</p>
+                </div>
+                <div className="rounded-lg border border-white/10 bg-black/20 p-4">
+                  <h4 className="text-base font-black text-white">ZigZag 5 기준</h4>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">
+                    현재 구조 민감도는 기존 지표와 맞추기 위해 5로 유지했습니다. 5는 15분과 1시간에서는 빠른 구조 감지에 좋지만, 5분에서는 노이즈가 늘 수 있고 4시간 이상에서는 큰 스윙을 놓칠 수 있어 이후 3, 5, 8 프리셋 검증이 필요합니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {analysis && radarProfile === "technical" ? <TechnicalRadarPanel candles={candles} timeframe={activeTimeframe} /> : null}
+
+          {analysis && activeAnalysis && activeAnalysis.condition && radarProfile === "combined" ? (
             <div id="radar-dashboard" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -2581,7 +2680,7 @@ export function LiveMarketChart() {
             <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <h3 className="text-sm font-bold text-white">분석 기준</h3>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                <MiniMetric label="구조 기준" value="ZigZag 5" />
+                <MiniMetric label="구조 민감도" value="ZigZag 5" />
                 <MiniMetric label="MSB 판정" value={msbMode === "close" ? "종가 돌파" : "윅 포함 돌파"} />
                 <MiniMetric label="CHoCH 판정" value="윅 돌파" />
                 <MiniMetric label="OTE 기준" value="4시간 20봉 범위" />
