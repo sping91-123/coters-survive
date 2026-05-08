@@ -12,7 +12,7 @@ export default function AltsPage() {
         <Header />
         <RadarTopNav />
         <WatchlistPanel />
-        <SetupScoutPanel />
+        <SetupScoutPanel excludeMajor />
         <AppFooter />
       </div>
     </main>

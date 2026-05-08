@@ -17,6 +17,7 @@ export type RadarNewsItem = RadarNewsSignal & {
   id: string;
   source: string;
   title: string;
+  translatedTitle?: string;
   link: string;
   publishedAt: string;
 };
@@ -143,6 +144,7 @@ export function analyzeNewsText(input: string): RadarNewsSignal {
 export function createRadarNewsItem(input: {
   source: string;
   title: string;
+  translatedTitle?: string;
   link: string;
   publishedAt?: string;
 }): RadarNewsItem {
@@ -157,6 +159,7 @@ export function createRadarNewsItem(input: {
     id: `${input.source.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${hash.toString(36)}`,
     source: input.source,
     title: input.title.trim(),
+    translatedTitle: input.translatedTitle?.trim() || undefined,
     link: input.link,
     publishedAt: input.publishedAt ?? new Date().toISOString()
   };

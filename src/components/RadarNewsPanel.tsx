@@ -51,12 +51,14 @@ function timeLabel(value: string) {
 function NewsSignalCard({
   signal,
   title,
+  originalTitle,
   source,
   publishedAt,
   link
 }: {
   signal: RadarNewsSignal;
   title: string;
+  originalTitle?: string;
   source?: string;
   publishedAt?: string;
   link?: string;
@@ -76,6 +78,9 @@ function NewsSignalCard({
             </span>
           </div>
           <h3 className="mt-3 text-base font-black leading-6 text-white">{title}</h3>
+          {originalTitle && originalTitle !== title ? (
+            <p className="mt-1 text-xs leading-5 text-slate-500">{originalTitle}</p>
+          ) : null}
         </div>
         <div className="shrink-0 text-right">
           <p className={`text-2xl font-black ${style.text}`}>{signal.score}</p>
@@ -265,7 +270,8 @@ export function RadarNewsPanel() {
           <NewsSignalCard
             key={item.id}
             signal={item}
-            title={item.title}
+            title={item.translatedTitle ?? item.title}
+            originalTitle={item.translatedTitle ? item.title : undefined}
             source={item.source}
             publishedAt={item.publishedAt}
             link={item.link}

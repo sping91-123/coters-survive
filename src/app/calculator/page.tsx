@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Calculator, ShieldAlert } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
-import { TabMenu } from "@/components/TabMenu";
+import { RadarTopNav } from "@/components/RadarTopNav";
 import { formatCurrency, formatPercent } from "@/lib/diagnosis";
 
 function toNumber(value: string) {
@@ -85,7 +85,7 @@ export default function CalculatorPage() {
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
-        <TabMenu />
+        <RadarTopNav />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
           <span className="font-bold text-accent-blue">차트 레이더</span>에서 관찰 구간과 리스크 기준을 확인한 뒤,

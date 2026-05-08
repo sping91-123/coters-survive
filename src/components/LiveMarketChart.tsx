@@ -62,6 +62,8 @@ const symbols = [
   "SUIUSDT.P",
   "LTCUSDT.P"
 ];
+const majorSymbols = symbols.slice(0, 2);
+const altSymbols = symbols.slice(2);
 const timeframeScoreLimit = 6.25;
 const storagePrefix = "positionguard";
 const legacyStoragePrefix = "co" + "ters";
@@ -656,7 +658,7 @@ function timeframeSignalSummary(item: TimeframeAnalysis) {
   return parts.length ? parts.slice(0, 2).join(" / ") : "겹치는 신호 없음";
 }
 
-export function LiveMarketChart() {
+export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } = {}) {
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartApiRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -684,8 +686,8 @@ export function LiveMarketChart() {
   const [overlaySettings, setOverlaySettings] = useState<OverlaySettings>(defaultOverlaySettings);
   const effectiveTradingMode: TradingMode = activeTimeframe === "5m" || activeTimeframe === "15m" ? "scalp" : "swing";
   const modeTimeframes = chartTimeframes;
-  const primarySymbols = symbols.slice(0, 2);
-  const otherSymbols = symbols.slice(2);
+  const primarySymbols = majorSymbols;
+  const otherSymbols = majorOnly ? [] : altSymbols;
   const isOtherSymbolActive = otherSymbols.includes(symbol);
 
   const cacheKey = `${storagePrefix}.marketCache.${symbol}.${activeTimeframe}.${analysisMode}.${msbMode}`;
@@ -693,6 +695,13 @@ export function LiveMarketChart() {
   useEffect(() => {
     setOverlaySettings(readOverlaySettings());
   }, []);
+
+  useEffect(() => {
+    if (majorOnly && !majorSymbols.includes(symbol)) {
+      setSymbol(majorSymbols[0]);
+      setShowOtherSymbols(false);
+    }
+  }, [majorOnly, symbol]);
 
   useEffect(() => {
     const storedSymbol = readLocalStorageWithLegacy(storageKey("symbol"), legacyStorageKey("symbol"));
@@ -2949,7 +2958,7 @@ export function LiveMarketChart() {
       </div>
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur">
         <div className="mx-auto max-w-6xl space-y-2 sm:grid sm:grid-cols-[minmax(0,1fr)_260px] sm:items-center sm:gap-2 sm:space-y-0 lg:grid-cols-[230px_220px_330px_110px]">
-          <div className="relative grid grid-cols-3 gap-2">
+          <div className={`relative grid gap-2 ${majorOnly ? "grid-cols-2" : "grid-cols-3"}`}>
             {primarySymbols.map((item) => (
               <button
                 key={item}
@@ -2967,7 +2976,7 @@ export function LiveMarketChart() {
                 {symbolLabel(item)}
               </button>
             ))}
-            <button
+            {!majorOnly ? <button
               type="button"
               onClick={() => setShowOtherSymbols((value) => !value)}
               className={`min-h-9 whitespace-nowrap rounded-md border px-2 text-xs font-black transition ${
@@ -2977,8 +2986,8 @@ export function LiveMarketChart() {
               }`}
             >
               {isOtherSymbolActive ? symbolLabel(symbol) : "그 외"}
-            </button>
-            {showOtherSymbols ? (
+            </button> : null}
+            {!majorOnly && showOtherSymbols ? (
               <div className="absolute bottom-full left-0 z-50 mb-2 grid w-[min(92vw,360px)] grid-cols-4 gap-2 rounded-lg border border-surface-line bg-slate-950 p-2 shadow-[0_-18px_50px_rgba(0,0,0,0.55)]">
                 {otherSymbols.map((item) => (
                   <button

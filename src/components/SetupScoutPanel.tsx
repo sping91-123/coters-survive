@@ -608,7 +608,13 @@ function uniqueTopSetupsBySymbol(setups: ScoutSetup[], limit: number) {
   return picked;
 }
 
-export function SetupScoutPanel() {
+const majorSetupSymbols = new Set(["BTCUSDT.P", "ETHUSDT.P"]);
+
+function filterSetupsByScope(setups: ScoutSetup[], excludeMajor: boolean) {
+  return excludeMajor ? setups.filter((setup) => !majorSetupSymbols.has(setup.symbol)) : setups;
+}
+
+export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boolean } = {}) {
   const [state, setState] = useState<ScanState>({ status: "idle" });
   const [riskProfile, setRiskProfile] = useState<ScoutRiskProfile>("radar");
   const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
@@ -623,9 +629,10 @@ export function SetupScoutPanel() {
       const cachedScalp = readScoutCache("scalp", riskProfile);
       const cachedSwing = readScoutCache("swing", riskProfile);
       if (cachedScalp && cachedSwing) {
+        const scopedSetups = filterSetupsByScope([...cachedScalp.setups, ...cachedSwing.setups], excludeMajor);
         setState({
           status: "ready",
-          setups: [...cachedScalp.setups, ...cachedSwing.setups],
+          setups: scopedSetups,
           cachedAt: Math.max(cachedScalp.cachedAt, cachedSwing.cachedAt)
         });
         return;
@@ -645,16 +652,17 @@ export function SetupScoutPanel() {
         return data;
       };
       const [scalp, swing] = await Promise.all([fetchMode("scalp"), fetchMode("swing")]);
+      const scopedSetups = filterSetupsByScope([...scalp.setups, ...swing.setups], excludeMajor);
       setState({
         status: "ready",
-        setups: [...scalp.setups, ...swing.setups],
+        setups: scopedSetups,
         cachedAt: Math.max(scalp.cachedAt, swing.cachedAt)
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setState({ status: "error", message });
     }
-  }, [riskProfile]);
+  }, [excludeMajor, riskProfile]);
 
   useEffect(() => {
     if (!hasLoadedPreferences) return;

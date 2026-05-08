@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
-import { TabMenu } from "@/components/TabMenu";
+import { RadarTopNav } from "@/components/RadarTopNav";
 import {
   appendJournalEntry,
   journalStorageKey,
@@ -370,7 +370,7 @@ export default function JournalPage() {
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
-        <TabMenu />
+        <RadarTopNav />
 
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
           <div className="flex items-start gap-3">
