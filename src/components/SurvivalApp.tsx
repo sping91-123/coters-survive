@@ -6,7 +6,6 @@ import { RadarCommandCenter } from "@/components/RadarCommandCenter";
 import { RadarDigestPanel } from "@/components/RadarDigestPanel";
 import { RadarTopNav } from "@/components/RadarTopNav";
 import { SetupScoutPanel } from "@/components/SetupScoutPanel";
-import { WatchlistPanel } from "@/components/WatchlistPanel";
 
 export function SurvivalApp() {
   return (
@@ -18,9 +17,6 @@ export function SurvivalApp() {
         <RadarDigestPanel />
         <LiveMarketChart />
         <MarketBoardPanel />
-        <section id="watchlist" className="scroll-mt-24">
-          <WatchlistPanel />
-        </section>
         <SetupScoutPanel />
         <AppFooter />
       </div>
