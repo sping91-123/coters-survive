@@ -1634,7 +1634,7 @@ export function LiveMarketChart() {
   }
 
   return (
-    <section id="basic-coins" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
+    <section id="basic-coins" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-card p-4 pb-56 shadow-glow sm:p-5">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-3">
@@ -1665,7 +1665,7 @@ export function LiveMarketChart() {
 
       </div>
 
-      <div className="mt-4 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <div className="mt-4 -mx-1 hidden gap-2 overflow-x-auto px-1 pb-1 sm:flex">
         {symbols.map((item) => (
           <button
             key={item}
@@ -1699,7 +1699,7 @@ export function LiveMarketChart() {
         ))}
       </div>
 
-      <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
+      <div className="mt-3 hidden grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1 sm:grid">
         {[
           { key: "combined", label: "종합", description: "구조와 지표를 함께 요약" },
           { key: "ict", label: "ICT 구조", description: "MSB, CHoCH, OB, FVG 중심" },
@@ -2943,15 +2943,60 @@ export function LiveMarketChart() {
           ) : null}
         </div>
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 py-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/95 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-20px_50px_rgba(0,0,0,0.45)] backdrop-blur sm:hidden">
         <div className="mx-auto max-w-5xl">
-          <div className="grid grid-cols-5 gap-2">
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+            {symbols.map((item) => (
+              <button
+                key={item}
+                type="button"
+                onClick={() => setSymbol(item)}
+                className={`min-h-9 min-w-[58px] whitespace-nowrap rounded-md border px-2 text-xs font-black transition ${
+                  symbol === item
+                    ? "border-accent-blue bg-accent-blue text-slate-950"
+                    : "border-surface-line bg-surface-cardSoft text-slate-300"
+                }`}
+              >
+                {symbolLabel(item)}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-2 grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
+            {[
+              { key: "combined", label: "종합" },
+              { key: "ict", label: "ICT" },
+              { key: "technical", label: "기술" }
+            ].map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => {
+                  setRadarProfile(item.key as RadarProfile);
+                  window.setTimeout(() => {
+                    const targetId =
+                      item.key === "technical" ? "technical-radar" : item.key === "ict" ? "ict-radar" : "radar-dashboard";
+                    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }, 80);
+                }}
+                className={`min-h-9 rounded-md border px-2 text-xs font-black transition ${
+                  radarProfile === item.key
+                    ? "border-accent-blue bg-accent-blue text-slate-950"
+                    : "border-transparent bg-transparent text-slate-300"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-2 grid grid-cols-5 gap-2">
             {modeTimeframes.map((timeframe) => (
               <button
                 key={timeframe}
                 type="button"
                 onClick={() => setActiveTimeframe(timeframe)}
-                className={`min-h-11 rounded-md border px-2 text-sm font-black transition ${
+                className={`min-h-10 rounded-md border px-2 text-sm font-black transition ${
                   activeTimeframe === timeframe
                     ? "border-accent-blue bg-accent-blue text-slate-950"
                     : "border-surface-line bg-surface-cardSoft text-slate-300"
@@ -2966,23 +3011,26 @@ export function LiveMarketChart() {
               type="button"
               onClick={loadMarketBriefing}
               disabled={!analysis || !activeAnalysis || marketBriefing.status === "loading"}
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-accent-blue px-3 text-sm font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex min-h-10 items-center justify-center rounded-md bg-accent-blue px-3 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              분석하기
+              분석
             </button>
             <button
               type="button"
               onClick={() => document.getElementById("ai-briefing")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-black text-slate-200"
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-black text-slate-200"
             >
-              요약보기
+              요약
             </button>
             <button
               type="button"
-              onClick={() => document.getElementById("radar-dashboard")?.scrollIntoView({ behavior: "smooth" })}
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-black text-slate-200"
+              onClick={() => {
+                const targetId = radarProfile === "technical" ? "technical-radar" : radarProfile === "ict" ? "ict-radar" : "radar-dashboard";
+                document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="inline-flex min-h-10 items-center justify-center rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-black text-slate-200"
             >
-              근거보기
+              근거
             </button>
           </div>
         </div>
