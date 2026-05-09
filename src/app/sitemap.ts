@@ -7,13 +7,10 @@ const routes = [
   "/survival",
   "/alts",
   "/news",
-  "/diagnosis",
   "/calculator",
   "/journal",
-  "/learn",
   "/terms",
-  "/privacy",
-  "/refund"
+  "/privacy"
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {

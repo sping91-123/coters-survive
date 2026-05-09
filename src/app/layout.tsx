@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000"),
+  metadataBase: siteUrl ? new URL(siteUrl) : undefined,
   title: {
     default: "차트 레이더 Beta",
     template: "%s | 차트 레이더"

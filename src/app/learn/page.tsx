@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookOpen, CheckCircle2 } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
-import { TabMenu } from "@/components/TabMenu";
+import { RadarTopNav } from "@/components/RadarTopNav";
 
 const lessons = [
   {
@@ -36,7 +36,7 @@ export default function LearnPage() {
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
-        <TabMenu />
+        <RadarTopNav />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
             <span className="font-bold text-accent-blue">차트 레이더</span>가 감지한 후보의 근거를 직접 이해하고 싶다면 여기서 핵심 개념을 확인하세요.

@@ -7,8 +7,8 @@ import { AppFooter } from "@/components/AppFooter";
 import { DiagnosisForm } from "@/components/DiagnosisForm";
 import { Header } from "@/components/Header";
 import { QuestionTemplates } from "@/components/QuestionTemplates";
+import { RadarTopNav } from "@/components/RadarTopNav";
 import { ResultCard } from "@/components/ResultCard";
-import { TabMenu } from "@/components/TabMenu";
 import { diagnoseTrade } from "@/lib/diagnosis";
 import type { DiagnosisFormValues, DiagnosisResult } from "@/types";
 
@@ -58,7 +58,7 @@ export default function DiagnosisPage() {
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
         <Header />
-        <TabMenu />
+        <RadarTopNav />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
           <span className="font-bold text-accent-blue">차트 레이더</span>에서 후보를 확인한 뒤,

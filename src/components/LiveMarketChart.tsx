@@ -1660,6 +1660,9 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-accent-blue">
                   Beta
                 </span>
+                <span className="rounded border border-white/10 bg-black/20 px-2 py-0.5 text-[10px] font-bold text-slate-400">
+                  Binance USDT-M 기준
+                </span>
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">
                 ICT 구조를 먼저 보고, 보조지표는 과열과 추격 위험만 참고합니다.
