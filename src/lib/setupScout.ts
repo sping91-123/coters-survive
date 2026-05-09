@@ -35,7 +35,9 @@ export type WatchlistSymbol = (typeof watchlistSymbolPool)[number];
 // 레이더 후보 스캔은 내부적으로 빠른 TF와 느린 TF를 나누되 UI에서는 타임프레임 기준으로만 보여준다.
 export const defaultScoutMode: TradingMode = "scalp";
 export type ScoutRiskProfile = "guard" | "radar";
+export type ScoutScope = "all" | "major" | "alts";
 export const defaultScoutRiskProfile: ScoutRiskProfile = "radar";
+export const defaultScoutScope: ScoutScope = "all";
 
 export const scoutTimeframes: Record<TradingMode, ChartTimeframe[]> = {
   scalp: tradingModeConfigs.scalp.activeTimeframes,
@@ -862,21 +864,30 @@ interface ScoutCacheEntry {
   cachedAt: number;
 }
 
-function scoutCacheKeyForMode(mode: TradingMode, riskProfile: ScoutRiskProfile) {
-  return `${scoutCacheKey}.${mode}.${riskProfile}`;
+function scoutCacheKeyForMode(
+  mode: TradingMode,
+  riskProfile: ScoutRiskProfile,
+  scope: ScoutScope = defaultScoutScope
+) {
+  return `${scoutCacheKey}.${mode}.${riskProfile}.${scope}`;
 }
 
 export function readScoutCache(
   mode: TradingMode = defaultScoutMode,
-  riskProfile: ScoutRiskProfile = defaultScoutRiskProfile
+  riskProfile: ScoutRiskProfile = defaultScoutRiskProfile,
+  scope: ScoutScope = defaultScoutScope
 ): ScoutCacheEntry | null {
   if (typeof window === "undefined") return null;
   try {
+    const scopedKey = scoutCacheKeyForMode(mode, riskProfile, scope);
+    const legacyModeKey = `${scoutCacheKey}.${mode}.${riskProfile}`;
     const raw =
-      window.localStorage.getItem(scoutCacheKeyForMode(mode, riskProfile)) ??
+      window.localStorage.getItem(scopedKey) ??
+      window.localStorage.getItem(legacyModeKey) ??
       window.localStorage.getItem(legacyScoutCacheKey);
     if (!raw) return null;
-    window.localStorage.setItem(scoutCacheKeyForMode(mode, riskProfile), raw);
+    window.localStorage.setItem(scopedKey, raw);
+    window.localStorage.removeItem(legacyModeKey);
     window.localStorage.removeItem(legacyScoutCacheKey);
     const parsed = JSON.parse(raw) as ScoutCacheEntry;
     if (Date.now() - parsed.cachedAt > scoutCacheTtlMs) return null;
@@ -889,12 +900,13 @@ export function readScoutCache(
 export function writeScoutCache(
   setups: ScoutSetup[],
   mode: TradingMode = defaultScoutMode,
-  riskProfile: ScoutRiskProfile = defaultScoutRiskProfile
+  riskProfile: ScoutRiskProfile = defaultScoutRiskProfile,
+  scope: ScoutScope = defaultScoutScope
 ) {
   if (typeof window === "undefined") return;
   try {
     const entry: ScoutCacheEntry = { setups, cachedAt: Date.now() };
-    window.localStorage.setItem(scoutCacheKeyForMode(mode, riskProfile), JSON.stringify(entry));
+    window.localStorage.setItem(scoutCacheKeyForMode(mode, riskProfile, scope), JSON.stringify(entry));
     window.localStorage.removeItem(legacyScoutCacheKey);
   } catch {
     // 용량 초과 등은 무시

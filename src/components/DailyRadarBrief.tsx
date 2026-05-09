@@ -240,23 +240,10 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
   const loadBrief = useCallback(async () => {
     setState({ status: "loading" });
     try {
-      const [boardResponse, ...scanResponses] = await Promise.all([
-        fetch("/api/market-board", { cache: "no-store" }),
-        ...scanModes.map((mode) => fetch(`/api/scout?mode=${mode}&risk=radar`, { cache: "no-store" }))
-      ]);
-
-      const boardPayload = (await boardResponse.json().catch(() => ({}))) as {
-        items?: MarketBoardItem[];
-        cachedAt?: number;
-        error?: string;
-      };
-
-      if (!boardResponse.ok || !Array.isArray(boardPayload.items)) {
-        throw new Error(boardPayload.error ?? "시장 보드를 불러오지 못했습니다.");
-      }
-
-      const scanPayloads = await Promise.all(
-        scanResponses.map(async (response) => {
+      const boardResponse = await fetch("/api/market-board", { cache: "no-store" });
+      const scanResults = await Promise.allSettled(
+        scanModes.map(async (mode) => {
+          const response = await fetch(`/api/scout?mode=${mode}&risk=radar&scope=${scope}`, { cache: "no-store" });
           const payload = (await response.json().catch(() => ({}))) as {
             setups?: ScoutSetup[];
             cachedAt?: number;
@@ -268,6 +255,20 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
           return payload;
         })
       );
+
+      const boardPayload = (await boardResponse.json().catch(() => ({}))) as {
+        items?: MarketBoardItem[];
+        cachedAt?: number;
+        error?: string;
+      };
+
+      if (!boardResponse.ok || !Array.isArray(boardPayload.items)) {
+        throw new Error(boardPayload.error ?? "시장 보드를 불러오지 못했습니다.");
+      }
+
+      const scanPayloads = scanResults
+        .filter((result): result is PromiseFulfilledResult<{ setups?: ScoutSetup[]; cachedAt?: number }> => result.status === "fulfilled")
+        .map((result) => result.value);
 
       setState({
         status: "ready",

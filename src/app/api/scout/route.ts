@@ -24,6 +24,9 @@ interface ServerCache {
 
 const cacheByKey = new Map<string, ServerCache>();
 const inflightByKey = new Map<string, Promise<ScoutSetup[]>>();
+type ScoutScope = "all" | "major" | "alts";
+
+const majorSymbols = new Set(["BTCUSDT.P", "ETHUSDT.P"]);
 
 function parseMode(request: Request): TradingMode {
   const raw = new URL(request.url).searchParams.get("mode");
@@ -33,6 +36,18 @@ function parseMode(request: Request): TradingMode {
 function parseRiskProfile(request: Request): ScoutRiskProfile {
   const raw = new URL(request.url).searchParams.get("risk");
   return raw === "radar" ? "radar" : "guard";
+}
+
+function parseScope(request: Request): ScoutScope {
+  const raw = new URL(request.url).searchParams.get("scope");
+  if (raw === "major" || raw === "alts") return raw;
+  return "all";
+}
+
+function setupInScope(setup: ScoutSetup, scope: ScoutScope) {
+  if (scope === "all") return true;
+  const isMajor = majorSymbols.has(setup.symbol);
+  return scope === "major" ? isMajor : !isMajor;
 }
 
 export async function GET(request: Request) {
@@ -46,7 +61,8 @@ export async function GET(request: Request) {
 
   const mode = parseMode(request);
   const riskProfile = parseRiskProfile(request);
-  const cacheKey = `${mode}:${riskProfile}`;
+  const scope = parseScope(request);
+  const cacheKey = `${mode}:${riskProfile}:${scope}`;
   const now = Date.now();
   const cache = cacheByKey.get(cacheKey) ?? null;
 
@@ -63,7 +79,8 @@ export async function GET(request: Request) {
   if (!inflightByKey.has(cacheKey)) {
     const promise = scanAllSetups({ mode, riskProfile })
       .then((all) => {
-        const top = topSetups(all, riskProfile === "radar" ? 6 : 3);
+        const scoped = all.filter((setup) => setupInScope(setup, scope));
+        const top = topSetups(scoped, riskProfile === "radar" ? 6 : 3);
         cacheByKey.set(cacheKey, { setups: top, cachedAt: Date.now() });
         return top;
       })

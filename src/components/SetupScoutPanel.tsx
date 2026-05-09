@@ -12,7 +12,13 @@ import {
   Save,
   Target
 } from "lucide-react";
-import { readScoutCache, writeScoutCache, type ScoutRiskProfile, type ScoutSetup } from "@/lib/setupScout";
+import {
+  readScoutCache,
+  writeScoutCache,
+  type ScoutRiskProfile,
+  type ScoutScope,
+  type ScoutSetup
+} from "@/lib/setupScout";
 import { appendJournalEntry, type ScoutSnapshot } from "@/lib/journal";
 import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getActiveSupabaseSession } from "@/lib/supabase";
@@ -637,16 +643,20 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
   const [state, setState] = useState<ScanState>({ status: "idle" });
   const [riskProfile, setRiskProfile] = useState<ScoutRiskProfile>("radar");
   const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
+  const scoutScope: ScoutScope = excludeMajor ? "alts" : "all";
+
   useEffect(() => {
     setRiskProfile(excludeMajor ? "radar" : readStoredScoutRiskProfile());
     setHasLoadedPreferences(true);
   }, [excludeMajor]);
 
   const runScan = useCallback(async (force = false) => {
-    window.localStorage.setItem(scoutRiskProfileStorageKey, riskProfile);
+    if (!excludeMajor) {
+      window.localStorage.setItem(scoutRiskProfileStorageKey, riskProfile);
+    }
     if (!force) {
-      const cachedScalp = readScoutCache("scalp", riskProfile);
-      const cachedSwing = readScoutCache("swing", riskProfile);
+      const cachedScalp = readScoutCache("scalp", riskProfile, scoutScope);
+      const cachedSwing = readScoutCache("swing", riskProfile, scoutScope);
       if (cachedScalp && cachedSwing) {
         const scopedSetups = filterSetupsByScope([...cachedScalp.setups, ...cachedSwing.setups], excludeMajor);
         setState({
@@ -661,13 +671,13 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
     setState({ status: "loading" });
     try {
       const fetchMode = async (mode: TradingMode) => {
-        const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}`, { cache: "no-store" });
+        const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}&scope=${scoutScope}`, { cache: "no-store" });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
           throw new Error(data.error ?? `서버 오류 (${res.status})`);
         }
         const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
-        writeScoutCache(data.setups, mode, riskProfile);
+        writeScoutCache(data.setups, mode, riskProfile, scoutScope);
         return data;
       };
       const [scalp, swing] = await Promise.all([fetchMode("scalp"), fetchMode("swing")]);
@@ -681,7 +691,7 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
       const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setState({ status: "error", message });
     }
-  }, [excludeMajor, riskProfile]);
+  }, [excludeMajor, riskProfile, scoutScope]);
 
   useEffect(() => {
     if (!hasLoadedPreferences) return;
