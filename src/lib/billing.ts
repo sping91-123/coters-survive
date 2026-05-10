@@ -60,14 +60,14 @@ export const billingPlans: BillingPlan[] = [
     priceLabel: "연 199,000원",
     monthlyValue: 16584,
     appStoreProductId: "chart_radar_pro_yearly",
-    description: "처음 베타부터 오래 쓸 사용자를 위한 연간 구독입니다. 월간 대비 약 두 달을 아끼는 구조입니다.",
-    highlights: ["Pro 전체 기능", "연간 구독자 우선 피드백", "신규 시장 추가 베타 우선 적용"],
+    description: "정식 출시 초기부터 오래 쓸 사용자를 위한 연간 구독입니다. 월간 대비 약 두 달을 아끼는 구조입니다.",
+    highlights: ["Pro 전체 기능", "연간 구독자 우선 피드백", "신규 시장 추가 기능 우선 적용"],
     limits: {
       radarScans: "공정 사용 범위 내 넉넉하게",
       aiBriefings: "일 40회",
       watchlist: "100개",
       alerts: "관심종목 변화 알림",
-      markets: "코인 + 해외주식 + 확장 베타"
+      markets: "코인 + 해외주식 + 확장 시장"
     }
   }
 ];
@@ -90,5 +90,5 @@ export function isPaidPlan(planId: string | null | undefined) {
 export const launchPaymentNotes = [
   "웹 결제는 토스페이먼츠 결제 링크나 결제위젯으로 연결합니다.",
   "iOS 앱 안에서 디지털 구독을 직접 판매할 때는 App Store 구독 상품으로 연결하는 것이 가장 안전합니다.",
-  "5월 베타 출시에서는 기능을 과하게 잠그기보다 Pro의 편의성, AI 사용량, 알림, 저장 기능을 중심으로 차이를 만듭니다."
+  "5월 정식 출시에서는 기능을 과하게 잠그기보다 Pro의 편의성, AI 사용량, 알림, 저장 기능을 중심으로 차이를 만듭니다."
 ];

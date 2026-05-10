@@ -1,5 +1,5 @@
 "use client";
-// 해외주식 주요 종목을 차트와 기술지표 레이더로 보여주는 베타 화면.
+// 해외주식 주요 종목을 차트와 기술지표 레이더로 보여주는 화면.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CandlestickSeries, createChart, type IChartApi, type ISeriesApi, type Time } from "lightweight-charts";
 import { Activity, AlertTriangle, BarChart3, Gauge, Loader2, RefreshCw, Shield } from "lucide-react";
@@ -181,7 +181,7 @@ export function StockRadarApp() {
       setState({
         status: "ready",
         candles: data.candles,
-        dataSource: data.dataSource ?? "해외주식 지연 데이터 베타",
+        dataSource: data.dataSource ?? "해외주식 지연 데이터",
         cachedAt: data.cachedAt ?? Date.now()
       });
     } catch (error) {
@@ -263,11 +263,11 @@ export function StockRadarApp() {
             <BarChart3 size={21} aria-hidden />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-accent-blue">Global Stocks Beta</p>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-accent-blue">Global Stocks</p>
             <h2 className="mt-1 text-xl font-black text-white">해외주식 레이더</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
               미국 주요 주식, 지수 ETF, 반도체, 성장주, 원자재 ETF를 기술지표 중심으로 빠르게 훑습니다.
-              무료 베타 데이터라 실시간 체결 기준보다는 방향 점검과 관심종목 선별용으로 보세요.
+              현재 해외주식 데이터는 지연될 수 있으므로 실시간 체결 기준보다는 방향 점검과 관심종목 선별용으로 보세요.
             </p>
           </div>
         </div>

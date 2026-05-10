@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   title: {
-    default: "Chart Radar Beta",
+    default: "Chart Radar",
     template: "%s | Chart Radar"
   },
   description: "코인과 해외주식의 차트 구조, 기술지표, 시장 이슈를 빠르게 확인하는 분석 레이더",
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "리스크 관리"
   ],
   openGraph: {
-    title: "Chart Radar Beta",
+    title: "Chart Radar",
     description: "코인과 해외주식의 차트 구조, 기술지표, 시장 이슈를 빠르게 확인하세요.",
     type: "website",
     locale: "ko_KR",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Chart Radar Beta",
+    title: "Chart Radar",
     description: "코인과 해외주식의 차트 구조와 시장 이슈를 빠르게 확인하세요.",
     images: [appIcon]
   },

@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "개인정보 처리방침",
-  description: "차트 레이더 Beta 개인정보 처리방침"
+  description: "Chart Radar 개인정보 처리방침"
 };
 
 const sections = [
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             <div>
               <h1 className="text-2xl font-black text-white">개인정보 처리방침</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                시행일: 2026년 5월 7일 · 베타 서비스 기준
+                시행일: 2026년 5월 7일 · 정식 서비스 기준
               </p>
             </div>
           </div>

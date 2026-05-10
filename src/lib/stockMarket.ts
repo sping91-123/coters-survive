@@ -1,4 +1,4 @@
-// 해외주식 베타 레이더에 필요한 주요 종목과 캔들 공급자를 관리한다.
+// 해외주식 레이더에 필요한 주요 종목과 캔들 공급자를 관리한다.
 import type { Candle, ChartTimeframe } from "@/lib/marketAnalysis";
 
 export interface StockSymbolInfo {
@@ -128,7 +128,7 @@ export async function fetchStockCandles(symbol: string, timeframe: ChartTimefram
   const response = await fetch(url, {
     headers: {
       Accept: "application/json",
-      "User-Agent": "Mozilla/5.0 ChartRadarBeta/1.0"
+      "User-Agent": "Mozilla/5.0 ChartRadar/1.0"
     },
     cache: "no-store"
   });

@@ -655,7 +655,12 @@ function timeframeSignalSummary(item: TimeframeAnalysis) {
   if (item.oteZone !== "none") parts.push(`${item.oteZone === "long" ? "롱" : "숏"} OTE`);
   if (item.latestSweep && item.latestSweep.age <= 8) parts.push(`Sweep ${barsAgoLabel(item.latestSweep.age, item.timeframe)}`);
   if (item.latestCisd && item.latestCisd.age <= 8) parts.push(`CISD ${barsAgoLabel(item.latestCisd.age, item.timeframe)}`);
-  return parts.length ? parts.slice(0, 2).join(" / ") : "겹치는 신호 없음";
+  if (item.latestDisplacement && item.latestDisplacement.age <= 8) {
+    parts.push(`Displacement ${barsAgoLabel(item.latestDisplacement.age, item.timeframe)}`);
+  }
+  if (item.buySideLiquidity) parts.push("상단 유동성");
+  if (item.sellSideLiquidity) parts.push("하단 유동성");
+  return parts.length ? parts.slice(0, 3).join(" / ") : "겹치는 신호 없음";
 }
 
 export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } = {}) {
@@ -930,6 +935,12 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
     () => analysis?.timeframeAnalyses.find((item) => item.timeframe === activeTimeframe),
     [analysis, activeTimeframe]
   );
+  const activeDealingRange = activeAnalysis?.dealingRange ?? {
+    high: null,
+    low: null,
+    equilibrium: null,
+    position: "unknown" as const
+  };
   const radarPulseItems = useMemo(
     () => (analysis ? buildRadarPulse(analysis, activeAnalysis) : []),
     [activeAnalysis, analysis]
@@ -995,6 +1006,16 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
         cisd: activeAnalysis.latestCisd
           ? `${aiStateLabel(activeAnalysis.latestCisd.direction)} ${barsAgoLabel(activeAnalysis.latestCisd.age, activeTimeframe)}`
           : "없음",
+        displacement: activeAnalysis.latestDisplacement
+          ? `${aiStateLabel(activeAnalysis.latestDisplacement.direction)} ${barsAgoLabel(activeAnalysis.latestDisplacement.age, activeTimeframe)} · 강도 ${activeAnalysis.latestDisplacement.strength}점`
+          : "없음",
+        buySideLiquidity: activeAnalysis.buySideLiquidity
+          ? `${activeAnalysis.buySideLiquidity.level.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} · ${Math.abs(activeAnalysis.buySideLiquidity.distancePercent).toFixed(2)}%`
+          : "없음",
+        sellSideLiquidity: activeAnalysis.sellSideLiquidity
+          ? `${activeAnalysis.sellSideLiquidity.level.toLocaleString("ko-KR", { maximumFractionDigits: 5 })} · ${Math.abs(activeAnalysis.sellSideLiquidity.distancePercent).toFixed(2)}%`
+          : "없음",
+        dealingRange: aiStateLabel(activeDealingRange.position),
         pd: aiStateLabel(activeAnalysis.premiumDiscount),
         poc: activeAnalysis.volumeProfile
           ? `${aiStateLabel(activeAnalysis.volumeProfile.position)} ${Math.abs(activeAnalysis.volumeProfile.distancePercent).toFixed(2)}%`
@@ -1014,7 +1035,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
       })),
       scenario
     };
-  }, [activeAnalysis, activeTimeframe, analysis, combinedScoreLimit]);
+  }, [activeAnalysis, activeDealingRange.position, activeTimeframe, analysis, combinedScoreLimit]);
   const marketBriefingScopeKey = `${symbol}.${activeTimeframe}`;
 
   useEffect(() => {
@@ -1680,7 +1701,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="text-xl font-black text-white">코인 레이더</h2>
                 <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-accent-blue">
-                  Beta
+                  Live
                 </span>
                 <span className="rounded border border-white/10 bg-black/20 px-2 py-0.5 text-[10px] font-bold text-slate-400">
                   Binance USDT-M 기준
@@ -2229,6 +2250,21 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   value={activeAnalysis.latestCisd ? `${eventDirectionLabel(activeAnalysis.latestCisd.direction)} · ${barsAgoLabel(activeAnalysis.latestCisd.age, activeTimeframe)}` : "없음"}
                   direction={activeAnalysis.latestCisd?.direction}
                 />
+                <SignalMetric
+                  label="Displacement"
+                  value={activeAnalysis.latestDisplacement ? `${eventDirectionLabel(activeAnalysis.latestDisplacement.direction)} · ${activeAnalysis.latestDisplacement.strength}점` : "없음"}
+                  direction={activeAnalysis.latestDisplacement?.direction}
+                />
+                <SignalMetric
+                  label="Liquidity"
+                  value={
+                    activeAnalysis.buySideLiquidity || activeAnalysis.sellSideLiquidity
+                      ? `${activeAnalysis.buySideLiquidity ? "상단" : ""}${activeAnalysis.buySideLiquidity && activeAnalysis.sellSideLiquidity ? " / " : ""}${activeAnalysis.sellSideLiquidity ? "하단" : ""}`
+                      : "없음"
+                  }
+                  direction="neutral"
+                />
+                <SignalMetric label="Dealing Range" value={stateLabel(activeDealingRange.position)} direction="neutral" />
                 <SignalMetric label="PD" value={stateLabel(activeAnalysis.premiumDiscount)} direction="neutral" />
                 <SignalMetric
                   label="POC"
@@ -2295,6 +2331,21 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       value={activeAnalysis.latestCisd ? `${eventDirectionLabel(activeAnalysis.latestCisd.direction)} · ${barsAgoLabel(activeAnalysis.latestCisd.age, activeTimeframe)}` : "없음"}
                       direction={activeAnalysis.latestCisd?.direction}
                     />
+                    <SignalMetric
+                      label="Displacement"
+                      value={activeAnalysis.latestDisplacement ? `${eventDirectionLabel(activeAnalysis.latestDisplacement.direction)} · ${activeAnalysis.latestDisplacement.strength}점` : "없음"}
+                      direction={activeAnalysis.latestDisplacement?.direction}
+                    />
+                    <SignalMetric
+                      label="Liquidity"
+                      value={
+                        activeAnalysis.buySideLiquidity || activeAnalysis.sellSideLiquidity
+                          ? `${activeAnalysis.buySideLiquidity ? "상단" : ""}${activeAnalysis.buySideLiquidity && activeAnalysis.sellSideLiquidity ? " / " : ""}${activeAnalysis.sellSideLiquidity ? "하단" : ""}`
+                          : "없음"
+                      }
+                      direction="neutral"
+                    />
+                    <SignalMetric label="Dealing Range" value={stateLabel(activeDealingRange.position)} direction="neutral" />
                     <SignalMetric label="PD" value={stateLabel(activeAnalysis.premiumDiscount)} direction="neutral" />
                     <SignalMetric
                       label="POC"
@@ -2474,10 +2525,16 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       CISD {eventDirectionLabel(activeAnalysis.latestCisd.direction)} / {barsAgoLabel(activeAnalysis.latestCisd.age, activeTimeframe)} / {formatPrice(activeAnalysis.latestCisd.level)}
                     </p>
                   ) : null}
+                  {activeAnalysis.latestDisplacement ? (
+                    <p className={`rounded-md border px-3 py-2 text-sm leading-6 ${directionBadge(activeAnalysis.latestDisplacement.direction)}`}>
+                      Displacement {eventDirectionLabel(activeAnalysis.latestDisplacement.direction)} / {barsAgoLabel(activeAnalysis.latestDisplacement.age, activeTimeframe)} / 강도 {activeAnalysis.latestDisplacement.strength}점
+                    </p>
+                  ) : null}
                   {!activeAnalysis.latestMsbEvent &&
                   !activeAnalysis.latestChochEvent &&
                   !activeAnalysis.latestSweep &&
-                  !activeAnalysis.latestCisd ? (
+                  !activeAnalysis.latestCisd &&
+                  !activeAnalysis.latestDisplacement ? (
                     <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-400">
                       최근 이벤트가 충분히 누적되지 않았습니다.
                     </p>
@@ -2509,6 +2566,21 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       {formatPriceRange(activeAnalysis.volumeProfile.val, activeAnalysis.volumeProfile.vah)}
                     </p>
                   ) : null}
+                  {activeAnalysis.buySideLiquidity ? (
+                    <p className="rounded-md border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm leading-6 text-sky-200">
+                      Buy-side liquidity / {formatPrice(activeAnalysis.buySideLiquidity.level)} / {barsAgoLabel(activeAnalysis.buySideLiquidity.age, activeTimeframe)}
+                    </p>
+                  ) : null}
+                  {activeAnalysis.sellSideLiquidity ? (
+                    <p className="rounded-md border border-sky-500/20 bg-sky-500/10 px-3 py-2 text-sm leading-6 text-sky-200">
+                      Sell-side liquidity / {formatPrice(activeAnalysis.sellSideLiquidity.level)} / {barsAgoLabel(activeAnalysis.sellSideLiquidity.age, activeTimeframe)}
+                    </p>
+                  ) : null}
+                  {activeDealingRange.equilibrium ? (
+                    <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
+                      Dealing range / {stateLabel(activeDealingRange.position)} / EQ {formatPrice(activeDealingRange.equilibrium)}
+                    </p>
+                  ) : null}
                   {activeAnalysis.oteLevels ? (
                     <>
                       <p className="rounded-md border border-teal-500/20 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-200">
@@ -2523,7 +2595,10 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   !activeAnalysis.latestBb &&
                   !activeAnalysis.latestFvg &&
                   !activeAnalysis.volumeProfile &&
-                  !activeAnalysis.oteLevels ? (
+                  !activeAnalysis.oteLevels &&
+                  !activeAnalysis.buySideLiquidity &&
+                  !activeAnalysis.sellSideLiquidity &&
+                  !activeDealingRange.equilibrium ? (
                     <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-400">
                       아직 표시할 주요 구간이 부족합니다.
                     </p>
@@ -2678,6 +2753,23 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                     : "없음"
                 }
               />
+              <MiniMetric
+                label="Displacement"
+                value={
+                  activeAnalysis.latestDisplacement
+                    ? `${activeAnalysis.latestDisplacement.direction === "bullish" ? "상승" : "하락"} / ${activeAnalysis.latestDisplacement.strength}점`
+                    : "없음"
+                }
+              />
+              <MiniMetric
+                label="Buy-side 유동성"
+                value={activeAnalysis.buySideLiquidity ? `${formatPrice(activeAnalysis.buySideLiquidity.level)} / ${Math.abs(activeAnalysis.buySideLiquidity.distancePercent).toFixed(2)}%` : "없음"}
+              />
+              <MiniMetric
+                label="Sell-side 유동성"
+                value={activeAnalysis.sellSideLiquidity ? `${formatPrice(activeAnalysis.sellSideLiquidity.level)} / ${Math.abs(activeAnalysis.sellSideLiquidity.distancePercent).toFixed(2)}%` : "없음"}
+              />
+              <MiniMetric label="Dealing Range" value={stateLabel(activeDealingRange.position)} />
               <MiniMetric label="OTE" value={stateLabel(activeAnalysis.oteZone)} />
               <MiniMetric label="프리미엄/디스카운트" value={stateLabel(activeAnalysis.premiumDiscount)} />
               <MiniMetric label="FVG 내부" value={activeAnalysis.inFvg ? "예" : "아니오"} />
@@ -2956,23 +3048,23 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
           ) : null}
 
           {showDetailedReadout && analysis ? (
-            <div id="beta-notice" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
+            <div id="service-notice" className="scroll-mt-24 rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4">
               <div className="flex items-start gap-3">
                 <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-accent-blue/25 bg-black/20 text-accent-blue">
                   <LockKeyhole size={17} aria-hidden />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">베타 기능 공개 안내</h3>
+                  <h3 className="text-sm font-bold text-white">서비스 기능 안내</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
-                    현재는 사람들 반응을 보기 위해 분석 시나리오, AI 코멘트, 복기 저장을 모두 공개합니다.
-                    다만 정식 서비스 오픈 전에는 복기와 저장 데이터가 보존되지 않을 수 있습니다.
+                    현재는 분석 시나리오, AI 코멘트, 복기 저장을 기본 기능으로 제공합니다.
+                    중요한 복기와 저장 데이터는 계정 상태와 브라우저 환경을 함께 확인해 주세요.
                   </p>
                   <div className="mt-3 grid gap-2 sm:grid-cols-2">
                     <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-slate-300">
                       제공 중: 롱/숏 우세도, MSB/CHoCH, OB/FVG/iFVG, Sweep/CISD, POC, PD, 위험 신호
                     </p>
                     <p className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs leading-5 text-slate-300">
-                      주의: 베타 저장 데이터는 정식 서비스 전환 시 초기화될 수 있습니다.
+                      주의: 저장 데이터는 네트워크와 로그인 상태에 따라 동기화 시간이 달라질 수 있습니다.
                     </p>
                   </div>
                 </div>

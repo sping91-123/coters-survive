@@ -1,7 +1,7 @@
 "use client";
-// 기술지표 레이더 결과를 모바일 카드 형태로 보여주는 패널
+// 기술지표 레이더 결과를 모바일 카드 형태로 보여주는 패널입니다.
 import { useMemo } from "react";
-import type { ChartTimeframe, Candle } from "@/lib/marketAnalysis";
+import type { Candle, ChartTimeframe } from "@/lib/marketAnalysis";
 import { analyzeTechnicalRadar, type IndicatorReading, type TechnicalTone } from "@/lib/technicalRadar";
 
 function toneClass(tone: TechnicalTone) {
@@ -50,7 +50,7 @@ function IndicatorSection({ title, items }: { title: string; items: IndicatorRea
   return (
     <section className="rounded-lg border border-surface-line bg-black/20 p-4">
       <h4 className="text-base font-black text-white">{title}</h4>
-      <div className="mt-3 space-y-3">
+      <div className="mt-3 grid gap-3 md:grid-cols-2">
         {items.map((item) => (
           <IndicatorRow key={item.label} item={item} />
         ))}
@@ -66,10 +66,10 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
     <div id="technical-radar" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-cardSoft p-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">기술지표 기준</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">Technical Radar</p>
           <h3 className="mt-1 text-lg font-black text-white">기술지표 레이더</h3>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            ICT 구조와 분리해서 RSI, MACD, 볼린저밴드, 거래량, 피보나치 같은 보조지표만 따로 봅니다.
+            ICT 구조와 분리해서 이동평균, MACD, RSI, 일목균형표, Supertrend, 거래량, 변동성 지표를 한 번에 확인합니다.
           </p>
         </div>
         <span className="inline-flex w-fit rounded-md border border-white/10 bg-black/20 px-3 py-1.5 text-xs font-bold text-slate-300">
@@ -97,14 +97,14 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
               </div>
               <div className="rounded-md border border-white/10 bg-white/5 p-3">
                 <p className="text-lg font-black text-slate-200">{report.neutralCount}</p>
-                <p className="text-[11px] font-bold text-slate-400">횡보</p>
+                <p className="text-[11px] font-bold text-slate-400">관망</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-          <p className="text-xs font-bold text-slate-400">공포·탐욕 참고값</p>
+          <p className="text-xs font-bold text-slate-400">심리 참고값</p>
           <div className="mt-5">
             <div className="relative h-5 rounded-full bg-[linear-gradient(90deg,#ef4444,#f59e0b,#facc15,#38bdf8,#22c55e)]">
               <span
@@ -117,7 +117,7 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
               <p className="pb-1 text-sm font-black text-accent-blue">{report.fearGreed.label}</p>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-400">
-              {report.fearGreed.description} 공식 공포·탐욕 지수가 아니라 선택 코인의 캔들로 만든 참고값입니다.
+              {report.fearGreed.description} 공식 공포와 탐욕 지수가 아니라 선택 코인의 캔들로 만든 참고값입니다.
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
 
       <div className="mt-4 rounded-lg border border-white/10 bg-black/20 p-4">
         <h4 className="text-base font-black text-white">캔들스틱 패턴</h4>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {report.candlestickPatterns.length ? (
             report.candlestickPatterns.map((pattern) => (
               <div key={`${pattern.name}-${pattern.detectedAt}`} className={`rounded-md border p-3 ${toneClass(pattern.tone)}`}>
@@ -151,14 +151,14 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
               </div>
             ))
           ) : (
-            <p className="rounded-md border border-white/10 bg-black/20 px-3 py-3 text-sm text-slate-400 sm:col-span-3">
+            <p className="rounded-md border border-white/10 bg-black/20 px-3 py-3 text-sm text-slate-400 sm:col-span-2 xl:col-span-4">
               현재 캔들에서는 뚜렷한 패턴이 확인되지 않았습니다.
             </p>
           )}
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+      <div className="mt-4 space-y-4">
         <IndicatorSection title="추세지표" items={report.trendIndicators} />
         <IndicatorSection title="모멘텀지표" items={report.momentumIndicators} />
         <IndicatorSection title="변동성지표" items={report.volatilityIndicators} />
@@ -170,7 +170,7 @@ export function TechnicalRadarPanel({ candles, timeframe }: { candles: Candle[];
           <div>
             <h4 className="text-base font-black text-white">피보나치 되돌림</h4>
             <p className="mt-1 text-xs leading-5 text-slate-400">
-              최근 120개 캔들의 고점과 저점을 기준으로 현재 위치를 표시합니다.
+              최근 160개 캔들의 고점과 저점을 기준으로 현재 위치를 표시합니다.
             </p>
           </div>
           <span className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs font-bold text-slate-300">

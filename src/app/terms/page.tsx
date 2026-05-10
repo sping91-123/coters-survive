@@ -6,7 +6,7 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "이용약관",
-  description: "차트 레이더 Beta 이용약관"
+  description: "Chart Radar 이용약관"
 };
 
 const sections = [
@@ -21,9 +21,9 @@ const sections = [
       "레버리지 거래와 파생상품 거래는 원금 손실과 청산 위험이 큽니다. 사용자는 서비스가 표시하는 판독, 후보, 계산 결과를 참고 정보로만 사용해야 하며, 모든 투자 판단과 결과에 대한 책임은 사용자 본인에게 있습니다."
   },
   {
-    title: "3. 베타 기능",
+    title: "3. 서비스 기능",
     body:
-      "현재 서비스는 공개 베타로 제공되며, 기능, 화면, 판독 기준, 저장 방식, 운영 방식은 사용자 피드백과 안정성 검토에 따라 변경될 수 있습니다. 베타 기간 중 저장한 복기와 설정은 정식 서비스 전환 과정에서 이전되지 않거나 초기화될 수 있습니다."
+      "서비스의 기능, 화면, 판독 기준, 저장 방식, 운영 방식은 사용자 피드백과 안정성 검토에 따라 변경될 수 있습니다. 중요한 복기와 설정은 사용자가 별도로 백업하는 것을 권장합니다."
   },
   {
     title: "4. 금지 행위",
@@ -33,7 +33,7 @@ const sections = [
   {
     title: "5. 면책",
     body:
-      "서비스는 외부 거래소 데이터, 네트워크 상태, 브라우저 환경, 베타 판독 로직의 한계에 영향을 받을 수 있습니다. 서비스 제공자는 데이터 지연, 오류, 중단, 사용자의 매매 손실에 대해 책임을 지지 않습니다."
+      "서비스는 외부 거래소 데이터, 네트워크 상태, 브라우저 환경, 판독 로직의 한계에 영향을 받을 수 있습니다. 서비스 제공자는 데이터 지연, 오류, 중단, 사용자의 매매 손실에 대해 책임을 지지 않습니다."
   },
   {
     title: "6. 약관 변경",
@@ -60,7 +60,7 @@ export default function TermsPage() {
             <div>
               <h1 className="text-2xl font-black text-white">이용약관</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                시행일: 2026년 5월 7일 · 베타 서비스 기준
+                시행일: 2026년 5월 7일 · 정식 서비스 기준
               </p>
             </div>
           </div>
@@ -79,7 +79,7 @@ export default function TermsPage() {
           <div className="flex items-start gap-3">
             <ShieldAlert className="mt-0.5 shrink-0" size={18} aria-hidden />
             <p>
-              본 약관은 베타 공개를 위한 기본 문서입니다. 정식 사업자 결제, 앱스토어 출시,
+              본 약관은 Chart Radar 서비스 이용을 위한 기본 문서입니다. 사업자 결제, 앱스토어 출시,
               해외 서비스 확장 전에는 전문가 검토를 권장합니다.
             </p>
           </div>

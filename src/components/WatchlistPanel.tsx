@@ -277,7 +277,7 @@ export function WatchlistPanel() {
     setWatchlist(getWatchlist());
   }
 
-  // ── 베타 기간 전체 공개 UI ──
+  // ── 정식 출시 초기 전체 공개 UI ──
   const isEmpty = watchlist.length === 0;
 
   return (

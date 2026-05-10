@@ -86,6 +86,11 @@ html.theme-light body {
   color: #0f172a !important;
 }
 
+.theme-light .text-slate-50,
+.theme-light .text-slate-100 {
+  color: #111827 !important;
+}
+
 .theme-light .text-slate-200,
 .theme-light .text-slate-300 {
   color: #334155 !important;
@@ -103,12 +108,52 @@ html.theme-light body {
   background-color: rgba(255, 255, 255, 0.64) !important;
 }
 
+.theme-light [class~="bg-black/40"],
+.theme-light [class~="bg-black/50"],
+.theme-light [class~="bg-slate-950"],
+.theme-light [class~="bg-slate-950/95"],
+.theme-light [class~="bg-slate-950/90"],
+.theme-light [class~="bg-slate-950/80"],
+.theme-light [class~="bg-white/5"],
+.theme-light [class~="bg-white/[0.03]"] {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+}
+
 .theme-light [class~="bg-slate-950/88"] {
   background-color: rgba(255, 255, 255, 0.88) !important;
 }
 
+.theme-light [class~="text-cyan-100"],
+.theme-light [class~="text-cyan-200"],
+.theme-light [class~="text-cyan-300"] {
+  color: #0369a1 !important;
+}
+
+.theme-light [class~="text-emerald-100"],
+.theme-light [class~="text-emerald-200"],
+.theme-light [class~="text-emerald-300"] {
+  color: #047857 !important;
+}
+
+.theme-light [class~="text-rose-100"],
+.theme-light [class~="text-rose-200"],
+.theme-light [class~="text-rose-300"] {
+  color: #be123c !important;
+}
+
+.theme-light [class~="text-amber-100"],
+.theme-light [class~="text-amber-200"],
+.theme-light [class~="text-amber-300"] {
+  color: #b45309 !important;
+}
+
 .theme-light [class~="border-white/10"] {
   border-color: rgba(148, 163, 184, 0.26) !important;
+}
+
+.theme-light [class~="border-white/15"],
+.theme-light [class~="border-white/20"] {
+  border-color: rgba(100, 116, 139, 0.28) !important;
 }
 
 .theme-light [class~="hover:text-white"]:hover {
@@ -138,6 +183,7 @@ html.theme-light body {
 
 .radar-mark {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   border-radius: 1rem;
   background:
@@ -153,28 +199,30 @@ html.theme-light body {
 
 .radar-mark::before {
   position: absolute;
-  inset: 18% 18% 26%;
+  inset: 17%;
   content: "";
-  border: 3px solid transparent;
-  border-top-color: rgba(34, 211, 238, 0.96);
-  border-left-color: rgba(37, 99, 235, 0.9);
   border-radius: 9999px;
-  filter: drop-shadow(0 0 9px rgba(34, 211, 238, 0.55));
-  transform: rotate(-15deg);
+  background:
+    radial-gradient(circle, rgba(34, 211, 238, 0.95) 0 4%, transparent 4.5%),
+    radial-gradient(circle, transparent 0 27%, rgba(34, 211, 238, 0.22) 27.5% 28.5%, transparent 29% 50%, rgba(37, 99, 235, 0.2) 50.5% 51.5%, transparent 52% 73%, rgba(34, 211, 238, 0.32) 73.5% 75%, transparent 75.5%),
+    conic-gradient(from -35deg, transparent 0deg, rgba(34, 211, 238, 0.1) 9deg, rgba(34, 211, 238, 0.88) 31deg, rgba(103, 232, 249, 0.95) 37deg, transparent 50deg 360deg);
+  filter: drop-shadow(0 0 13px rgba(34, 211, 238, 0.55));
   animation: radar-sweep 2.45s linear infinite;
+  z-index: 0;
 }
 
 .radar-mark::after {
   position: absolute;
-  left: 28%;
-  bottom: 21%;
+  left: 31%;
+  bottom: 22%;
   content: "";
-  width: 58%;
-  height: 46%;
+  width: 51%;
+  height: 39%;
   background: linear-gradient(135deg, #2563eb 0%, #22d3ee 48%, #67e8f9 100%);
   clip-path: polygon(0 82%, 38% 45%, 51% 58%, 77% 29%, 68% 21%, 100% 0, 90% 34%, 83% 25%, 52% 70%, 38% 57%, 7% 90%);
   filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5));
   animation: radar-pulse 1.8s ease-in-out infinite;
+  z-index: 1;
 }
 
 .radar-mark > * {
@@ -184,6 +232,7 @@ html.theme-light body {
 
 .radar-mark-lg {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   border-radius: 1.8rem;
   background:
@@ -201,24 +250,25 @@ html.theme-light body {
 
 .radar-mark-lg::before {
   position: absolute;
-  inset: 19% 18% 25%;
+  inset: 15%;
   content: "";
-  border: 7px solid transparent;
-  border-top-color: rgba(34, 211, 238, 0.98);
-  border-left-color: rgba(37, 99, 235, 0.94);
   border-radius: 9999px;
-  filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.58));
-  transform: rotate(-15deg);
+  background:
+    radial-gradient(circle, rgba(34, 211, 238, 1) 0 4%, transparent 4.5%),
+    radial-gradient(circle, transparent 0 26%, rgba(34, 211, 238, 0.22) 26.5% 27.5%, transparent 28% 48%, rgba(37, 99, 235, 0.22) 48.5% 49.5%, transparent 50% 70%, rgba(34, 211, 238, 0.34) 70.5% 72%, transparent 72.5%),
+    conic-gradient(from -35deg, transparent 0deg, rgba(34, 211, 238, 0.08) 8deg, rgba(34, 211, 238, 0.88) 31deg, rgba(103, 232, 249, 0.95) 39deg, transparent 52deg 360deg);
+  filter: drop-shadow(0 0 22px rgba(34, 211, 238, 0.62));
   animation: radar-sweep 1.65s linear infinite;
+  z-index: 0;
 }
 
 .radar-mark-lg::after {
   position: absolute;
-  left: 29%;
+  left: 32%;
   bottom: 19%;
   content: "";
-  width: 58%;
-  height: 45%;
+  width: 50%;
+  height: 39%;
   background:
     linear-gradient(180deg, transparent 58%, rgba(37, 99, 235, 0.85) 58% 100%) 21% 68% / 12% 35% no-repeat,
     linear-gradient(180deg, transparent 42%, rgba(14, 165, 233, 0.9) 42% 100%) 43% 70% / 12% 45% no-repeat,
@@ -227,6 +277,7 @@ html.theme-light body {
   clip-path: polygon(0 82%, 38% 45%, 51% 58%, 77% 29%, 68% 21%, 100% 0, 90% 34%, 83% 25%, 52% 70%, 38% 57%, 7% 90%);
   filter: drop-shadow(0 0 18px rgba(34, 211, 238, 0.55));
   animation: radar-pulse 1.35s ease-in-out infinite;
+  z-index: 1;
 }
 
 .radar-scan-line {

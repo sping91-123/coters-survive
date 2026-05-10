@@ -18,9 +18,9 @@ const entryCards = [
     title: "해외주식 레이더",
     href: "/stocks",
     icon: TrendingUp,
-    eyebrow: "Global Stocks Beta",
+    eyebrow: "Global Stocks",
     description: "미국 주요 주식과 ETF를 기술지표 중심으로 확인합니다.",
-    points: ["SPY, QQQ, NVDA, AAPL", "ETF와 빅테크", "지연 데이터 베타"]
+    points: ["SPY, QQQ, NVDA, AAPL", "ETF와 빅테크", "지연 데이터"]
   }
 ] as const;
 
@@ -83,7 +83,7 @@ export default function Home() {
             <div className="flex items-start gap-3">
               <Coins className="mt-0.5 shrink-0 text-accent-blue" size={18} aria-hidden />
               <p className="text-xs leading-5 text-slate-500">
-                코인은 바이낸스에서 거래 중인 USDT-M 종목 목록을 자동으로 불러옵니다. 해외주식은 주요 미국 종목과 ETF부터 베타로 제공하며, 정식 실시간 데이터 계약 전까지 지연될 수 있습니다.
+                코인은 바이낸스에서 거래 중인 주요 종목을 자동으로 불러옵니다. 해외주식은 주요 미국 종목과 ETF부터 제공하며, 정식 실시간 데이터 계약 전까지 지연될 수 있습니다.
               </p>
             </div>
           </div>

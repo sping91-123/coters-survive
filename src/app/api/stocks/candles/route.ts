@@ -1,4 +1,4 @@
-// 해외주식 주요 종목의 캔들 데이터를 제공하는 베타 API 라우트.
+// 해외주식 주요 종목의 캔들 데이터를 제공하는 API 라우트.
 import { NextResponse } from "next/server";
 import { fetchStockCandles, findStockSymbol, normalizeStockSymbol, stockSymbols } from "@/lib/stockMarket";
 import { chartTimeframes, type ChartTimeframe } from "@/lib/marketAnalysis";
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
       timeframe,
       candles,
       universe: stockSymbols,
-      dataSource: "Yahoo Finance 비공식 지연 데이터 베타",
+      dataSource: "Yahoo Finance 비공식 지연 데이터",
       cachedAt: Date.now()
     });
   } catch (error) {

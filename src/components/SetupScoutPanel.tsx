@@ -718,7 +718,7 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-black text-white">시장 레이더 TOP</h2>
               <span className="rounded border border-accent-blue/30 bg-accent-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-blue">
-                Beta
+                Live
               </span>
             </div>
             <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">

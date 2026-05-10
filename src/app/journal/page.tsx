@@ -383,7 +383,7 @@ export default function JournalPage() {
                 결과보다 원칙을 지켰는지 기록하는 공간입니다. 로그인하면 기록이 서버에 저장되어 나중에 모바일 앱에서도 이어갈 수 있습니다.
               </p>
               <p className="mt-2 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-                베타 기간의 복기 데이터는 정식 서비스 오픈 과정에서 보존되지 않을 수 있습니다.
+                복기 데이터는 계정과 브라우저 상태에 따라 보존됩니다. 중요한 기록은 별도 백업을 권장합니다.
               </p>
             </div>
           </div>

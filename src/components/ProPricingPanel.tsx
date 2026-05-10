@@ -86,7 +86,7 @@ export function ProPricingPanel() {
             <p className="font-black text-white">권장 출시가</p>
             <p className="mt-2 text-3xl font-black text-cyan-200">월 19,900원</p>
             <p className="mt-2 leading-6 text-slate-400">
-              베타 첫 달은 가격을 낮추기보다 기능을 열고, 결제자는 알림과 저장 안정성을 먼저 제공하는 편이 좋습니다.
+              정식 출시 첫 달은 가격을 낮추기보다 기능을 충분히 보여주고, 결제자는 알림과 저장 안정성을 먼저 제공하는 편이 좋습니다.
             </p>
           </div>
         </div>

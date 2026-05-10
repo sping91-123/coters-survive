@@ -81,6 +81,31 @@ export interface VolumeProfileLevels {
   position: "above" | "below" | "near";
 }
 
+export interface DisplacementSignal {
+  timeframe: ChartTimeframe;
+  direction: "bullish" | "bearish";
+  strength: number;
+  age: number;
+  index: number;
+  bodyPercent: number;
+}
+
+export interface LiquidityPool {
+  timeframe: ChartTimeframe;
+  side: "buySide" | "sellSide";
+  level: number;
+  age: number;
+  touches: number;
+  distancePercent: number;
+}
+
+export interface DealingRange {
+  high: number | null;
+  low: number | null;
+  equilibrium: number | null;
+  position: "premium" | "discount" | "equilibrium" | "unknown";
+}
+
 export interface StructureDebug {
   h0: number | null;
   h1: number | null;
@@ -126,6 +151,10 @@ export interface TimeframeAnalysis {
   inBb: boolean;
   latestSweep: SweepZone | null;
   latestCisd: CisdSignal | null;
+  latestDisplacement: DisplacementSignal | null;
+  buySideLiquidity: LiquidityPool | null;
+  sellSideLiquidity: LiquidityPool | null;
+  dealingRange: DealingRange;
   volumeProfile: VolumeProfileLevels | null;
   oteZone: "long" | "short" | "none";
   oteLevels: OteLevels | null;
@@ -1205,6 +1234,113 @@ function calculateVolumeProfile(candles: Candle[], lookback = 180, bins = 96): V
   return { poc, vah, val, distancePercent, position };
 }
 
+function detectLatestDisplacement(candles: Candle[], timeframe: ChartTimeframe): DisplacementSignal | null {
+  if (candles.length < 30) return null;
+  const atrValues = atrSeries(candles, 14);
+  const volumeAverage = smaSeries(candles.map((candle) => candle.volume), 20);
+  const start = Math.max(1, candles.length - 60);
+
+  for (let index = candles.length - 1; index >= start; index -= 1) {
+    const candle = candles[index];
+    const atrValue = atrValues[index];
+    if (!atrValue || atrValue <= 0) continue;
+
+    const body = Math.abs(candle.close - candle.open);
+    const range = Math.max(candle.high - candle.low, 1e-10);
+    const bodyPercent = (body / range) * 100;
+    const volumeRatio = volumeAverage[index] ? candle.volume / Number(volumeAverage[index]) : 1;
+    const bodyAtr = body / atrValue;
+    const strength = Math.min(100, Math.round(bodyAtr * 35 + bodyPercent * 0.45 + Math.min(2, volumeRatio) * 12));
+
+    if (bodyAtr >= 0.9 && bodyPercent >= 54 && strength >= 62) {
+      return {
+        timeframe,
+        direction: candle.close >= candle.open ? "bullish" : "bearish",
+        strength,
+        age: candles.length - 1 - index,
+        index,
+        bodyPercent: roundMetric(bodyPercent, 1) ?? bodyPercent
+      };
+    }
+  }
+
+  return null;
+}
+
+function detectLiquidityPools(
+  candles: Candle[],
+  timeframe: ChartTimeframe,
+  hiPoints: PivotPoint[],
+  loPoints: PivotPoint[]
+): { buySideLiquidity: LiquidityPool | null; sellSideLiquidity: LiquidityPool | null } {
+  const latest = candles[candles.length - 1];
+  if (!latest) return { buySideLiquidity: null, sellSideLiquidity: null };
+
+  const atrValue = lastNumber(atrSeries(candles, 14));
+  const tolerance = Math.max(latest.close * 0.0015, (atrValue ?? latest.close * 0.004) * 0.18);
+
+  const makePool = (points: PivotPoint[], side: "buySide" | "sellSide") => {
+    const recent = points.slice(-16);
+    const pools: LiquidityPool[] = [];
+
+    for (let index = 0; index < recent.length; index += 1) {
+      const base = recent[index];
+      const cluster = recent.filter((point) => Math.abs(point.price - base.price) <= tolerance);
+      if (cluster.length < 2) continue;
+
+      const level = cluster.reduce((total, point) => total + point.price, 0) / cluster.length;
+      const distancePercent = ((level - latest.close) / latest.close) * 100;
+      const isRelevant =
+        side === "buySide" ? distancePercent >= -0.15 : distancePercent <= 0.15;
+      if (!isRelevant) continue;
+
+      const lastTouchIndex = Math.max(...cluster.map((point) => point.confirmedIndex));
+      pools.push({
+        timeframe,
+        side,
+        level,
+        age: candles.length - 1 - lastTouchIndex,
+        touches: cluster.length,
+        distancePercent: roundMetric(distancePercent, 2) ?? distancePercent
+      });
+    }
+
+    const unique = pools.filter(
+      (pool, index, array) => array.findIndex((item) => Math.abs(item.level - pool.level) <= tolerance) === index
+    );
+    return unique.sort((a, b) => Math.abs(a.distancePercent) - Math.abs(b.distancePercent))[0] ?? null;
+  };
+
+  return {
+    buySideLiquidity: makePool(hiPoints, "buySide"),
+    sellSideLiquidity: makePool(loPoints, "sellSide")
+  };
+}
+
+function detectDealingRange(candles: Candle[], structure: StructureState): DealingRange {
+  const latest = candles[candles.length - 1];
+  if (!latest) return { high: null, low: null, equilibrium: null, position: "unknown" };
+
+  const swingHigh = structure.h0?.price ?? Math.max(...candles.slice(-80).map((candle) => candle.high));
+  const swingLow = structure.l0?.price ?? Math.min(...candles.slice(-80).map((candle) => candle.low));
+  const high = Math.max(swingHigh, swingLow);
+  const low = Math.min(swingHigh, swingLow);
+  const span = high - low;
+  if (!Number.isFinite(span) || span <= 0) return { high, low, equilibrium: null, position: "unknown" };
+
+  const equilibrium = low + span * 0.5;
+  const premiumLine = low + span * 0.55;
+  const discountLine = low + span * 0.45;
+  const position =
+    latest.close >= premiumLine
+      ? ("premium" as const)
+      : latest.close <= discountLine
+        ? ("discount" as const)
+        : ("equilibrium" as const);
+
+  return { high, low, equilibrium, position };
+}
+
 function detectOteAndPd(candles: Candle[], anchorCandles?: Candle[]) {
   const latest = candles[candles.length - 1];
   const range = (anchorCandles && anchorCandles.length >= 20 ? anchorCandles : candles).slice(-20);
@@ -1813,6 +1949,9 @@ export function analyzeTimeframe(
   const latestOb = structure.latestOb;
   const latestBb = structure.latestBb;
   const latestCisd = structure.latestCisd;
+  const latestDisplacement = detectLatestDisplacement(candles, timeframe);
+  const { buySideLiquidity, sellSideLiquidity } = detectLiquidityPools(candles, timeframe, structure.hiPoints, structure.loPoints);
+  const dealingRange = detectDealingRange(candles, structure);
   const volumeProfile = calculateVolumeProfile(candles);
   const { oteZone, premiumDiscount, oteLevels } = detectOteAndPd(candles, context?.oteAnchorCandles);
   const condition = buildMarketCondition(candles, closes);
@@ -1837,6 +1976,10 @@ export function analyzeTimeframe(
   if (latestSweep?.direction === "bearish" && latestSweep.age <= 20) score -= 0.6;
   if (latestCisd?.direction === "bullish" && latestCisd.age <= 12) score += 0.8;
   if (latestCisd?.direction === "bearish" && latestCisd.age <= 12) score -= 0.8;
+  if (latestDisplacement?.direction === "bullish" && latestDisplacement.age <= 8) score += 0.45;
+  if (latestDisplacement?.direction === "bearish" && latestDisplacement.age <= 8) score -= 0.45;
+  if (dealingRange.position === "discount") score += 0.15;
+  if (dealingRange.position === "premium") score -= 0.15;
   if (oteZone === "long") score += 0.5;
   if (oteZone === "short") score -= 0.5;
 
@@ -1856,6 +1999,10 @@ export function analyzeTimeframe(
     inBb: Boolean(latestBb?.isInside),
     latestSweep,
     latestCisd,
+    latestDisplacement,
+    buySideLiquidity,
+    sellSideLiquidity,
+    dealingRange,
     volumeProfile,
     oteZone,
     oteLevels,
@@ -1971,6 +2118,44 @@ export function summarizeMarket(
       reasons,
       `${active.timeframe} ${active.latestCisd.direction === "bullish" ? "상승" : "하락"} CISD ${formatBarsAgo(active.latestCisd.age, active.timeframe)}`,
       active.latestCisd.direction === "bullish" ? "bullish" : "bearish"
+    );
+  }
+
+  if (active?.latestDisplacement) {
+    appendReason(
+      reasons,
+      `${active.timeframe} ${active.latestDisplacement.direction === "bullish" ? "상승" : "하락"} Displacement ${formatBarsAgo(active.latestDisplacement.age, active.timeframe)} · 강도 ${active.latestDisplacement.strength}점`,
+      active.latestDisplacement.direction === "bullish" ? "bullish" : "bearish"
+    );
+  }
+
+  if (active?.buySideLiquidity) {
+    appendReason(
+      reasons,
+      `${active.timeframe} Buy-side liquidity ${formatLevel(active.buySideLiquidity.level)} · ${formatBarsAgo(active.buySideLiquidity.age, active.timeframe)}`,
+      "neutral"
+    );
+  }
+
+  if (active?.sellSideLiquidity) {
+    appendReason(
+      reasons,
+      `${active.timeframe} Sell-side liquidity ${formatLevel(active.sellSideLiquidity.level)} · ${formatBarsAgo(active.sellSideLiquidity.age, active.timeframe)}`,
+      "neutral"
+    );
+  }
+
+  if (active && active.dealingRange.position !== "unknown") {
+    appendReason(
+      reasons,
+      `${active.timeframe} Dealing range ${
+        active?.dealingRange.position === "premium"
+          ? "프리미엄"
+          : active?.dealingRange.position === "discount"
+            ? "디스카운트"
+            : "균형가"
+      }`,
+      "neutral"
     );
   }
 
