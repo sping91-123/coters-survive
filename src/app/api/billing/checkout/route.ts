@@ -53,6 +53,7 @@ export async function POST(request: Request) {
     orderId,
     amount: plan.monthlyValue,
     orderName: plan.name,
-    message: "아직 웹 결제 링크가 설정되지 않았습니다. NEXT_PUBLIC_PRO_PAYMENT_URL 또는 토스페이먼츠 결제위젯 키를 연결하면 이 버튼이 실제 결제로 이어집니다."
+    message:
+      "현재 결제창을 점검하고 있습니다. 운영 결제 URL이 연결되면 같은 버튼에서 바로 결제 화면으로 이동합니다."
   });
 }

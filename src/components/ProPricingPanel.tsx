@@ -2,10 +2,10 @@
 // Pro 구독 플랜과 결제 시작 흐름을 보여주는 판매 패널이다.
 import { useState } from "react";
 import Link from "next/link";
-import { BellRing, Check, Crown, Loader2, Radar, Sparkles } from "lucide-react";
+import { ArrowRight, BellRing, Check, Crown, Loader2, Radar, ShieldCheck, Sparkles, TimerReset } from "lucide-react";
 import { RadarAlertCenter } from "@/components/RadarAlertCenter";
 import { UsageMeterPanel } from "@/components/UsageMeterPanel";
-import { billingPlans, launchPaymentNotes, type BillingPlanId } from "@/lib/billing";
+import { billingPlans, subscriptionTrustNotes, type BillingPlanId } from "@/lib/billing";
 
 type CheckoutState =
   | { status: "idle" }
@@ -15,18 +15,36 @@ type CheckoutState =
 const conversionPoints = [
   {
     icon: Radar,
-    title: "매일 켜는 이유",
-    body: "코인과 해외주식에서 오늘 먼저 볼 종목, 방향 쏠림, 위험 구간을 한 화면에서 정리합니다."
+    title: "시장 먼저 훑기",
+    body: "코인과 해외주식에서 오늘 먼저 봐야 할 종목, 방향 쏠림, 위험 구간을 압축합니다."
   },
   {
     icon: Sparkles,
-    title: "AI 사용량 차별화",
-    body: "무료는 맛보기만 열고, Pro는 AI 브리핑과 종합 해석을 넉넉하게 제공합니다."
+    title: "AI 해석 넉넉하게",
+    body: "뉴스, 레이더 결과, 관심종목 흐름을 긴 문장으로 다시 정리해 줍니다."
   },
   {
     icon: BellRing,
-    title: "알림이 결제 이유",
-    body: "5월 출시 이후 Pro는 관심종목 구조 변화, 급등락, 주요 뉴스 브리핑 알림을 우선 받습니다."
+    title: "놓치지 않는 알림",
+    body: "관심종목 구조 변화, 큰 변동, 뉴스 브리핑을 매번 직접 찾지 않도록 도와줍니다."
+  }
+];
+
+const valueRows = [
+  {
+    icon: TimerReset,
+    title: "하루 3번 켜는 구조",
+    body: "아침에는 시장 온도, 장중에는 TOP 감지, 자기 전에는 관심종목과 뉴스 브리핑을 확인하는 흐름을 만듭니다."
+  },
+  {
+    icon: ShieldCheck,
+    title: "타점 강요 대신 위험 정리",
+    body: "롱·숏을 단정하기보다 어느 쪽 근거가 강한지, 무엇을 확인해야 하는지 먼저 보여줍니다."
+  },
+  {
+    icon: Crown,
+    title: "Pro는 편의성과 빈도",
+    body: "더 많은 종목, 더 많은 AI 브리핑, 더 많은 알림 규칙으로 반복 사용의 마찰을 줄입니다."
   }
 ];
 
@@ -57,7 +75,7 @@ export function ProPricingPanel() {
       setCheckoutState({
         status: "message",
         tone: "info",
-        text: data.message ?? "결제 링크가 아직 연결되지 않았습니다. 토스페이먼츠 계약과 결제 URL 설정이 필요합니다."
+        text: data.message ?? "현재 결제창을 점검하고 있습니다. 잠시 후 다시 시도해 주세요."
       });
     } catch (error) {
       setCheckoutState({
@@ -74,22 +92,30 @@ export function ProPricingPanel() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-200">
-              5월 출시 결제 모델
+              Chart Radar Pro
             </p>
             <h2 className="mt-4 text-3xl font-black tracking-normal text-white sm:text-4xl">
-              Pro는 신호 판매가 아니라, 매일 시장을 훑는 시간을 줄여주는 구독입니다.
+              매일 시장을 확인하는 시간을 줄이고, 놓칠 만한 변화는 먼저 띄워드립니다.
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-300">
-              무료 사용자는 핵심 흐름을 확인하고, Pro 사용자는 전체 코인 레이더, 해외주식 레이더, AI 브리핑, 관심종목 알림과 저장 기능을 더 넓게 씁니다.
-              앱스토어 출시 시 iOS 내부 결제는 Apple 구독 상품으로 연결하고, 웹은 토스페이먼츠로 결제받는 구조가 가장 안전합니다.
+              무료로 핵심 흐름을 먼저 확인하고, Pro에서는 전체 코인 레이더, 해외주식 레이더, AI 브리핑,
+              관심종목 알림과 저장 기능을 더 넓게 사용합니다. 신호를 판매하는 서비스가 아니라,
+              매일 시장을 빠르게 정리하는 레이더입니다.
             </p>
           </div>
           <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 lg:w-72">
-            <p className="font-black text-white">권장 출시가</p>
+            <p className="font-black text-white">대표 플랜</p>
             <p className="mt-2 text-3xl font-black text-cyan-200">월 19,900원</p>
             <p className="mt-2 leading-6 text-slate-400">
-              정식 출시 첫 달은 가격을 낮추기보다 기능을 충분히 보여주고, 결제자는 알림과 저장 안정성을 먼저 제공하는 편이 좋습니다.
+              자주 켜는 사용자에게 필요한 레이더, AI 브리핑, 관심종목 알림을 하나로 묶었습니다.
             </p>
+            <Link
+              href="#plans"
+              className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-md bg-cyan-300 px-4 text-sm font-black text-slate-950 transition hover:bg-cyan-200"
+            >
+              플랜 보기
+              <ArrowRight size={15} aria-hidden />
+            </Link>
           </div>
         </div>
 
@@ -104,7 +130,17 @@ export function ProPricingPanel() {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3">
+        {valueRows.map(({ icon: Icon, title, body }) => (
+          <div key={title} className="rounded-lg border border-surface-line bg-surface-card p-4">
+            <Icon className="text-cyan-300" size={20} aria-hidden />
+            <p className="mt-3 font-black text-white">{title}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-400">{body}</p>
+          </div>
+        ))}
+      </div>
+
+      <div id="plans" className="grid scroll-mt-28 gap-4 lg:grid-cols-3">
         {billingPlans.map((plan) => {
           const highlighted = plan.id === "pro_monthly";
           const isLoading = checkoutState.status === "loading" && checkoutState.planId === plan.id;
@@ -168,7 +204,7 @@ export function ProPricingPanel() {
                   } disabled:cursor-wait disabled:opacity-70`}
                 >
                   {isLoading ? <Loader2 className="animate-spin" size={16} aria-hidden /> : null}
-                  {isLoading ? "결제 상태 확인 중" : "Pro 시작하기"}
+                  {isLoading ? "결제 상태 확인 중" : plan.id === "pro_yearly" ? "연간으로 시작하기" : "월간으로 시작하기"}
                 </button>
               )}
             </article>
@@ -193,17 +229,25 @@ export function ProPricingPanel() {
       ) : null}
 
       <div className="rounded-lg border border-surface-line bg-surface-card p-4">
-        <p className="font-black text-white">출시 전 결제 체크리스트</p>
+        <p className="font-black text-white">구독 전 확인해 주세요</p>
         <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-400">
-          {launchPaymentNotes.map((item) => (
+          {subscriptionTrustNotes.map((item) => (
             <p key={item} className="flex gap-2">
               <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300" />
               {item}
             </p>
           ))}
         </div>
-        <div className="mt-4 rounded-md border border-amber-300/20 bg-amber-300/10 p-3 text-xs leading-5 text-amber-100">
-          실제 결제를 열기 전에는 사업자 정보, 환불 정책, 고객센터 이메일, 개인정보 처리방침, App Store 구독 상품 심사까지 함께 맞춰야 합니다.
+        <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
+          <Link href="/refund" className="rounded-md border border-cyan-300/25 bg-cyan-300/10 px-3 py-2 text-cyan-200">
+            구독 해지·환불 안내
+          </Link>
+          <Link href="/terms" className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
+            이용약관
+          </Link>
+          <Link href="/privacy" className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
+            개인정보 처리방침
+          </Link>
         </div>
       </div>
     </section>
