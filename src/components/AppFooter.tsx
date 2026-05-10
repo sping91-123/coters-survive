@@ -23,6 +23,9 @@ export function AppFooter() {
             <Link href="/privacy" className="hover:text-white">
               개인정보 처리방침
             </Link>
+            <Link href="/refund" className="hover:text-white">
+              구독 해지·환불 안내
+            </Link>
           </nav>
           <p className="text-slate-600">Chart Radar.</p>
         </div>

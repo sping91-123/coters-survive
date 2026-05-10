@@ -13,7 +13,8 @@ const routes = [
   "/calculator",
   "/journal",
   "/terms",
-  "/privacy"
+  "/privacy",
+  "/refund"
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
