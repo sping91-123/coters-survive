@@ -12,7 +12,11 @@
 
 ```env
 NEXT_PUBLIC_PRO_PAYMENT_URL=https://your-payment-link.example
+NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL=https://your-monthly-payment-link.example
+NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL=https://your-yearly-payment-link.example
 ```
+
+`NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL`과 `NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL`이 있으면 해당 플랜 링크를 우선 사용합니다. 두 값이 비어 있으면 `NEXT_PUBLIC_PRO_PAYMENT_URL`을 공통 fallback 링크로 사용합니다.
 
 4. Vercel 배포 환경변수에도 같은 값을 넣습니다.
 5. `/pro`에서 월간 또는 연간 버튼을 누르고 실제 결제창으로 이동하는지 확인합니다.
@@ -59,6 +63,8 @@ GROQ_MODEL=qwen/qwen3-32b
 GEMINI_API_KEY=xxx
 
 NEXT_PUBLIC_PRO_PAYMENT_URL=https://your-payment-link.example
+NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL=https://your-monthly-payment-link.example
+NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL=https://your-yearly-payment-link.example
 
 CAPACITOR_SERVER_URL=https://your-domain.kr
 ```

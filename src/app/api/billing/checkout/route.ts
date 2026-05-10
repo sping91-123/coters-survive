@@ -12,6 +12,16 @@ function makeOrderId(planId: string) {
   return `cr_${planId}_${Date.now()}_${random}`;
 }
 
+function getPaymentUrl(planId: string) {
+  if (planId === "pro_monthly") {
+    return process.env.NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
+  }
+  if (planId === "pro_yearly") {
+    return process.env.NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
+  }
+  return process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
+}
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as CheckoutRequest;
   const plan = findBillingPlan(body.planId);
@@ -30,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   const orderId = makeOrderId(plan.id);
-  const paymentUrl = process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
+  const paymentUrl = getPaymentUrl(plan.id);
   if (paymentUrl) {
     let url: URL;
     try {
