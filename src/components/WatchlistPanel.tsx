@@ -104,18 +104,20 @@ function WatchlistSetupCard({ setup }: { setup: ScoutSetup }) {
 function AddCoinModal({
   watchlist,
   plan,
+  symbols,
   onAdd,
   onRemove,
   onClose
 }: {
   watchlist: string[];
   plan: WatchlistPlan;
+  symbols: string[];
   onAdd: (symbol: string) => void;
   onRemove: (symbol: string) => void;
   onClose: () => void;
 }) {
   const limit = WATCHLIST_LIMIT[plan];
-  const pool = watchlistSymbolPool as readonly string[];
+  const pool = symbols.length > 0 ? symbols : (watchlistSymbolPool as readonly string[]);
 
   // 모달 외부 클릭으로 닫기
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -142,10 +144,10 @@ function AddCoinModal({
           </button>
         </div>
         <p className="mt-1.5 text-xs leading-5 text-slate-500">
-          현재 {watchlist.length}/{limit}개 · 베타 기간에는 전체 공개로 테스트합니다.
+          현재 {watchlist.length}/{limit}개 · 바이낸스 USDT-M 전체 목록 기준입니다.
         </p>
 
-        <div className="mt-4 grid grid-cols-3 gap-2">
+        <div className="mt-4 grid max-h-[54vh] grid-cols-3 gap-2 overflow-y-auto pr-1">
           {pool.map((symbol) => {
             const name = symbolToName(symbol);
             const isAdded = watchlist.includes(symbol);
@@ -200,12 +202,32 @@ export function WatchlistPanel() {
   const limit = WATCHLIST_LIMIT[plan];
 
   const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [availableSymbols, setAvailableSymbols] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [scanState, setScanState] = useState<ScanState>({ status: "idle" });
 
   // localStorage에서 초기 로드
   useEffect(() => {
     setWatchlist(getWatchlist());
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSymbols() {
+      try {
+        const response = await fetch("/api/crypto-symbols", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as { symbols?: Array<{ symbol: string }> };
+        const symbols = (data.symbols ?? []).map((item) => item.symbol);
+        if (!cancelled && symbols.length) setAvailableSymbols(symbols);
+      } catch {
+        // 기본 관심 코인 목록으로 충분히 동작하므로 조용히 대체한다.
+      }
+    }
+    void loadSymbols();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // 레이더 실행
@@ -264,6 +286,7 @@ export function WatchlistPanel() {
         <AddCoinModal
           watchlist={watchlist}
           plan={plan}
+          symbols={availableSymbols}
           onAdd={handleAdd}
           onRemove={handleRemove}
           onClose={() => setShowModal(false)}

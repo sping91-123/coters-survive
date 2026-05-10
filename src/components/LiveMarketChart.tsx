@@ -680,6 +680,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const [showDetailedReadout, setShowDetailedReadout] = useState(true);
   const [showOtherSymbols, setShowOtherSymbols] = useState(false);
+  const [dynamicSymbols, setDynamicSymbols] = useState<string[]>([]);
   const [pineSnapshotInput, setPineSnapshotInput] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const [marketBriefing, setMarketBriefing] = useState<MarketBriefingState>({ status: "idle" });
@@ -687,7 +688,8 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
   const effectiveTradingMode: TradingMode = activeTimeframe === "5m" || activeTimeframe === "15m" ? "scalp" : "swing";
   const modeTimeframes = chartTimeframes;
   const primarySymbols = majorSymbols;
-  const otherSymbols = majorOnly ? [] : altSymbols;
+  const allSelectableSymbols = dynamicSymbols.length > 0 ? dynamicSymbols : symbols;
+  const otherSymbols = majorOnly ? [] : allSelectableSymbols.filter((item) => !majorSymbols.includes(item)).slice(0, 220);
   const isOtherSymbolActive = otherSymbols.includes(symbol);
 
   const cacheKey = `${storagePrefix}.marketCache.${symbol}.${activeTimeframe}.${analysisMode}.${msbMode}`;
@@ -695,6 +697,26 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
   useEffect(() => {
     setOverlaySettings(readOverlaySettings());
   }, []);
+
+  useEffect(() => {
+    if (majorOnly) return;
+    let cancelled = false;
+    async function loadCryptoSymbols() {
+      try {
+        const response = await fetch("/api/crypto-symbols", { cache: "no-store" });
+        if (!response.ok) return;
+        const data = (await response.json()) as { symbols?: Array<{ symbol: string }> };
+        const nextSymbols = (data.symbols ?? []).map((item) => item.symbol);
+        if (!cancelled && nextSymbols.length) setDynamicSymbols(nextSymbols);
+      } catch {
+        // 기본 10개 코인 선택으로 대체한다.
+      }
+    }
+    void loadCryptoSymbols();
+    return () => {
+      cancelled = true;
+    };
+  }, [majorOnly]);
 
   useEffect(() => {
     if (majorOnly && !majorSymbols.includes(symbol)) {
@@ -2991,7 +3013,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
               {isOtherSymbolActive ? symbolLabel(symbol) : "그 외"}
             </button> : null}
             {!majorOnly && showOtherSymbols ? (
-              <div className="absolute bottom-full left-0 z-50 mb-2 grid w-[min(92vw,360px)] grid-cols-4 gap-2 rounded-lg border border-surface-line bg-slate-950 p-2 shadow-[0_-18px_50px_rgba(0,0,0,0.55)]">
+              <div className="absolute bottom-full left-0 z-50 mb-2 grid max-h-[52vh] w-[min(92vw,420px)] grid-cols-4 gap-2 overflow-y-auto rounded-lg border border-surface-line bg-slate-950 p-2 shadow-[0_-18px_50px_rgba(0,0,0,0.55)]">
                 {otherSymbols.map((item) => (
                   <button
                     key={item}

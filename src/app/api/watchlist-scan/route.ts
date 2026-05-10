@@ -10,7 +10,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { scanAllSetups, watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
+import { scanAllSetups, type ScoutSetup } from "@/lib/setupScout";
+import { isLikelyUsdtPerpSymbol } from "@/lib/cryptoUniverse";
 import { isBodyTooLarge, rateLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
@@ -61,10 +62,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "symbols는 배열이어야 합니다." }, { status: 400 });
   }
 
-  // 유효한 Tier 2 심볼만 허용
-  const validPool = watchlistSymbolPool as readonly string[];
+  // 바이낸스 전체 USDT-M 심볼 형식만 허용한다. 실제 존재 여부는 스캔 단계에서 자연스럽게 걸러진다.
   const symbols: string[] = (rawSymbols as unknown[])
-    .filter((s): s is string => typeof s === "string" && validPool.includes(s))
+    .filter((s): s is string => typeof s === "string" && isLikelyUsdtPerpSymbol(s))
     .slice(0, MAX_SYMBOLS);
 
   if (symbols.length === 0) {

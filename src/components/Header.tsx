@@ -16,7 +16,7 @@ export function Header() {
               차트 레이더
             </h1>
             <p className="mt-1 text-sm leading-6 text-slate-400">
-              진입 전, 차트 구조와 리스크를 먼저 감지하세요.
+              코인과 해외주식의 차트 흐름을 빠르게 감지하세요.
             </p>
           </div>
         </Link>

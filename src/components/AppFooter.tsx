@@ -13,8 +13,8 @@ export function AppFooter() {
             레버리지 거래는 원금 손실과 청산 위험이 있으며 모든 투자 판단과 책임은 사용자 본인에게 있습니다.
           </p>
           <p>
-            현재 베타 데이터는 Binance USDT-M 실시간 가격을 기준으로 판독합니다.
-            현물 가격과 일부 차이가 있을 수 있으며, 이후 현물과 해외선물 데이터까지 확대할 예정입니다.
+            코인 베타 데이터는 Binance USDT-M 가격을 기준으로 판독합니다.
+            해외주식 베타 데이터는 지연될 수 있으며, 정식 데이터 계약 전까지 방향 점검용으로 제공됩니다.
           </p>
           <nav className="flex flex-wrap gap-x-3 gap-y-1 text-slate-400" aria-label="서비스 정책">
             <Link href="/terms" className="hover:text-white">

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     default: "차트 레이더 Beta",
     template: "%s | 차트 레이더"
   },
-  description: "진입 전 차트 구조, 손절 기준, 포지션 리스크를 먼저 감지하는 코인 분석 레이더",
+  description: "코인과 해외주식의 차트 구조, 기술지표, 시장 이슈를 빠르게 확인하는 분석 레이더",
   applicationName: "Chart Radar",
   keywords: [
     "매매 리스크",
@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     "포지션 계산",
     "매매 복기",
     "코인 분석",
+    "해외주식 분석",
+    "미국주식",
+    "ETF",
     "MSB",
     "CHoCH",
     "FVG",
@@ -31,7 +34,7 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "차트 레이더 Beta",
-    description: "진입 전 차트 구조와 포지션 리스크를 먼저 감지하세요.",
+    description: "코인과 해외주식의 차트 구조, 기술지표, 시장 이슈를 빠르게 확인하세요.",
     type: "website",
     locale: "ko_KR"
   },
@@ -42,7 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "차트 레이더 Beta",
-    description: "진입 전, 차트 구조와 리스크를 먼저 감지하세요."
+    description: "코인과 해외주식의 차트 구조와 시장 이슈를 빠르게 확인하세요."
   },
   appleWebApp: {
     capable: true,

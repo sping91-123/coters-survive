@@ -2,11 +2,12 @@
 // 차트 레이더의 핵심 페이지로 이동하는 상단 앱 메뉴.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calculator, Coins, History, Newspaper, Radar } from "lucide-react";
+import { Calculator, Coins, History, Newspaper, Radar, TrendingUp } from "lucide-react";
 
 const navItems = [
-  { label: "BTC / ETH", icon: Radar, href: "/survival", match: ["/", "/survival"] },
+  { label: "코인", icon: Radar, href: "/survival", match: ["/survival"] },
   { label: "알트코인", icon: Coins, href: "/alts", match: ["/alts"] },
+  { label: "해외주식", icon: TrendingUp, href: "/stocks", match: ["/stocks"] },
   { label: "레이더뉴스", icon: Newspaper, href: "/news", match: ["/news"] },
   { label: "매매복기", icon: History, href: "/journal", match: ["/journal"] },
   { label: "계산기", icon: Calculator, href: "/calculator", match: ["/calculator"] }
@@ -17,7 +18,7 @@ export function RadarTopNav() {
 
   return (
     <nav className="sticky top-0 z-30 rounded-lg border border-surface-line bg-slate-950/88 p-1.5 shadow-[0_16px_44px_rgba(0,0,0,0.34)] backdrop-blur">
-      <div className="grid grid-cols-5 gap-1">
+      <div className="grid grid-cols-3 gap-1 sm:grid-cols-6">
         {navItems.map(({ label, icon: Icon, href, match }) => {
           const active = match.some((path) => path === pathname);
 

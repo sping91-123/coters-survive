@@ -9,6 +9,7 @@
 
 import { NextResponse } from "next/server";
 import { scanAllSetups, topSetups, type ScoutRiskProfile, type ScoutSetup } from "@/lib/setupScout";
+import { getLiquidCryptoSymbols } from "@/lib/cryptoUniverse";
 import { rateLimit } from "@/lib/server/rateLimit";
 import type { TradingMode } from "@/lib/marketAnalysis";
 
@@ -50,6 +51,12 @@ function setupInScope(setup: ScoutSetup, scope: ScoutScope) {
   return scope === "major" ? isMajor : !isMajor;
 }
 
+async function getScannerSymbols(scope: ScoutScope) {
+  if (scope === "major") return ["BTCUSDT.P", "ETHUSDT.P"];
+  if (scope === "alts") return getLiquidCryptoSymbols({ excludeMajor: true, limit: 36 });
+  return getLiquidCryptoSymbols({ includeMajor: true, limit: 40 });
+}
+
 export async function GET(request: Request) {
   const limit = rateLimit(request, { key: "scout", limit: 20, windowMs: 5 * 60 * 1000 });
   if (!limit.allowed) {
@@ -77,7 +84,8 @@ export async function GET(request: Request) {
 
   // 동시 요청 중 inflight가 있으면 재사용 (thundering-herd 방지)
   if (!inflightByKey.has(cacheKey)) {
-    const promise = scanAllSetups({ mode, riskProfile })
+    const promise = getScannerSymbols(scope)
+      .then((symbols) => scanAllSetups({ mode, riskProfile, symbols }))
       .then((all) => {
         const scoped = all.filter((setup) => setupInScope(setup, scope));
         const top = topSetups(scoped, riskProfile === "radar" ? 6 : 3);

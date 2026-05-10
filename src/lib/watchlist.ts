@@ -7,7 +7,7 @@
  *  - premium / admin: 10개
  */
 
-import { watchlistSymbolPool } from "./setupScout";
+import { isLikelyUsdtPerpSymbol } from "./cryptoUniverse";
 
 export type WatchlistPlan = "free" | "member" | "premium" | "admin";
 
@@ -31,10 +31,8 @@ export function getWatchlist(): string[] {
     window.localStorage.removeItem(LEGACY_STORAGE_KEY);
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    // watchlistSymbolPool에 속하는 항목만 유지
-    const valid = (parsed as string[]).filter((s) =>
-      (watchlistSymbolPool as readonly string[]).includes(s)
-    );
+    // 바이낸스 전체 USDT-M 심볼을 허용한다.
+    const valid = (parsed as string[]).filter((s) => isLikelyUsdtPerpSymbol(s));
     return valid;
   } catch {
     return [];
