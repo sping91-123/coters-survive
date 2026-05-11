@@ -1,6 +1,7 @@
 "use client";
 // 레이더뉴스 상단에 날짜와 중요도가 있는 미국 매크로 일정을 전광판 형태로 보여준다.
-import { CalendarClock, Clock3, Radio, ShieldAlert, TimerReset } from "lucide-react";
+import Link from "next/link";
+import { CalendarClock, ChevronRight, Clock3, Radio, ShieldAlert, TimerReset } from "lucide-react";
 
 type MacroTickerItem = {
   label: string;
@@ -147,33 +148,44 @@ function getTimeLabel(releaseAt: string) {
   return "지난 일정";
 }
 
+function getCompactItem() {
+  const now = Date.now();
+  const upcoming = macroItems
+    .filter((item) => new Date(item.releaseAt).getTime() >= now)
+    .sort((a, b) => {
+      const importanceDiff = b.importance - a.importance;
+      if (importanceDiff !== 0) return importanceDiff;
+      return new Date(a.releaseAt).getTime() - new Date(b.releaseAt).getTime();
+    });
+
+  return upcoming[0] ?? macroItems.find((item) => item.state === "released") ?? macroItems[0];
+}
+
 export function MacroTicker({ compact = false }: { compact?: boolean } = {}) {
   const repeatedItems = [...macroItems, ...macroItems];
 
   if (compact) {
+    const item = getCompactItem();
+
     return (
-      <section className="overflow-hidden rounded-md border border-accent-blue/15 bg-surface-card/78 px-2 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
-        <div className="flex min-h-8 items-center gap-2">
-          <div className="inline-flex shrink-0 items-center gap-1.5 rounded border border-accent-blue/20 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
+      <Link
+        href="/news"
+        className="group flex min-h-10 items-center gap-2 rounded-md border border-accent-blue/15 bg-surface-card/78 px-2.5 py-2 shadow-[0_10px_34px_rgba(0,0,0,0.18)] transition hover:border-accent-blue/35 hover:bg-surface-card"
+      >
+        <div className="inline-flex shrink-0 items-center gap-1.5 rounded border border-accent-blue/20 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
             <Radio size={12} aria-hidden />
             매크로
-          </div>
-          <div className="macro-marquee min-w-0 flex-1">
-            <div className="macro-marquee-track">
-              {repeatedItems.map((item, index) => (
-                <span key={`${item.label}-compact-${index}`} className="mx-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
-                  <span className={`font-black ${compactStateClass(item)}`}>{stateLabel(item)}</span>
-                  <span className="text-white">{item.label}</span>
-                  <span>KST {item.dateKst}</span>
-                  <span className="text-slate-500">{importanceLabel(item.importance)}</span>
-                  <span className="max-w-[18rem] truncate text-slate-500">{item.marketImpact}</span>
-                </span>
-              ))}
-            </div>
-          </div>
-          <span className="hidden shrink-0 text-[10px] font-bold text-slate-600 sm:inline">{updatedAt}</span>
         </div>
-      </section>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[11px] font-black text-white">
+            다음 핵심 일정 · <span className={compactStateClass(item)}>{stateLabel(item)}</span> · {item.label}
+          </p>
+          <p className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
+            KST {item.dateKst} · {importanceLabel(item.importance)} · {item.marketImpact}
+          </p>
+        </div>
+        <ChevronRight size={14} className="shrink-0 text-slate-600 transition group-hover:text-accent-blue" aria-hidden />
+      </Link>
     );
   }
 
