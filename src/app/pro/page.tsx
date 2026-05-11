@@ -3,14 +3,24 @@ import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
 import { ProPricingPanel } from "@/components/ProPricingPanel";
 import { RadarTopNav } from "@/components/RadarTopNav";
+import type { BillingPageScope } from "@/lib/billing";
 
-export default function ProPage() {
+function normalizeBillingScope(market: string | undefined): BillingPageScope {
+  if (market === "crypto" || market === "coin") return "crypto";
+  if (market === "stocks" || market === "stock") return "stocks";
+  return "all";
+}
+
+export default function ProPage({ searchParams }: { searchParams?: { market?: string } }) {
+  const marketScope = normalizeBillingScope(searchParams?.market);
+  const navMarket = marketScope === "stocks" ? "stocks" : "crypto";
+
   return (
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <Header />
-        <RadarTopNav />
-        <ProPricingPanel />
+        <Header market={navMarket} />
+        <RadarTopNav market={navMarket} />
+        <ProPricingPanel marketScope={marketScope} />
         <AppFooter />
       </div>
     </main>

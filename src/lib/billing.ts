@@ -1,5 +1,6 @@
 // Chart Radar 구독 플랜과 출시용 결제 정책을 한곳에서 관리한다.
 export type BillingMarketScope = "trial" | "crypto" | "stocks" | "bundle";
+export type BillingPageScope = "all" | "crypto" | "stocks";
 
 export type BillingPlanId =
   | "free"
@@ -173,6 +174,18 @@ export function findBillingPlan(planId: string | null | undefined) {
 
 export function getBillingPlansByScope(scope: BillingMarketScope) {
   return billingPlans.filter((plan) => plan.marketScope === scope);
+}
+
+export function getBillingPlansForPage(scope: BillingPageScope) {
+  if (scope === "crypto") {
+    return billingPlans.filter((plan) => plan.marketScope === "trial" || plan.marketScope === "crypto" || plan.marketScope === "bundle");
+  }
+
+  if (scope === "stocks") {
+    return billingPlans.filter((plan) => plan.marketScope === "trial" || plan.marketScope === "stocks" || plan.marketScope === "bundle");
+  }
+
+  return billingPlans;
 }
 
 export function formatKrw(value: number) {

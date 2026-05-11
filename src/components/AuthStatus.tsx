@@ -1,11 +1,11 @@
 "use client";
-
+// 로그인 상태와 PRO 미리보기 권한을 상단에 표시한다.
 import Link from "next/link";
-import { Loader2, LogIn, LogOut } from "lucide-react";
+import { Crown, Loader2, LogIn, LogOut } from "lucide-react";
 import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
 
 export function AuthStatus() {
-  const { user, isLoading, signOut } = useSupabaseAuth();
+  const { user, profile, isLoading, signOut } = useSupabaseAuth();
 
   if (isLoading) {
     return (
@@ -29,19 +29,34 @@ export function AuthStatus() {
   }
 
   const name = user.user_metadata?.name ?? user.user_metadata?.full_name ?? user.email ?? "회원";
+  const plan = profile?.plan ?? "free";
+  const isPaid = plan === "member" || plan === "premium" || plan === "admin";
 
   return (
-    <button
-      type="button"
-      onClick={() => {
-        signOut();
-        window.location.reload();
-      }}
-      className="inline-flex items-center gap-1.5 rounded-md border border-signal-success/20 bg-signal-success/10 px-2.5 py-1 text-xs font-semibold text-signal-success hover:border-signal-success/50"
-      title={`${name} 로그아웃`}
-    >
-      <LogOut size={13} aria-hidden />
-      {name.length > 8 ? `${name.slice(0, 8)}...` : name}
-    </button>
+    <div className="flex flex-col items-end gap-1 sm:flex-row sm:items-center">
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-black ${
+          isPaid
+            ? "border-amber-300/35 bg-amber-300/10 text-amber-200"
+            : "border-cyan-300/35 bg-cyan-300/10 text-cyan-200"
+        }`}
+        title={isPaid ? `${plan.toUpperCase()} 권한` : "결제 전 로그인 사용자에게 제공되는 PRO 미리보기입니다."}
+      >
+        <Crown size={13} aria-hidden />
+        {isPaid ? plan.toUpperCase() : "PRO 미리보기"}
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          signOut();
+          window.location.reload();
+        }}
+        className="inline-flex items-center gap-1.5 rounded-md border border-signal-success/20 bg-signal-success/10 px-2.5 py-1 text-xs font-semibold text-signal-success hover:border-signal-success/50"
+        title={`${name} 로그아웃`}
+      >
+        <LogOut size={13} aria-hidden />
+        {name.length > 8 ? `${name.slice(0, 8)}...` : name}
+      </button>
+    </div>
   );
 }

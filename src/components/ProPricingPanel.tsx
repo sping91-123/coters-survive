@@ -5,7 +5,13 @@ import Link from "next/link";
 import { ArrowRight, BellRing, Check, Crown, Loader2, Radar, ShieldCheck, Sparkles, TimerReset } from "lucide-react";
 import { RadarAlertCenter } from "@/components/RadarAlertCenter";
 import { UsageMeterPanel } from "@/components/UsageMeterPanel";
-import { billingPlans, isYearlyBillingPlan, subscriptionTrustNotes, type BillingPlanId } from "@/lib/billing";
+import {
+  getBillingPlansForPage,
+  isYearlyBillingPlan,
+  subscriptionTrustNotes,
+  type BillingPageScope,
+  type BillingPlanId
+} from "@/lib/billing";
 
 type CheckoutState =
   | { status: "idle" }
@@ -48,8 +54,58 @@ const valueRows = [
   }
 ];
 
-export function ProPricingPanel() {
+const scopeCopy: Record<
+  BillingPageScope,
+  {
+    eyebrow: string;
+    title: string;
+    body: string;
+    representativePrice: string;
+    representativeBody: string;
+    highlightedPlanId: BillingPlanId;
+    freeHref: string;
+    filterNotice: string;
+  }
+> = {
+  all: {
+    eyebrow: "Chart Radar Pro",
+    title: "매일 시장을 확인하는 시간을 줄이고, 놓칠 만한 변화는 먼저 띄워드립니다.",
+    body:
+      "무료로 핵심 흐름을 먼저 확인하고, Pro에서는 전체 코인 레이더, 해외주식 레이더, AI 브리핑, 관심종목 알림과 저장 기능을 더 넓게 사용합니다. 신호를 판매하는 서비스가 아니라, 매일 시장을 빠르게 정리하는 레이더입니다.",
+    representativePrice: "월 24,900원",
+    representativeBody: "자주 켜는 사용자에게 필요한 코인, 해외주식, AI 브리핑, 관심종목 알림을 하나로 묶었습니다.",
+    highlightedPlanId: "bundle_monthly",
+    freeHref: "/survival",
+    filterNotice: "전체 요금제를 보고 있습니다. 코인과 해외주식을 모두 쓰면 올마켓 플랜이 유리합니다."
+  },
+  crypto: {
+    eyebrow: "Crypto Radar Pro",
+    title: "코인 화면에서는 코인 전용 플랜과 올마켓 플랜만 보여드립니다.",
+    body:
+      "BTC·ETH, 알트코인, 코인뉴스, 코인알림을 중심으로 쓰는 사용자라면 코인 전용 플랜으로 충분합니다. 해외주식까지 함께 볼 예정이면 올마켓 플랜을 선택하면 됩니다.",
+    representativePrice: "월 14,900원",
+    representativeBody: "코인 레이더, ICT 판독, 기술지표, 코인뉴스, 코인알림을 코인 시장에 맞춰 엽니다.",
+    highlightedPlanId: "crypto_monthly",
+    freeHref: "/survival",
+    filterNotice: "코인 전용 화면입니다. 해외주식 전용 플랜은 숨기고, 올마켓 플랜만 함께 보여드립니다."
+  },
+  stocks: {
+    eyebrow: "Stock Radar Pro",
+    title: "해외주식 화면에서는 해외주식 전용 플랜과 올마켓 플랜만 보여드립니다.",
+    body:
+      "미국주식, ETF, 지수, 실적과 매크로 흐름을 중심으로 쓰는 사용자라면 해외주식 전용 플랜으로 충분합니다. 코인까지 함께 볼 예정이면 올마켓 플랜을 선택하면 됩니다.",
+    representativePrice: "월 14,900원",
+    representativeBody: "해외주식 레이더, 기술지표, 주식뉴스, 매크로 브리핑, 주식알림을 주식 시장에 맞춰 엽니다.",
+    highlightedPlanId: "stocks_monthly",
+    freeHref: "/stocks",
+    filterNotice: "해외주식 전용 화면입니다. 코인 전용 플랜은 숨기고, 올마켓 플랜만 함께 보여드립니다."
+  }
+};
+
+export function ProPricingPanel({ marketScope = "all" }: { marketScope?: BillingPageScope } = {}) {
   const [checkoutState, setCheckoutState] = useState<CheckoutState>({ status: "idle" });
+  const visiblePlans = getBillingPlansForPage(marketScope);
+  const copy = scopeCopy[marketScope];
 
   async function startCheckout(planId: BillingPlanId) {
     setCheckoutState({ status: "loading", planId });
@@ -92,22 +148,20 @@ export function ProPricingPanel() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-200">
-              Chart Radar Pro
+              {copy.eyebrow}
             </p>
             <h2 className="mt-4 text-3xl font-black tracking-normal text-white sm:text-4xl">
-              매일 시장을 확인하는 시간을 줄이고, 놓칠 만한 변화는 먼저 띄워드립니다.
+              {copy.title}
             </h2>
             <p className="mt-4 text-sm leading-7 text-slate-300">
-              무료로 핵심 흐름을 먼저 확인하고, Pro에서는 전체 코인 레이더, 해외주식 레이더, AI 브리핑,
-              관심종목 알림과 저장 기능을 더 넓게 사용합니다. 신호를 판매하는 서비스가 아니라,
-              매일 시장을 빠르게 정리하는 레이더입니다.
+              {copy.body}
             </p>
           </div>
           <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 lg:w-72">
             <p className="font-black text-white">대표 플랜</p>
-            <p className="mt-2 text-3xl font-black text-cyan-200">월 24,900원</p>
+            <p className="mt-2 text-3xl font-black text-cyan-200">{copy.representativePrice}</p>
             <p className="mt-2 leading-6 text-slate-400">
-              자주 켜는 사용자에게 필요한 레이더, AI 브리핑, 관심종목 알림을 하나로 묶었습니다.
+              {copy.representativeBody}
             </p>
             <Link
               href="#plans"
@@ -130,6 +184,10 @@ export function ProPricingPanel() {
         </div>
       </div>
 
+      <div className="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm leading-6 text-cyan-100">
+        {copy.filterNotice}
+      </div>
+
       <div className="grid gap-3 lg:grid-cols-3">
         {valueRows.map(({ icon: Icon, title, body }) => (
           <div key={title} className="rounded-lg border border-surface-line bg-surface-card p-4">
@@ -141,8 +199,8 @@ export function ProPricingPanel() {
       </div>
 
       <div id="plans" className="grid scroll-mt-28 gap-4 lg:grid-cols-3">
-        {billingPlans.map((plan) => {
-          const highlighted = plan.id === "bundle_monthly";
+        {visiblePlans.map((plan) => {
+          const highlighted = plan.id === copy.highlightedPlanId;
           const isYearly = isYearlyBillingPlan(plan.id);
           const isLoading = checkoutState.status === "loading" && checkoutState.planId === plan.id;
 
@@ -188,7 +246,7 @@ export function ProPricingPanel() {
 
               {plan.id === "free" ? (
                 <Link
-                  href="/survival"
+                  href={copy.freeHref}
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/10 bg-white/5 px-4 text-sm font-black text-white transition hover:bg-white/10"
                 >
                   무료로 먼저 보기

@@ -11,7 +11,7 @@ export default function NewsPage({ searchParams }: { searchParams?: { market?: s
   return (
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <Header />
+        <Header market={market} />
         <RadarTopNav market={market} />
         <MacroTicker />
         <RadarNewsPanel market={market} />

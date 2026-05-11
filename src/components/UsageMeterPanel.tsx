@@ -11,6 +11,7 @@ import {
   USAGE_CHANGED_EVENT,
   type UsageSnapshot
 } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
 
 function barColor(percent: number, isOverFree: boolean) {
   if (isOverFree) return "bg-rose-400";
@@ -18,7 +19,12 @@ function barColor(percent: number, isOverFree: boolean) {
   return "bg-cyan-300";
 }
 
-function UsageRow({ state }: { state: ReturnType<typeof getUsageBucketStates>[number] }) {
+function UsageRow({ state, isProPreview }: { state: ReturnType<typeof getUsageBucketStates>[number]; isProPreview: boolean }) {
+  const activeLimit = isProPreview ? state.proDailyLimit : state.freeDailyLimit;
+  const activeRemaining = Math.max(0, activeLimit - state.used);
+  const activePercent = Math.min(100, Math.round((state.used / activeLimit) * 100));
+  const isOverActiveLimit = state.used >= activeLimit;
+
   return (
     <div className="rounded-md border border-white/10 bg-black/20 p-3">
       <div className="flex items-center justify-between gap-3">
@@ -27,27 +33,29 @@ function UsageRow({ state }: { state: ReturnType<typeof getUsageBucketStates>[nu
           <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">{state.description}</p>
         </div>
         <span className={`shrink-0 rounded border px-2 py-1 text-[11px] font-black ${
-          state.isOverFree
+          isOverActiveLimit
             ? "border-rose-400/30 bg-rose-500/10 text-rose-300"
             : "border-cyan-300/30 bg-cyan-300/10 text-cyan-200"
         }`}
         >
-          {state.used}/{state.freeDailyLimit}
+          {state.used}/{activeLimit}
         </span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
-        <div className={`h-full rounded-full ${barColor(state.freePercent, state.isOverFree)}`} style={{ width: `${state.freePercent}%` }} />
+        <div className={`h-full rounded-full ${barColor(activePercent, isOverActiveLimit)}`} style={{ width: `${activePercent}%` }} />
       </div>
       <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-slate-500">
-        <span>Free 잔여 {state.freeRemaining}회</span>
-        <span>Pro 일 {state.proDailyLimit}회</span>
+        <span>{isProPreview ? "PRO 미리보기" : "Free"} 잔여 {activeRemaining}회</span>
+        <span>Free {state.freeDailyLimit}회 · Pro {state.proDailyLimit}회</span>
       </div>
     </div>
   );
 }
 
 export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
+  const { user } = useSupabaseAuth();
   const [snapshot, setSnapshot] = useState<UsageSnapshot>(() => readUsageSnapshot());
+  const isProPreview = Boolean(user);
 
   useEffect(() => {
     const refresh = () => setSnapshot(readUsageSnapshot());
@@ -63,7 +71,9 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
   const summary = useMemo(() => summarizeUsage(snapshot), [snapshot]);
   const visibleStates = compact ? summary.states.slice(0, 3) : summary.states;
   const title =
-    summary.overCount > 0
+    isProPreview
+      ? "로그인 계정은 PRO 미리보기 한도로 표시됩니다."
+      : summary.overCount > 0
       ? "오늘 무료 기준을 넘긴 항목이 있습니다."
       : summary.usedTotal > 0
         ? "오늘 레이더 사용량이 쌓이고 있습니다."
@@ -80,7 +90,9 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
             <p className="text-xs font-black uppercase tracking-[0.2em] text-cyan-300">Usage Radar</p>
             <h2 className="mt-1 text-lg font-black text-white">{title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
-              Free는 핵심 흐름을 확인하는 체험 모드이고, Pro는 코인·해외주식·AI·알림을 매일 여러 번 돌리는 운영 모드입니다.
+              {isProPreview
+                ? "정식 결제 전 데모를 위해 로그인 사용자에게 PRO 미리보기 한도를 보여드립니다. 결제 연동 후에는 실제 구독 권한으로 전환됩니다."
+                : "Free는 핵심 흐름을 확인하는 체험 모드이고, Pro는 코인·해외주식·AI·알림을 매일 여러 번 돌리는 운영 모드입니다."}
             </p>
           </div>
         </div>
@@ -105,7 +117,7 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
 
       <div className={`mt-4 grid gap-2 ${compact ? "lg:grid-cols-3" : "md:grid-cols-2 lg:grid-cols-3"}`}>
         {visibleStates.map((state) => (
-          <UsageRow key={state.id} state={state} />
+          <UsageRow key={state.id} state={state} isProPreview={isProPreview} />
         ))}
       </div>
 

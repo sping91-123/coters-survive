@@ -4,7 +4,11 @@ import Image from "next/image";
 import { AuthStatus } from "@/components/AuthStatus";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
-export function Header() {
+type HeaderMarket = "crypto" | "stocks";
+
+export function Header({ market }: { market?: HeaderMarket } = {}) {
+  const proHref = market === "crypto" ? "/pro?market=crypto" : market === "stocks" ? "/pro?market=stocks" : "/pro";
+
   return (
     <header className="space-y-4 pt-6">
       <div className="flex items-center justify-between gap-4">
@@ -30,7 +34,7 @@ export function Header() {
             Official
           </span>
           <Link
-            href="/pro"
+            href={proHref}
             className="rounded-md border border-cyan-300/30 bg-cyan-300 px-2.5 py-1 text-xs font-black text-slate-950 transition hover:bg-cyan-200"
           >
             Pro

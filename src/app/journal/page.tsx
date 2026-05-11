@@ -231,6 +231,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
   const [market, setMarket] = useState<"crypto" | "stocks">(initialMarket);
   const marketLabel = market === "stocks" ? "해외주식" : "코인";
   const { session, user, profile, isLoading: isLoadingAuth } = useSupabaseAuth();
+  const profilePlanLabel = profile?.plan && profile.plan !== "free" ? profile.plan.toUpperCase() : "PRO 미리보기";
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [localEntries, setLocalEntries] = useState<JournalEntry[]>([]);
   const [title, setTitle] = useState("");
@@ -396,7 +397,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
   return (
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <Header />
+        <Header market={market} />
         <RadarTopNav market={market} />
 
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
@@ -499,7 +500,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-md border border-accent-blue/25 bg-accent-blue/10 px-2 py-1 text-accent-blue">
                   <BadgeCheck size={12} aria-hidden />
-                  {profile?.plan?.toUpperCase() ?? "FREE"}
+                  {profilePlanLabel}
                 </span>
               </div>
             ) : null}

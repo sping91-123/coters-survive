@@ -106,7 +106,7 @@ export default function CalculatorPage({ searchParams }: { searchParams?: { mark
   return (
     <main className="min-h-screen px-4 pb-10">
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
-        <Header />
+        <Header market={market} />
         <RadarTopNav market={market} />
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
