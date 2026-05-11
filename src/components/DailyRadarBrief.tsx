@@ -321,16 +321,16 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
   }, [loadBrief]);
 
   useEffect(() => {
-    setSavedPresetIds(new Set(readSetupAlertPresets().map((preset) => preset.id)));
+    setSavedPresetIds(new Set(readSetupAlertPresets("crypto").map((preset) => preset.id)));
   }, []);
 
   function toggleSetupAlert(setup: ScoutSetup) {
-    const preset = buildSetupAlertPreset(setup);
-    const current = readSetupAlertPresets();
+    const preset = buildSetupAlertPreset(setup, "crypto");
+    const current = readSetupAlertPresets("crypto");
     const exists = current.some((item) => item.id === preset.id);
     const next = exists ? current.filter((item) => item.id !== preset.id) : [preset, ...current.filter((item) => item.id !== preset.id)];
 
-    writeSetupAlertPresets(next);
+    writeSetupAlertPresets(next, "crypto");
     setSavedPresetIds(new Set(next.map((item) => item.id)));
     if (!exists) {
       recordUsageEvent("alertRule");
@@ -458,7 +458,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
                     <MiniSetupCard
                       key={`${setup.symbol}-${setup.timeframe}-${setup.mode}`}
                       setup={setup}
-                      isSaved={savedPresetIds.has(getSetupAlertPresetId(setup))}
+                      isSaved={savedPresetIds.has(getSetupAlertPresetId(setup, "crypto"))}
                       onToggleAlert={toggleSetupAlert}
                     />
                   ))}

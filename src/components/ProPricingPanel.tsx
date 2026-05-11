@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, BellRing, Check, Crown, Loader2, Radar, ShieldCheck, Sparkles, TimerReset } from "lucide-react";
 import { RadarAlertCenter } from "@/components/RadarAlertCenter";
 import { UsageMeterPanel } from "@/components/UsageMeterPanel";
-import { billingPlans, subscriptionTrustNotes, type BillingPlanId } from "@/lib/billing";
+import { billingPlans, isYearlyBillingPlan, subscriptionTrustNotes, type BillingPlanId } from "@/lib/billing";
 
 type CheckoutState =
   | { status: "idle" }
@@ -105,7 +105,7 @@ export function ProPricingPanel() {
           </div>
           <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 lg:w-72">
             <p className="font-black text-white">대표 플랜</p>
-            <p className="mt-2 text-3xl font-black text-cyan-200">월 19,900원</p>
+            <p className="mt-2 text-3xl font-black text-cyan-200">월 24,900원</p>
             <p className="mt-2 leading-6 text-slate-400">
               자주 켜는 사용자에게 필요한 레이더, AI 브리핑, 관심종목 알림을 하나로 묶었습니다.
             </p>
@@ -142,7 +142,8 @@ export function ProPricingPanel() {
 
       <div id="plans" className="grid scroll-mt-28 gap-4 lg:grid-cols-3">
         {billingPlans.map((plan) => {
-          const highlighted = plan.id === "pro_monthly";
+          const highlighted = plan.id === "bundle_monthly";
+          const isYearly = isYearlyBillingPlan(plan.id);
           const isLoading = checkoutState.status === "loading" && checkoutState.planId === plan.id;
 
           return (
@@ -164,7 +165,7 @@ export function ProPricingPanel() {
                 {highlighted ? <Crown className="text-cyan-300" size={22} aria-hidden /> : null}
               </div>
               <p className="mt-4 text-3xl font-black text-white">{plan.priceLabel}</p>
-              {plan.id === "pro_yearly" ? (
+              {isYearly && plan.id !== "free" ? (
                 <p className="mt-1 text-xs font-bold text-cyan-200">월 환산 약 {plan.monthlyValue.toLocaleString("ko-KR")}원</p>
               ) : null}
               <p className="mt-4 min-h-16 text-sm leading-6 text-slate-400">{plan.description}</p>
@@ -204,7 +205,7 @@ export function ProPricingPanel() {
                   } disabled:cursor-wait disabled:opacity-70`}
                 >
                   {isLoading ? <Loader2 className="animate-spin" size={16} aria-hidden /> : null}
-                  {isLoading ? "결제 상태 확인 중" : plan.id === "pro_yearly" ? "연간으로 시작하기" : "월간으로 시작하기"}
+                  {isLoading ? "결제 상태 확인 중" : isYearly ? "연간으로 시작하기" : "월간으로 시작하기"}
                 </button>
               )}
             </article>

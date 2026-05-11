@@ -105,3 +105,17 @@ Chart Radar is a market analysis and education tool. It provides market structur
 - 알림 기능은 브라우저 알림 권한 요청 실패 시에도 앱이 멈추지 않음.
 - AI API 호출 제한이 켜져 있음.
 - 앱 설명에 수익 보장, 매수 신호, 자동매매처럼 오해될 표현이 없음.
+# 2026-05-11 App Store 상품 ID 최신 구조.
+
+정식 출시용 구독 상품은 코인, 해외주식, 번들로 나눕니다.
+
+| 상품 | 상품 ID | 표시 이름 |
+| --- | --- | --- |
+| Crypto 월간 | `chart_radar_crypto_monthly` | Chart Radar Crypto 월간 |
+| Crypto 연간 | `chart_radar_crypto_yearly` | Chart Radar Crypto 연간 |
+| Stock 월간 | `chart_radar_stocks_monthly` | Chart Radar Stock 월간 |
+| Stock 연간 | `chart_radar_stocks_yearly` | Chart Radar Stock 연간 |
+| Bundle 월간 | `chart_radar_bundle_monthly` | Chart Radar All Market 월간 |
+| Bundle 연간 | `chart_radar_bundle_yearly` | Chart Radar All Market 연간 |
+
+기존 `chart_radar_pro_monthly`, `chart_radar_pro_yearly`는 이전 설계 메모로만 남기고 새 상품 생성에는 사용하지 않습니다.

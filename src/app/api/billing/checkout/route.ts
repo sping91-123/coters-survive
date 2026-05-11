@@ -13,13 +13,22 @@ function makeOrderId(planId: string) {
 }
 
 function getPaymentUrl(planId: string) {
-  if (planId === "pro_monthly") {
-    return process.env.NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
-  }
-  if (planId === "pro_yearly") {
-    return process.env.NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
-  }
-  return process.env.NEXT_PUBLIC_PRO_PAYMENT_URL;
+  const paymentUrlByPlan: Record<string, string | undefined> = {
+    crypto_monthly: process.env.NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL,
+    crypto_yearly: process.env.NEXT_PUBLIC_CRYPTO_YEARLY_PAYMENT_URL,
+    stocks_monthly: process.env.NEXT_PUBLIC_STOCKS_MONTHLY_PAYMENT_URL,
+    stocks_yearly: process.env.NEXT_PUBLIC_STOCKS_YEARLY_PAYMENT_URL,
+    bundle_monthly: process.env.NEXT_PUBLIC_BUNDLE_MONTHLY_PAYMENT_URL,
+    bundle_yearly: process.env.NEXT_PUBLIC_BUNDLE_YEARLY_PAYMENT_URL
+  };
+
+  return (
+    paymentUrlByPlan[planId] ??
+    (planId.endsWith("_yearly")
+      ? process.env.NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL
+      : process.env.NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL) ??
+    process.env.NEXT_PUBLIC_PRO_PAYMENT_URL
+  );
 }
 
 export async function POST(request: Request) {

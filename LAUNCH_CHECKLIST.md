@@ -108,3 +108,17 @@ dev 서버가 켜진 상태에서 `npm run build`를 실행하면 `.next` 안의
 - `/alerts` 알림 조건 설정 수.
 - `/pro` 진입률과 결제 버튼 클릭률.
 - 실제 결제 전환 수.
+# 2026-05-11 결제 상품 최신 메모.
+
+정식 출시 결제는 `Crypto Radar`, `Stock Radar`, `All Market Radar` 세 축으로 나눕니다. 환경변수는 아래 여섯 개를 우선 입력합니다.
+
+```env
+NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL=
+NEXT_PUBLIC_CRYPTO_YEARLY_PAYMENT_URL=
+NEXT_PUBLIC_STOCKS_MONTHLY_PAYMENT_URL=
+NEXT_PUBLIC_STOCKS_YEARLY_PAYMENT_URL=
+NEXT_PUBLIC_BUNDLE_MONTHLY_PAYMENT_URL=
+NEXT_PUBLIC_BUNDLE_YEARLY_PAYMENT_URL=
+```
+
+기존 `NEXT_PUBLIC_PRO_*` 값은 fallback으로만 남겨둡니다.

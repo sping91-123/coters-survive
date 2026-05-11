@@ -1,12 +1,17 @@
 // 공개 RSS 뉴스 제목을 수집해 레이더뉴스 카드 데이터로 변환하는 API.
 import { NextResponse } from "next/server";
 import { XMLParser } from "fast-xml-parser";
-import { createRadarNewsItem, type RadarNewsBriefing, type RadarNewsDirection, type RadarNewsItem } from "@/lib/radarNews";
+import {
+  createRadarNewsItem,
+  type RadarNewsBriefing,
+  type RadarNewsDirection,
+  type RadarNewsItem,
+  type RadarNewsMarket
+} from "@/lib/radarNews";
 import { rateLimit } from "@/lib/server/rateLimit";
 
 export const runtime = "nodejs";
 
-type RadarNewsMarket = "crypto" | "stocks";
 type NewsFeed = {
   source: string;
   url: string;
@@ -195,7 +200,7 @@ async function translateTitleToKorean(title: string) {
   return fallback;
 }
 
-async function loadFeed(feed: NewsFeed) {
+async function loadFeed(feed: NewsFeed, market: RadarNewsMarket) {
   const response = await fetch(feed.url, {
     headers: {
       "user-agent": "ChartRadarBot/0.1 (+https://chartradar.local)"
@@ -234,7 +239,7 @@ async function loadFeed(feed: NewsFeed) {
         translatedTitle,
         link,
         publishedAt: toIsoDate(publishedAt)
-      });
+      }, market);
     })
   );
 
@@ -549,7 +554,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ ...cache[market], market, cached: true });
   }
 
-  const settled = await Promise.allSettled(feeds.map((feed) => loadFeed(feed)));
+  const settled = await Promise.allSettled(feeds.map((feed) => loadFeed(feed, market)));
   const failedSources = settled
     .map((result, index) => (result.status === "rejected" ? feeds[index].source : null))
     .filter((source): source is string => Boolean(source));

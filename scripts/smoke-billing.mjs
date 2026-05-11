@@ -1,4 +1,4 @@
-// 출시 전 구독 플랜과 결제 문서의 일치 여부를 점검하는 로컬 스모크 테스트다.
+// 출시용 구독 상품 ID와 결제 환경변수 구성을 빠르게 점검하는 로컬 스모크 테스트다.
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -29,48 +29,79 @@ function expectIncludes(source, value, label, fileName) {
 
 const billing = read("src/lib/billing.ts");
 const envExample = read(".env.example");
-const paymentDoc = read("docs/payment-launch.md");
-const appStoreDoc = read("docs/app-store-release.md");
 
 if (!billing) fail("결제 플랜 소스", "src/lib/billing.ts 파일을 읽지 못했습니다.");
 if (!envExample) fail("환경변수 예시", ".env.example 파일을 읽지 못했습니다.");
 
-for (const planId of ["free", "pro_monthly", "pro_yearly"]) {
-  expectIncludes(billing, `id: "${planId}"`, `플랜 ID ${planId}`, "src/lib/billing.ts");
-}
+const planIds = [
+  "free",
+  "crypto_monthly",
+  "crypto_yearly",
+  "stocks_monthly",
+  "stocks_yearly",
+  "bundle_monthly",
+  "bundle_yearly"
+];
 
-for (const productId of ["chart_radar_pro_monthly", "chart_radar_pro_yearly"]) {
-  expectIncludes(billing, productId, `앱스토어 상품 ID ${productId}`, "src/lib/billing.ts");
-  expectIncludes(appStoreDoc, productId, `앱스토어 문서 상품 ID ${productId}`, "docs/app-store-release.md");
-}
+const productIds = [
+  "chart_radar_crypto_monthly",
+  "chart_radar_crypto_yearly",
+  "chart_radar_stocks_monthly",
+  "chart_radar_stocks_yearly",
+  "chart_radar_bundle_monthly",
+  "chart_radar_bundle_yearly"
+];
 
-for (const envName of [
+const paymentEnvNames = [
   "NEXT_PUBLIC_PRO_PAYMENT_URL",
   "NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL",
   "NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL",
-]) {
+  "NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL",
+  "NEXT_PUBLIC_CRYPTO_YEARLY_PAYMENT_URL",
+  "NEXT_PUBLIC_STOCKS_MONTHLY_PAYMENT_URL",
+  "NEXT_PUBLIC_STOCKS_YEARLY_PAYMENT_URL",
+  "NEXT_PUBLIC_BUNDLE_MONTHLY_PAYMENT_URL",
+  "NEXT_PUBLIC_BUNDLE_YEARLY_PAYMENT_URL"
+];
+
+for (const planId of planIds) {
+  expectIncludes(billing, `id: "${planId}"`, `플랜 ID ${planId}`, "src/lib/billing.ts");
+}
+
+for (const productId of productIds) {
+  expectIncludes(billing, productId, `앱스토어 상품 ID ${productId}`, "src/lib/billing.ts");
+}
+
+for (const envName of paymentEnvNames) {
   expectIncludes(envExample, envName, `결제 환경변수 ${envName}`, ".env.example");
-  expectIncludes(paymentDoc, envName, `결제 문서 환경변수 ${envName}`, "docs/payment-launch.md");
 }
 
-const monthlyAmount = /id:\s*"pro_monthly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
-const yearlyAmount = /id:\s*"pro_yearly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
-const yearlyMonthlyValue = /id:\s*"pro_yearly"[\s\S]*?monthlyValue:\s*(\d+)/.exec(billing)?.[1];
+const cryptoAmount = /id:\s*"crypto_monthly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
+const stocksAmount = /id:\s*"stocks_monthly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
+const bundleAmount = /id:\s*"bundle_monthly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
+const bundleYearlyAmount = /id:\s*"bundle_yearly"[\s\S]*?billingAmount:\s*(\d+)/.exec(billing)?.[1];
+const bundleYearlyMonthlyValue = /id:\s*"bundle_yearly"[\s\S]*?monthlyValue:\s*(\d+)/.exec(billing)?.[1];
 
-if (Number(monthlyAmount) === 19900) {
-  pass("월간 실제 청구 금액", "19,900원");
+if (Number(cryptoAmount) === 14900) {
+  pass("코인 월간 청구 금액", "14,900원.");
 } else {
-  fail("월간 실제 청구 금액", `예상 19900, 현재 ${monthlyAmount ?? "미확인"}`);
+  fail("코인 월간 청구 금액", `예상 14900, 현재 ${cryptoAmount ?? "미확인"}.`);
 }
 
-if (Number(yearlyAmount) === 199000) {
-  pass("연간 실제 청구 금액", "199,000원");
+if (Number(stocksAmount) === 14900) {
+  pass("해외주식 월간 청구 금액", "14,900원.");
 } else {
-  fail("연간 실제 청구 금액", `예상 199000, 현재 ${yearlyAmount ?? "미확인"}`);
+  fail("해외주식 월간 청구 금액", `예상 14900, 현재 ${stocksAmount ?? "미확인"}.`);
 }
 
-if (Number(yearlyMonthlyValue) > 0 && Number(yearlyMonthlyValue) < Number(yearlyAmount)) {
-  pass("연간 월 환산가 분리", `월 환산가 ${yearlyMonthlyValue}원과 실제 청구 금액 ${yearlyAmount}원이 분리되어 있습니다.`);
+if (Number(bundleAmount) === 24900 && Number(bundleAmount) < Number(cryptoAmount) + Number(stocksAmount)) {
+  pass("번들 월간 할인 구조", "개별 결제보다 낮은 24,900원.");
+} else {
+  fail("번들 월간 할인 구조", "코인+주식 개별 결제보다 번들 가격이 낮아야 합니다.");
+}
+
+if (Number(bundleYearlyMonthlyValue) > 0 && Number(bundleYearlyMonthlyValue) < Number(bundleYearlyAmount)) {
+  pass("연간 월 환산가 분리", `월 환산가 ${bundleYearlyMonthlyValue}원과 실제 청구 금액 ${bundleYearlyAmount}원이 분리되어 있습니다.`);
 } else {
   fail("연간 월 환산가 분리", "monthlyValue와 billingAmount 관계를 확인해 주세요.");
 }
@@ -86,4 +117,4 @@ if (failures.length > 0) {
   process.exit(1);
 }
 
-console.log("\n구독 플랜과 결제 문서가 기본 점검을 통과했습니다.");
+console.log("\n구독 상품과 결제 환경변수 구성이 기본 검사를 통과했습니다.");

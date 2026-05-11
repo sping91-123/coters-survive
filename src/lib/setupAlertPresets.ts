@@ -1,8 +1,11 @@
 // 레이더 TOP 감지를 사용자가 다시 볼 감시 조건으로 저장하는 브라우저 저장 로직이다.
 import type { ScoutSetup } from "@/lib/setupScout";
 
+export type SetupAlertMarket = "crypto" | "stocks";
+
 export interface SetupAlertPreset {
   id: string;
+  market: SetupAlertMarket;
   symbol: string;
   mode?: ScoutSetup["mode"];
   timeframe: string;
@@ -15,6 +18,7 @@ export interface SetupAlertPreset {
 
 export interface SetupAlertMatch {
   id: string;
+  market: SetupAlertMarket;
   preset: SetupAlertPreset;
   setup: {
     symbol: string;
@@ -30,6 +34,7 @@ export interface SetupAlertMatch {
 }
 
 export interface SetupAlertMonitorStatus {
+  market: SetupAlertMarket;
   checkedAt: number;
   presetCount: number;
   setupCount: number;
@@ -50,47 +55,103 @@ function canUseStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
 }
 
-export function getSetupAlertPresetId(setup: Pick<ScoutSetup, "symbol" | "timeframe" | "mode" | "plan">) {
-  return `${setup.symbol}:${setup.timeframe}:${setup.mode}:${setup.plan.side}`;
+function marketStorageKey(baseKey: string, market: SetupAlertMarket) {
+  return `${baseKey}.${market}`;
 }
 
-export function readSetupAlertPresets(): SetupAlertPreset[] {
+function storageKeysFor(baseKey: string, market?: SetupAlertMarket) {
+  if (market === "stocks") return [marketStorageKey(baseKey, "stocks")];
+  if (market === "crypto") return [marketStorageKey(baseKey, "crypto"), baseKey];
+  return [marketStorageKey(baseKey, "crypto"), marketStorageKey(baseKey, "stocks"), baseKey];
+}
+
+function normalizeMarket(value: unknown): SetupAlertMarket {
+  return value === "stocks" ? "stocks" : "crypto";
+}
+
+export function getSetupAlertPresetId(
+  setup: Pick<ScoutSetup, "symbol" | "timeframe" | "mode" | "plan">,
+  market: SetupAlertMarket = "crypto"
+) {
+  return `${market}:${setup.symbol}:${setup.timeframe}:${setup.mode}:${setup.plan.side}`;
+}
+
+function normalizePreset(item: unknown): SetupAlertPreset | null {
+  if (!item || typeof item !== "object") return null;
+  const preset = item as Partial<SetupAlertPreset>;
+  if (
+    typeof preset.id !== "string" ||
+    typeof preset.symbol !== "string" ||
+    typeof preset.timeframe !== "string" ||
+    (preset.side !== "long" && preset.side !== "short") ||
+    (preset.quality !== "A" && preset.quality !== "B" && preset.quality !== "C") ||
+    typeof preset.score !== "number" ||
+    typeof preset.headline !== "string" ||
+    typeof preset.savedAt !== "number"
+  ) {
+    return null;
+  }
+
+  const market = normalizeMarket(preset.market);
+  const hasScopedId = preset.id.startsWith("crypto:") || preset.id.startsWith("stocks:");
+
+  return {
+    id: hasScopedId ? preset.id : `${market}:${preset.id}`,
+    market,
+    symbol: preset.symbol,
+    mode: preset.mode,
+    timeframe: preset.timeframe,
+    side: preset.side,
+    quality: preset.quality,
+    score: preset.score,
+    headline: preset.headline,
+    savedAt: preset.savedAt
+  };
+}
+
+export function readSetupAlertPresets(market?: SetupAlertMarket): SetupAlertPreset[] {
   if (!canUseStorage()) return [];
 
-  try {
-    const raw = window.localStorage.getItem(SETUP_ALERT_PRESETS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
+  const presets: SetupAlertPreset[] = [];
+  const seenIds = new Set<string>();
 
-    return parsed.filter((item): item is SetupAlertPreset => {
-      if (!item || typeof item !== "object") return false;
-      const preset = item as Partial<SetupAlertPreset>;
-      return (
-        typeof preset.id === "string" &&
-        typeof preset.symbol === "string" &&
-        typeof preset.timeframe === "string" &&
-        (preset.side === "long" || preset.side === "short") &&
-        (preset.quality === "A" || preset.quality === "B" || preset.quality === "C") &&
-        typeof preset.score === "number" &&
-        typeof preset.headline === "string" &&
-        typeof preset.savedAt === "number"
-      );
-    });
+  try {
+    for (const key of storageKeysFor(SETUP_ALERT_PRESETS_STORAGE_KEY, market)) {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) continue;
+
+      for (const item of parsed) {
+        const preset = normalizePreset(item);
+        if (!preset) continue;
+        if (market && preset.market !== market) continue;
+        if (seenIds.has(preset.id)) continue;
+        seenIds.add(preset.id);
+        presets.push(preset);
+      }
+    }
+
+    return presets.sort((a, b) => b.savedAt - a.savedAt);
   } catch {
     return [];
   }
 }
 
-export function writeSetupAlertPresets(presets: SetupAlertPreset[]) {
+export function writeSetupAlertPresets(presets: SetupAlertPreset[], market: SetupAlertMarket = "crypto") {
   if (!canUseStorage()) return;
-  window.localStorage.setItem(SETUP_ALERT_PRESETS_STORAGE_KEY, JSON.stringify(presets.slice(0, 20)));
-  window.dispatchEvent(new CustomEvent(SETUP_ALERT_PRESETS_CHANGED_EVENT));
+  const scopedPresets = presets
+    .map((preset) => ({ ...preset, market, id: preset.id.startsWith(`${market}:`) ? preset.id : `${market}:${preset.id}` }))
+    .slice(0, 30);
+
+  window.localStorage.setItem(marketStorageKey(SETUP_ALERT_PRESETS_STORAGE_KEY, market), JSON.stringify(scopedPresets));
+  window.dispatchEvent(new CustomEvent(SETUP_ALERT_PRESETS_CHANGED_EVENT, { detail: { market } }));
 }
 
-export function buildSetupAlertPreset(setup: ScoutSetup): SetupAlertPreset {
+export function buildSetupAlertPreset(setup: ScoutSetup, market: SetupAlertMarket = "crypto"): SetupAlertPreset {
   return {
-    id: getSetupAlertPresetId(setup),
+    id: getSetupAlertPresetId(setup, market),
+    market,
     symbol: setup.symbol,
     mode: setup.mode,
     timeframe: setup.timeframe,
@@ -102,11 +163,16 @@ export function buildSetupAlertPreset(setup: ScoutSetup): SetupAlertPreset {
   };
 }
 
-export function findSetupAlertMatches(presets: SetupAlertPreset[], setups: ScoutSetup[]): SetupAlertMatch[] {
+export function findSetupAlertMatches(
+  presets: SetupAlertPreset[],
+  setups: ScoutSetup[],
+  market: SetupAlertMarket = "crypto"
+): SetupAlertMatch[] {
   const matches: SetupAlertMatch[] = [];
   const usedPresetIds = new Set<string>();
+  const scopedPresets = presets.filter((preset) => preset.market === market);
 
-  for (const preset of presets) {
+  for (const preset of scopedPresets) {
     const match = setups.find((setup) => {
       if (setup.symbol !== preset.symbol) return false;
       if (setup.timeframe !== preset.timeframe) return false;
@@ -120,6 +186,7 @@ export function findSetupAlertMatches(presets: SetupAlertPreset[], setups: Scout
     usedPresetIds.add(preset.id);
     matches.push({
       id: `${preset.id}:${match.scannedAt}:${match.score}`,
+      market,
       preset,
       setup: {
         symbol: match.symbol,
@@ -138,36 +205,65 @@ export function findSetupAlertMatches(presets: SetupAlertPreset[], setups: Scout
   return matches;
 }
 
-export function readSetupAlertMatches(): SetupAlertMatch[] {
+function normalizeMatch(item: unknown): SetupAlertMatch | null {
+  if (!item || typeof item !== "object") return null;
+  const match = item as Partial<SetupAlertMatch>;
+  const preset = normalizePreset(match.preset);
+  if (typeof match.id !== "string" || typeof match.matchedAt !== "number" || !preset || !match.setup) return null;
+  const market = normalizeMarket(match.market ?? preset.market);
+
+  return {
+    id: match.id.startsWith("crypto:") || match.id.startsWith("stocks:") ? match.id : `${market}:${match.id}`,
+    market,
+    preset: { ...preset, market },
+    setup: match.setup,
+    matchedAt: match.matchedAt
+  };
+}
+
+export function readSetupAlertMatches(market?: SetupAlertMarket): SetupAlertMatch[] {
   if (!canUseStorage()) return [];
 
-  try {
-    const raw = window.localStorage.getItem(SETUP_ALERT_MATCHES_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return [];
+  const matches: SetupAlertMatch[] = [];
+  const seenIds = new Set<string>();
 
-    return parsed.filter((item): item is SetupAlertMatch => {
-      if (!item || typeof item !== "object") return false;
-      const match = item as Partial<SetupAlertMatch>;
-      return typeof match.id === "string" && typeof match.matchedAt === "number" && Boolean(match.preset) && Boolean(match.setup);
-    });
+  try {
+    for (const key of storageKeysFor(SETUP_ALERT_MATCHES_STORAGE_KEY, market)) {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) continue;
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) continue;
+
+      for (const item of parsed) {
+        const match = normalizeMatch(item);
+        if (!match) continue;
+        if (market && match.market !== market) continue;
+        if (seenIds.has(match.id)) continue;
+        seenIds.add(match.id);
+        matches.push(match);
+      }
+    }
+
+    return matches.sort((a, b) => b.matchedAt - a.matchedAt);
   } catch {
     return [];
   }
 }
 
-export function writeSetupAlertMatches(matches: SetupAlertMatch[]) {
+export function writeSetupAlertMatches(matches: SetupAlertMatch[], market: SetupAlertMarket = "crypto") {
   if (!canUseStorage()) return;
-  window.localStorage.setItem(SETUP_ALERT_MATCHES_STORAGE_KEY, JSON.stringify(matches.slice(0, 20)));
-  window.dispatchEvent(new CustomEvent(SETUP_ALERT_MATCHES_CHANGED_EVENT));
+  const scopedMatches = matches.map((match) => ({ ...match, market })).slice(0, 30);
+  window.localStorage.setItem(marketStorageKey(SETUP_ALERT_MATCHES_STORAGE_KEY, market), JSON.stringify(scopedMatches));
+  window.dispatchEvent(new CustomEvent(SETUP_ALERT_MATCHES_CHANGED_EVENT, { detail: { market } }));
 }
 
-export function readSetupAlertMonitorStatus(): SetupAlertMonitorStatus | null {
+export function readSetupAlertMonitorStatus(market: SetupAlertMarket = "crypto"): SetupAlertMonitorStatus | null {
   if (!canUseStorage()) return null;
 
   try {
-    const raw = window.localStorage.getItem(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY);
+    const raw =
+      window.localStorage.getItem(marketStorageKey(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY, market)) ??
+      (market === "crypto" ? window.localStorage.getItem(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY) : null);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<SetupAlertMonitorStatus>;
     if (
@@ -180,6 +276,7 @@ export function readSetupAlertMonitorStatus(): SetupAlertMonitorStatus | null {
     }
 
     return {
+      market,
       checkedAt: parsed.checkedAt,
       presetCount: parsed.presetCount,
       setupCount: parsed.setupCount,
@@ -191,8 +288,9 @@ export function readSetupAlertMonitorStatus(): SetupAlertMonitorStatus | null {
   }
 }
 
-export function writeSetupAlertMonitorStatus(status: SetupAlertMonitorStatus) {
+export function writeSetupAlertMonitorStatus(status: SetupAlertMonitorStatus, market: SetupAlertMarket = "crypto") {
   if (!canUseStorage()) return;
-  window.localStorage.setItem(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY, JSON.stringify(status));
-  window.dispatchEvent(new CustomEvent(SETUP_ALERT_MONITOR_STATUS_EVENT, { detail: status }));
+  const scopedStatus = { ...status, market };
+  window.localStorage.setItem(marketStorageKey(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY, market), JSON.stringify(scopedStatus));
+  window.dispatchEvent(new CustomEvent(SETUP_ALERT_MONITOR_STATUS_EVENT, { detail: scopedStatus }));
 }

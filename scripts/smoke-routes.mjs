@@ -23,13 +23,13 @@ const checks = [
     label: "월간 결제 진입",
     path: "/api/billing/checkout",
     method: "POST",
-    body: { planId: "pro_monthly", platform: "web" },
+    body: { planId: "crypto_monthly", platform: "web" },
   },
   {
     label: "연간 결제 진입",
     path: "/api/billing/checkout",
     method: "POST",
-    body: { planId: "pro_yearly", platform: "web" },
+    body: { planId: "bundle_yearly", platform: "web" },
   },
 ];
 

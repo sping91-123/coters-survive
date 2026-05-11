@@ -17,7 +17,8 @@ import {
 
 const scanModes: TradingMode[] = ["scalp", "swing"];
 const monitorIntervalMs = 5 * 60 * 1000;
-const notifiedStorageKey = "chart-radar.notifiedSetupMatches.v1";
+const monitorMarket = "crypto";
+const notifiedStorageKey = `chart-radar.notifiedSetupMatches.v1.${monitorMarket}`;
 
 function compactSymbol(symbol: string) {
   return symbol.replace("USDT.P", "").replace("USDT", "");
@@ -65,35 +66,37 @@ export function RadarAlertMonitor() {
     if (isCheckingRef.current) return 0;
     if (typeof window === "undefined") return 0;
 
-    const presets = readSetupAlertPresets();
+    const presets = readSetupAlertPresets(monitorMarket);
     if (presets.length === 0) {
       writeSetupAlertMonitorStatus({
+        market: monitorMarket,
         checkedAt: Date.now(),
         presetCount: 0,
         setupCount: 0,
         matchCount: 0,
         reason
-      });
+      }, monitorMarket);
       return 0;
     }
 
     isCheckingRef.current = true;
     try {
       const setups = await fetchCurrentSetups();
-      const matches = findSetupAlertMatches(presets, setups);
+      const matches = findSetupAlertMatches(presets, setups, monitorMarket);
       writeSetupAlertMonitorStatus({
+        market: monitorMarket,
         checkedAt: Date.now(),
         presetCount: presets.length,
         setupCount: setups.length,
         matchCount: matches.length,
         reason
-      });
+      }, monitorMarket);
 
       if (matches.length === 0) return 0;
 
-      const previous = readSetupAlertMatches();
+      const previous = readSetupAlertMatches(monitorMarket);
       const merged = [...matches, ...previous.filter((item) => !matches.some((match) => match.id === item.id))];
-      writeSetupAlertMatches(merged);
+      writeSetupAlertMatches(merged, monitorMarket);
 
       if (!("Notification" in window) || Notification.permission !== "granted") return matches.length;
 

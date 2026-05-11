@@ -180,27 +180,27 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
   useEffect(() => {
     setEnabledRuleIds(readStoredRuleIds());
-    setSetupPresets(readSetupAlertPresets());
-    setSetupMatches(readSetupAlertMatches());
-    setMonitorStatus(readSetupAlertMonitorStatus());
+    setSetupPresets(readSetupAlertPresets(market));
+    setSetupMatches(readSetupAlertMatches(market));
+    setMonitorStatus(readSetupAlertMonitorStatus(market));
     setPermission(getPermissionState());
-  }, []);
+  }, [market]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     function syncPresets() {
-      setSetupPresets(readSetupAlertPresets());
-      setSetupMatches(readSetupAlertMatches());
-      setMonitorStatus(readSetupAlertMonitorStatus());
+      setSetupPresets(readSetupAlertPresets(market));
+      setSetupMatches(readSetupAlertMatches(market));
+      setMonitorStatus(readSetupAlertMonitorStatus(market));
     }
 
     function handleCheckFinished(event: Event) {
       const detail = (event as CustomEvent<{ matchCount?: number }>).detail;
       const matchCount = detail?.matchCount ?? 0;
       setIsManualChecking(false);
-      setSetupMatches(readSetupAlertMatches());
-      setMonitorStatus(readSetupAlertMonitorStatus());
+      setSetupMatches(readSetupAlertMatches(market));
+      setMonitorStatus(readSetupAlertMonitorStatus(market));
       setToast(
         matchCount > 0
           ? `저장된 감시 조건 중 ${matchCount}개가 현재 레이더와 다시 맞아떨어졌습니다.`
@@ -220,7 +220,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
       window.removeEventListener(SETUP_ALERT_MONITOR_STATUS_EVENT, syncPresets);
       window.removeEventListener(SETUP_ALERT_CHECK_FINISHED_EVENT, handleCheckFinished);
     };
-  }, []);
+  }, [market]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -484,7 +484,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
       {compact ? (
         <Link
-          href="/alerts"
+          href={market === "stocks" ? "/alerts?market=stocks" : "/alerts?market=crypto"}
           className="mt-4 inline-flex min-h-10 w-full items-center justify-center rounded-md border border-cyan-300/30 bg-cyan-300/10 px-4 text-sm font-black text-cyan-200 transition hover:bg-cyan-300 hover:text-slate-950"
         >
           알림 조건 전체 설정하기
