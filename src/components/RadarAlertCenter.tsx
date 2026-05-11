@@ -12,12 +12,15 @@ import {
 } from "@/lib/radarAlerts";
 import {
   readSetupAlertMatches,
+  readSetupAlertMonitorStatus,
   readSetupAlertPresets,
   REQUEST_SETUP_ALERT_CHECK_EVENT,
   SETUP_ALERT_CHECK_FINISHED_EVENT,
+  SETUP_ALERT_MONITOR_STATUS_EVENT,
   SETUP_ALERT_MATCHES_CHANGED_EVENT,
   SETUP_ALERT_PRESETS_CHANGED_EVENT,
   type SetupAlertMatch,
+  type SetupAlertMonitorStatus,
   type SetupAlertPreset
 } from "@/lib/setupAlertPresets";
 import { recordUsageEvent } from "@/lib/usageMeter";
@@ -81,6 +84,13 @@ function formatSavedAt(ms: number) {
   if (min < 1) return "방금 저장";
   if (min < 60) return `${min}분 전 저장`;
   return `${Math.floor(min / 60)}시간 전 저장`;
+}
+
+function monitorReasonLabel(reason: SetupAlertMonitorStatus["reason"]) {
+  if (reason === "manual") return "수동 확인";
+  if (reason === "preset-change") return "조건 변경";
+  if (reason === "visible") return "화면 복귀";
+  return "자동 확인";
 }
 
 function RuleCard({
@@ -147,6 +157,7 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
   const [enabledRuleIds, setEnabledRuleIds] = useState<RadarAlertRuleId[]>(() => getDefaultRadarAlertRuleIds());
   const [setupPresets, setSetupPresets] = useState<SetupAlertPreset[]>([]);
   const [setupMatches, setSetupMatches] = useState<SetupAlertMatch[]>([]);
+  const [monitorStatus, setMonitorStatus] = useState<SetupAlertMonitorStatus | null>(null);
   const [permission, setPermission] = useState<PermissionState>("default");
   const [isRequesting, setIsRequesting] = useState(false);
   const [isManualChecking, setIsManualChecking] = useState(false);
@@ -156,6 +167,7 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
     setEnabledRuleIds(readStoredRuleIds());
     setSetupPresets(readSetupAlertPresets());
     setSetupMatches(readSetupAlertMatches());
+    setMonitorStatus(readSetupAlertMonitorStatus());
     setPermission(getPermissionState());
   }, []);
 
@@ -165,6 +177,7 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
     function syncPresets() {
       setSetupPresets(readSetupAlertPresets());
       setSetupMatches(readSetupAlertMatches());
+      setMonitorStatus(readSetupAlertMonitorStatus());
     }
 
     function handleCheckFinished(event: Event) {
@@ -172,6 +185,7 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
       const matchCount = detail?.matchCount ?? 0;
       setIsManualChecking(false);
       setSetupMatches(readSetupAlertMatches());
+      setMonitorStatus(readSetupAlertMonitorStatus());
       setToast(
         matchCount > 0
           ? `저장된 감시 조건 중 ${matchCount}개가 현재 레이더와 다시 맞아떨어졌습니다.`
@@ -182,11 +196,13 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
     window.addEventListener("storage", syncPresets);
     window.addEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, syncPresets);
     window.addEventListener(SETUP_ALERT_MATCHES_CHANGED_EVENT, syncPresets);
+    window.addEventListener(SETUP_ALERT_MONITOR_STATUS_EVENT, syncPresets);
     window.addEventListener(SETUP_ALERT_CHECK_FINISHED_EVENT, handleCheckFinished);
     return () => {
       window.removeEventListener("storage", syncPresets);
       window.removeEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, syncPresets);
       window.removeEventListener(SETUP_ALERT_MATCHES_CHANGED_EVENT, syncPresets);
+      window.removeEventListener(SETUP_ALERT_MONITOR_STATUS_EVENT, syncPresets);
       window.removeEventListener(SETUP_ALERT_CHECK_FINISHED_EVENT, handleCheckFinished);
     };
   }, []);
@@ -346,6 +362,30 @@ export function RadarAlertCenter({ compact = false }: { compact?: boolean }) {
           {isManualChecking ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Radar size={16} aria-hidden />}
           지금 저장 조건 확인
         </button>
+        {monitorStatus ? (
+          <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
+            <div className="rounded-md border border-white/10 bg-black/25 p-3">
+              <p className="font-bold text-slate-500">마지막 확인</p>
+              <p className="mt-1 font-black text-white">{formatSavedAt(monitorStatus.checkedAt).replace(" 저장", "")}</p>
+            </div>
+            <div className="rounded-md border border-white/10 bg-black/25 p-3">
+              <p className="font-bold text-slate-500">확인 범위</p>
+              <p className="mt-1 font-black text-white">
+                조건 {monitorStatus.presetCount}개, 후보 {monitorStatus.setupCount}개
+              </p>
+            </div>
+            <div className="rounded-md border border-white/10 bg-black/25 p-3">
+              <p className="font-bold text-slate-500">{monitorReasonLabel(monitorStatus.reason)}</p>
+              <p className={monitorStatus.matchCount > 0 ? "mt-1 font-black text-emerald-200" : "mt-1 font-black text-slate-300"}>
+                일치 {monitorStatus.matchCount}개
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="mt-3 rounded-md border border-white/10 bg-black/25 p-3 text-xs leading-5 text-slate-500">
+            앱이 열리면 저장된 조건을 자동으로 확인하고, 마지막 확인 상태가 이곳에 표시됩니다.
+          </p>
+        )}
         {setupMatches.length > 0 ? (
           <div className="mt-3 rounded-md border border-emerald-300/25 bg-emerald-300/10 p-3">
             <div className="flex items-center justify-between gap-2">

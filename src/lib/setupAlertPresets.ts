@@ -29,12 +29,22 @@ export interface SetupAlertMatch {
   matchedAt: number;
 }
 
+export interface SetupAlertMonitorStatus {
+  checkedAt: number;
+  presetCount: number;
+  setupCount: number;
+  matchCount: number;
+  reason: "auto" | "manual" | "preset-change" | "visible";
+}
+
 export const SETUP_ALERT_PRESETS_STORAGE_KEY = "chart-radar.setupAlertPresets.v1";
 export const SETUP_ALERT_MATCHES_STORAGE_KEY = "chart-radar.setupAlertMatches.v1";
+export const SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY = "chart-radar.setupAlertMonitorStatus.v1";
 export const SETUP_ALERT_PRESETS_CHANGED_EVENT = "chart-radar:setup-alert-presets";
 export const SETUP_ALERT_MATCHES_CHANGED_EVENT = "chart-radar:setup-alert-matches";
 export const REQUEST_SETUP_ALERT_CHECK_EVENT = "chart-radar:request-setup-alert-check";
 export const SETUP_ALERT_CHECK_FINISHED_EVENT = "chart-radar:setup-alert-check-finished";
+export const SETUP_ALERT_MONITOR_STATUS_EVENT = "chart-radar:setup-alert-monitor-status";
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
@@ -151,4 +161,38 @@ export function writeSetupAlertMatches(matches: SetupAlertMatch[]) {
   if (!canUseStorage()) return;
   window.localStorage.setItem(SETUP_ALERT_MATCHES_STORAGE_KEY, JSON.stringify(matches.slice(0, 20)));
   window.dispatchEvent(new CustomEvent(SETUP_ALERT_MATCHES_CHANGED_EVENT));
+}
+
+export function readSetupAlertMonitorStatus(): SetupAlertMonitorStatus | null {
+  if (!canUseStorage()) return null;
+
+  try {
+    const raw = window.localStorage.getItem(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<SetupAlertMonitorStatus>;
+    if (
+      typeof parsed.checkedAt !== "number" ||
+      typeof parsed.presetCount !== "number" ||
+      typeof parsed.setupCount !== "number" ||
+      typeof parsed.matchCount !== "number"
+    ) {
+      return null;
+    }
+
+    return {
+      checkedAt: parsed.checkedAt,
+      presetCount: parsed.presetCount,
+      setupCount: parsed.setupCount,
+      matchCount: parsed.matchCount,
+      reason: parsed.reason === "manual" || parsed.reason === "preset-change" || parsed.reason === "visible" ? parsed.reason : "auto"
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function writeSetupAlertMonitorStatus(status: SetupAlertMonitorStatus) {
+  if (!canUseStorage()) return;
+  window.localStorage.setItem(SETUP_ALERT_MONITOR_STATUS_STORAGE_KEY, JSON.stringify(status));
+  window.dispatchEvent(new CustomEvent(SETUP_ALERT_MONITOR_STATUS_EVENT, { detail: status }));
 }

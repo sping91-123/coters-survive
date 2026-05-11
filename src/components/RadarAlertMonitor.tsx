@@ -10,7 +10,9 @@ import {
   REQUEST_SETUP_ALERT_CHECK_EVENT,
   SETUP_ALERT_CHECK_FINISHED_EVENT,
   SETUP_ALERT_PRESETS_CHANGED_EVENT,
-  writeSetupAlertMatches
+  writeSetupAlertMatches,
+  writeSetupAlertMonitorStatus,
+  type SetupAlertMonitorStatus
 } from "@/lib/setupAlertPresets";
 
 const scanModes: TradingMode[] = ["scalp", "swing"];
@@ -59,17 +61,34 @@ export function RadarAlertMonitor() {
   const isCheckingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const runCheck = useCallback(async () => {
+  const runCheck = useCallback(async (reason: SetupAlertMonitorStatus["reason"] = "auto") => {
     if (isCheckingRef.current) return 0;
     if (typeof window === "undefined") return 0;
 
     const presets = readSetupAlertPresets();
-    if (presets.length === 0) return 0;
+    if (presets.length === 0) {
+      writeSetupAlertMonitorStatus({
+        checkedAt: Date.now(),
+        presetCount: 0,
+        setupCount: 0,
+        matchCount: 0,
+        reason
+      });
+      return 0;
+    }
 
     isCheckingRef.current = true;
     try {
       const setups = await fetchCurrentSetups();
       const matches = findSetupAlertMatches(presets, setups);
+      writeSetupAlertMonitorStatus({
+        checkedAt: Date.now(),
+        presetCount: presets.length,
+        setupCount: setups.length,
+        matchCount: matches.length,
+        reason
+      });
+
       if (matches.length === 0) return 0;
 
       const previous = readSetupAlertMatches();
@@ -95,26 +114,30 @@ export function RadarAlertMonitor() {
   }, []);
 
   useEffect(() => {
-    void runCheck();
+    void runCheck("auto");
     timerRef.current = setInterval(() => {
-      void runCheck();
+      void runCheck("auto");
     }, monitorIntervalMs);
 
     function handleVisibility() {
-      if (document.visibilityState === "visible") void runCheck();
+      if (document.visibilityState === "visible") void runCheck("visible");
+    }
+
+    function handlePresetChange() {
+      void runCheck("preset-change");
     }
 
     async function handleManualCheck() {
-      const matchCount = await runCheck();
+      const matchCount = await runCheck("manual");
       window.dispatchEvent(new CustomEvent(SETUP_ALERT_CHECK_FINISHED_EVENT, { detail: { matchCount } }));
     }
 
-    window.addEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, runCheck);
+    window.addEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, handlePresetChange);
     window.addEventListener(REQUEST_SETUP_ALERT_CHECK_EVENT, handleManualCheck);
     document.addEventListener("visibilitychange", handleVisibility);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
-      window.removeEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, runCheck);
+      window.removeEventListener(SETUP_ALERT_PRESETS_CHANGED_EVENT, handlePresetChange);
       window.removeEventListener(REQUEST_SETUP_ALERT_CHECK_EVENT, handleManualCheck);
       document.removeEventListener("visibilitychange", handleVisibility);
     };
