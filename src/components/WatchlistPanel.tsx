@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -10,6 +10,7 @@ import {
   Plus,
   Radar,
   RefreshCw,
+  Search,
   X
 } from "lucide-react";
 import { watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
@@ -119,6 +120,15 @@ function AddCoinModal({
 }) {
   const limit = WATCHLIST_LIMIT[plan];
   const pool = symbols.length > 0 ? symbols : (watchlistSymbolPool as readonly string[]);
+  const [query, setQuery] = useState("");
+  const normalizedQuery = query.trim().toUpperCase();
+  const filteredPool = useMemo(() => {
+    if (!normalizedQuery) return pool;
+    return pool.filter((symbol) => {
+      const name = symbolToName(symbol).toUpperCase();
+      return symbol.toUpperCase().includes(normalizedQuery) || name.includes(normalizedQuery);
+    });
+  }, [normalizedQuery, pool]);
 
   // 모달 외부 클릭으로 닫기
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -148,8 +158,18 @@ function AddCoinModal({
           현재 {watchlist.length}/{limit}개 · 바이낸스 USDT-M 전체 목록 기준입니다.
         </p>
 
+        <label className="mt-4 flex min-h-10 items-center gap-2 rounded-lg border border-surface-line bg-black/20 px-3 text-sm text-slate-300 focus-within:border-accent-blue">
+          <Search size={15} className="shrink-0 text-slate-500" aria-hidden />
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="코인명 검색. 예: XRP, SOL, PEPE"
+            className="min-w-0 flex-1 bg-transparent text-sm font-bold text-white outline-none placeholder:text-slate-600"
+          />
+        </label>
+
         <div className="mt-4 grid max-h-[54vh] grid-cols-3 gap-2 overflow-y-auto pr-1">
-          {pool.map((symbol) => {
+          {filteredPool.map((symbol) => {
             const name = symbolToName(symbol);
             const isAdded = watchlist.includes(symbol);
             const isFull = watchlist.length >= limit && !isAdded;
@@ -180,6 +200,11 @@ function AddCoinModal({
               </button>
             );
           })}
+          {filteredPool.length === 0 ? (
+            <p className="col-span-3 rounded-lg border border-white/10 bg-black/20 px-3 py-4 text-center text-xs leading-5 text-slate-500">
+              검색 결과가 없습니다. 심볼을 다시 확인해 주세요.
+            </p>
+          ) : null}
         </div>
 
         <p className="mt-4 text-[10px] leading-5 text-slate-600">

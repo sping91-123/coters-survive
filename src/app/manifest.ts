@@ -27,7 +27,7 @@ export default function manifest(): MetadataRoute.Manifest {
       },
       {
         name: "Altcoin Radar",
-        short_name: "Alts",
+        short_name: "Altcoin",
         description: "알트코인 감지 목록을 바로 확인합니다.",
         url: "/alts?source=pwa-shortcut",
         icons: [{ src: icon, sizes: "1024x1024", type: "image/png" }]

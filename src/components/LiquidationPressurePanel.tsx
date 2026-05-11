@@ -240,25 +240,24 @@ export function LiquidationPressurePanel({ symbol, timeframe }: LiquidationPress
             <h4 className="text-sm font-black text-white">글로벌 롱/숏 비율</h4>
             <TooltipLine>Binance 기준 롱과 숏 포지션 비율입니다. 한쪽으로 몰릴수록 반대 방향 변동성도 같이 커질 수 있습니다.</TooltipLine>
           </div>
-          <div className="mt-3 space-y-3">
-            <div>
-              <div className="flex items-center justify-between text-xs font-black">
-                <span className="text-signal-success">롱</span>
-                <span className="text-signal-success">{formatPercent(report.globalLongShort.longPercent, 1)}</span>
-              </div>
-              <div className="mt-1 h-2 rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-signal-success" style={{ width: `${report.globalLongShort.longPercent ?? 0}%` }} />
-              </div>
+          <div className="mt-3">
+            <div className="flex items-center justify-between text-xs font-black">
+              <span className="text-signal-success">롱 {formatPercent(report.globalLongShort.longPercent, 1)}</span>
+              <span className="text-signal-danger">숏 {formatPercent(report.globalLongShort.shortPercent, 1)}</span>
             </div>
-            <div>
-              <div className="flex items-center justify-between text-xs font-black">
-                <span className="text-signal-danger">숏</span>
-                <span className="text-signal-danger">{formatPercent(report.globalLongShort.shortPercent, 1)}</span>
-              </div>
-              <div className="mt-1 h-2 rounded-full bg-white/10">
-                <div className="h-full rounded-full bg-signal-danger" style={{ width: `${report.globalLongShort.shortPercent ?? 0}%` }} />
-              </div>
+            <div className="mt-2 flex h-3 overflow-hidden rounded-full bg-white/10 ring-1 ring-white/10">
+              <div
+                className="h-full bg-signal-success"
+                style={{ width: `${Math.max(0, Math.min(100, report.globalLongShort.longPercent ?? 0))}%` }}
+              />
+              <div
+                className="h-full bg-signal-danger"
+                style={{ width: `${Math.max(0, Math.min(100, report.globalLongShort.shortPercent ?? 0))}%` }}
+              />
             </div>
+            <p className="mt-2 text-[11px] leading-5 text-slate-500 [word-break:keep-all]">
+              한 막대 안에서 롱과 숏 쏠림을 비교합니다. 한쪽이 과하게 높으면 반대 방향 변동성도 같이 커질 수 있습니다.
+            </p>
           </div>
         </div>
 

@@ -203,21 +203,45 @@ const structureSensitivityOptions: Array<{
   value: StructureSensitivity;
   label: string;
   description: string;
+  analysisMode: "confirmed" | "aggressive";
+  msbMode: "close" | "wick";
+  detail: string;
 }> = [
-  { value: 5, label: "빠른 변화 감지", description: "5분·15분 변화를 더 빨리 잡습니다." },
-  { value: 7, label: "균형 감지", description: "노이즈와 반응 속도 사이의 중간값입니다." },
-  { value: 9, label: "큰 구조 위주", description: "큰 추세 전환만 천천히 확인합니다." }
+  {
+    value: 5,
+    label: "빠른 변화 감지",
+    description: "짧은 흐름을 더 빨리 잡습니다.",
+    analysisMode: "aggressive",
+    msbMode: "wick",
+    detail: "진행 중 봉, 윅 감지, ZigZag 5"
+  },
+  {
+    value: 7,
+    label: "균형 감지",
+    description: "기본값으로 쓰기 좋습니다.",
+    analysisMode: "confirmed",
+    msbMode: "wick",
+    detail: "닫힌 봉, 윅 감지, ZigZag 7"
+  },
+  {
+    value: 9,
+    label: "큰 구조 위주",
+    description: "큰 추세 전환을 봅니다.",
+    analysisMode: "confirmed",
+    msbMode: "close",
+    detail: "닫힌 봉, 종가 확정, ZigZag 9"
+  }
 ];
 
 function BriefingKeyword({ children, tone }: { children: string; tone: "long" | "short" | "warn" | "neutral" }) {
   const className =
     tone === "long"
-      ? "font-black text-signal-success"
+      ? "text-signal-success"
       : tone === "short"
-        ? "font-black text-signal-danger"
+        ? "text-signal-danger"
         : tone === "warn"
-          ? "font-black text-signal-warning"
-          : "font-black text-accent-blue";
+          ? "text-signal-warning"
+          : "text-accent-blue";
   return <span className={className}>{children}</span>;
 }
 
@@ -1576,6 +1600,12 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
     setOverlaySettings(overlayPresets[preset]);
   }
 
+  function applyStructurePreset(option: (typeof structureSensitivityOptions)[number]) {
+    setStructureSensitivity(option.value);
+    setAnalysisMode(option.analysisMode);
+    setMsbMode(option.msbMode);
+  }
+
   function comparableSnapshotFromWeb() {
     if (!activeAnalysis) return null;
 
@@ -1732,7 +1762,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
   }
 
   return (
-    <section id="basic-coins" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
+    <section id="basic-coins" className="scroll-mt-24 rounded-lg border border-surface-line bg-surface-card p-4 pb-28 shadow-glow sm:p-5 sm:pb-28">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-start gap-3">
@@ -1820,21 +1850,42 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
         ) : null}
       </div>
 
-      <div className="mt-3 grid grid-cols-5 gap-2">
-        {modeTimeframes.map((timeframe) => (
-          <button
-            key={timeframe}
-            type="button"
-            onClick={() => setActiveTimeframe(timeframe)}
-            className={`min-h-10 rounded-md border px-2 text-sm font-bold transition ${
-              activeTimeframe === timeframe
-                ? "border-accent-blue bg-accent-blue text-slate-950"
-                : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
-            }`}
-          >
-            {timeframe}
-          </button>
-        ))}
+      <div className="mt-3 rounded-lg border border-surface-line bg-surface-cardSoft p-3">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-black text-white">구조 감지 기준</p>
+            <p className="mt-1 text-[11px] leading-5 text-slate-500 [word-break:keep-all]">
+              초보자는 균형 감지를 기본으로 두고, 더 빠른 변화를 보고 싶을 때만 빠른 변화 감지를 쓰면 됩니다.
+            </p>
+          </div>
+          <span className="text-[11px] font-bold text-slate-500">
+            현재 {structureSensitivityLabel(structureSensitivity)}
+          </span>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-3">
+          {structureSensitivityOptions.map((item) => {
+            const active =
+              structureSensitivity === item.value &&
+              analysisMode === item.analysisMode &&
+              msbMode === item.msbMode;
+            return (
+              <button
+                key={item.value}
+                type="button"
+                onClick={() => applyStructurePreset(item)}
+                className={`min-h-16 rounded-md border px-3 py-2 text-left transition ${
+                  active
+                    ? "border-accent-blue bg-accent-blue text-slate-950"
+                    : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
+                }`}
+              >
+                <span className="block text-sm font-black">{item.label}</span>
+                <span className="mt-1 block text-[11px] font-semibold opacity-80">{item.description}</span>
+                <span className="mt-1 block text-[10px] font-semibold opacity-70">{item.detail}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
@@ -1961,87 +2012,16 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
           className="inline-flex min-h-10 items-center gap-2 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-sm font-bold text-slate-300 hover:border-accent-blue/60 hover:text-white"
         >
           <Settings2 size={16} aria-hidden />
-          판독 기준 {showAdvancedControls ? "접기" : "열기"}
+          차트 표시 설정 {showAdvancedControls ? "접기" : "열기"}
         </button>
       </div>
 
       {showAdvancedControls ? (
-        <div className="mt-3 grid gap-3 rounded-lg border border-surface-line bg-surface-cardSoft p-3 sm:grid-cols-2">
-          <div className="rounded-md border border-accent-blue/20 bg-accent-blue/5 p-3 text-xs leading-5 text-slate-300 sm:col-span-2">
-            이 설정은 실제 판독값에 반영됩니다. 안정형은 닫힌 봉 기준으로 늦지만 덜 흔들리고, 빠른 감지형은 진행 중 봉까지 반영해 더 빨리 흔들릴 수 있습니다.
-            차트 표시 설정은 아래 차트 표시 섹션에서 따로 조절합니다.
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setAnalysisMode("confirmed")}
-              className={`min-h-10 rounded-md border px-3 text-sm font-bold transition ${
-                analysisMode === "confirmed"
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
-              }`}
-            >
-              안정형
-              <span className="mt-0.5 block text-[10px] font-semibold opacity-70">닫힌 봉</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setAnalysisMode("aggressive")}
-              className={`min-h-10 rounded-md border px-3 text-sm font-bold transition ${
-                analysisMode === "aggressive"
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
-              }`}
-            >
-              빠른 감지형
-              <span className="mt-0.5 block text-[10px] font-semibold opacity-70">진행 중 봉</span>
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setMsbMode("close")}
-              className={`min-h-10 rounded-md border px-3 text-sm font-bold transition ${
-                msbMode === "close"
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
-              }`}
-            >
-              MSB 종가 확정
-            </button>
-            <button
-              type="button"
-              onClick={() => setMsbMode("wick")}
-              className={`min-h-10 rounded-md border px-3 text-sm font-bold transition ${
-                msbMode === "wick"
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
-              }`}
-            >
-              MSB 윅 감지
-            </button>
-          </div>
-          <div className="grid gap-2 sm:col-span-2 sm:grid-cols-3">
-            {structureSensitivityOptions.map((item) => (
-              <button
-                key={item.value}
-                type="button"
-                onClick={() => setStructureSensitivity(item.value)}
-                className={`min-h-14 rounded-md border px-3 text-left text-sm font-bold transition ${
-                  structureSensitivity === item.value
-                    ? "border-accent-blue bg-accent-blue text-slate-950"
-                    : "border-surface-line bg-black/20 text-slate-300 hover:border-accent-blue/60"
-                }`}
-              >
-                {item.label}
-                <span className="mt-0.5 block text-[10px] font-semibold opacity-75">ZigZag {item.value} · {item.description}</span>
-              </button>
-            ))}
-          </div>
-          <div className="rounded-md border border-white/10 bg-black/20 p-3 sm:col-span-2">
+        <div className="mt-3 rounded-lg border border-surface-line bg-surface-cardSoft p-3">
+          <div className="rounded-md border border-white/10 bg-black/20 p-3">
             <p className="text-xs font-semibold text-slate-400">차트 표시 설정</p>
             <p className="mt-1 text-[11px] leading-5 text-slate-500">
-              이 항목은 차트에 무엇을 그릴지만 정합니다. 판독 결론 자체는 위의 판독 기준으로 계산됩니다.
+              이 항목은 차트에 무엇을 그릴지만 정합니다. 판독 결론은 위의 구조 감지 기준에서 계산됩니다.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -2177,7 +2157,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
               </div>
             ) : null}
           </div>
-          {activeAnalysis ? (
+          {activeAnalysis && radarProfile !== "technical" ? (
             <div className="border-t border-surface-line bg-black/20 px-4 py-3">
               <div className="flex flex-wrap gap-2 text-[11px] font-semibold text-slate-300">
                 <span className="rounded-md border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-emerald-300">OB</span>
@@ -2272,7 +2252,11 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   <p className="text-xs font-bold uppercase tracking-widest text-accent-blue">AI 레이더 브리핑</p>
                   <h3 className="mt-1 text-lg font-black text-white">감지된 구조 전체를 긴 문장으로 종합합니다</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-400">
-                    선택 코인의 MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC와 보조지표를 함께 읽어 시장 해석을 정리합니다.
+                    {radarProfile === "technical"
+                      ? "선택 코인의 추세, 모멘텀, 변동성, 거래량 지표를 중심으로 시장 해석을 정리합니다."
+                      : radarProfile === "ict"
+                        ? "선택 코인의 MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC만 중심으로 시장 해석을 정리합니다."
+                        : "선택 코인의 ICT 구조와 기술지표를 함께 읽어 시장 해석을 정리합니다."}
                   </p>
                 </div>
                 <button
@@ -2292,7 +2276,11 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                     <div className="radar-mark-lg mx-auto h-36 w-36 border border-accent-blue/30" />
                     <p className="mt-5 text-base font-black text-white">AI 레이더 스캔 중</p>
                     <p className="mt-2 text-sm leading-6 text-slate-400">
-                      MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC와 보조지표를 한 번에 훑고 있습니다.
+                      {radarProfile === "technical"
+                        ? "추세, 모멘텀, 변동성, 거래량 지표를 한 번에 훑고 있습니다."
+                        : radarProfile === "ict"
+                          ? "MSB, CHoCH, OB, FVG, Sweep, CISD, PD, POC를 한 번에 훑고 있습니다."
+                          : "ICT 구조와 기술지표를 한 번에 훑고 있습니다."}
                     </p>
                   </div>
                 </div>
@@ -2533,7 +2521,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             </div>
           ) : null}
 
-          {analysis ? (
+          {analysis && radarProfile !== "technical" ? (
             <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <h3 className="text-sm font-bold text-white">지금 볼 구간</h3>
               <div className="mt-3 space-y-2">
@@ -2546,7 +2534,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             </div>
           ) : null}
 
-          {analysis ? (
+          {analysis && radarProfile !== "technical" ? (
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
                 <h3 className="text-sm font-bold text-white">현재 위치 판단</h3>
@@ -2563,7 +2551,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             </div>
           ) : null}
 
-          {analysis?.proPlan ? (
+          {analysis?.proPlan && radarProfile !== "technical" ? (
             <div className="rounded-lg border border-accent-blue/30 bg-accent-blue/10 p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -2592,7 +2580,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 ))}
               </div>
             </div>
-          ) : analysis ? (
+          ) : analysis && radarProfile !== "technical" ? (
             <div className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-4">
               <p className="text-sm font-bold text-signal-warning">분석 시나리오 대기</p>
               <p className="mt-2 text-sm leading-6 text-slate-300">
@@ -2601,7 +2589,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             </div>
           ) : null}
 
-          {analysis ? (
+          {analysis && radarProfile !== "technical" ? (
             <button
               type="button"
               onClick={() => setShowDetailedReadout((value) => !value)}
@@ -2611,7 +2599,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             </button>
           ) : null}
 
-          {showDetailedReadout ? (
+          {showDetailedReadout && radarProfile !== "technical" ? (
             <>
           {analysis ? (
             <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
@@ -3186,88 +3174,9 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
           ) : null}
         </div>
       </div>
-      <div className="hidden">
-        <div className="mx-auto max-w-6xl space-y-2 sm:grid sm:grid-cols-[minmax(0,1fr)_260px] sm:items-center sm:gap-2 sm:space-y-0 lg:grid-cols-[230px_220px_330px_110px]">
-          <div className={`relative grid gap-2 ${majorOnly ? "grid-cols-2" : "grid-cols-3"}`}>
-            {primarySymbols.map((item) => (
-              <button
-                key={item}
-                type="button"
-                onClick={() => {
-                  setSymbol(item);
-                  setShowOtherSymbols(false);
-                }}
-                className={`min-h-9 whitespace-nowrap rounded-md border px-2 text-xs font-black transition ${
-                  symbol === item
-                    ? "border-accent-blue bg-accent-blue text-slate-950"
-                    : "border-surface-line bg-surface-cardSoft text-slate-300"
-                }`}
-              >
-                {symbolLabel(item)}
-              </button>
-            ))}
-            {!majorOnly ? <button
-              type="button"
-              onClick={() => setShowOtherSymbols((value) => !value)}
-              className={`min-h-9 whitespace-nowrap rounded-md border px-2 text-xs font-black transition ${
-                isOtherSymbolActive || showOtherSymbols
-                  ? "border-accent-blue bg-accent-blue text-slate-950"
-                  : "border-surface-line bg-surface-cardSoft text-slate-300"
-              }`}
-            >
-              {isOtherSymbolActive ? symbolLabel(symbol) : "그 외"}
-            </button> : null}
-            {!majorOnly && showOtherSymbols ? (
-              <div className="absolute bottom-full left-0 z-50 mb-2 grid max-h-[52vh] w-[min(92vw,420px)] grid-cols-4 gap-2 overflow-y-auto rounded-lg border border-surface-line bg-slate-950 p-2 shadow-[0_-18px_50px_rgba(0,0,0,0.55)]">
-                {otherSymbols.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => {
-                      setSymbol(item);
-                      setShowOtherSymbols(false);
-                    }}
-                    className={`min-h-9 rounded-md border px-2 text-xs font-black transition ${
-                      symbol === item
-                        ? "border-accent-blue bg-accent-blue text-slate-950"
-                        : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
-                    }`}
-                  >
-                    {symbolLabel(item)}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 rounded-lg border border-surface-line bg-black/20 p-1">
-            {[
-              { key: "combined", label: "종합" },
-              { key: "ict", label: "ICT" },
-              { key: "technical", label: "기술" }
-            ].map((item) => (
-              <button
-                key={item.key}
-                type="button"
-                onClick={() => {
-                  setRadarProfile(item.key as RadarProfile);
-                  window.setTimeout(() => {
-                    const targetId =
-                      item.key === "technical" ? "technical-radar" : item.key === "ict" ? "ict-radar" : "radar-dashboard";
-                    document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                  }, 80);
-                }}
-                className={`min-h-9 rounded-md border px-2 text-xs font-black transition ${
-                  radarProfile === item.key
-                    ? "border-accent-blue bg-accent-blue text-slate-950"
-                    : "border-transparent bg-transparent text-slate-300"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-surface-line bg-slate-950/90 px-3 py-2 shadow-[0_-12px_36px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="mx-auto max-w-md">
+          <p className="mb-1 text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">Timeframe</p>
           <div className="grid grid-cols-5 gap-2">
             {modeTimeframes.map((timeframe) => (
               <button
@@ -3277,22 +3186,12 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 className={`min-h-10 rounded-md border px-2 text-sm font-black transition ${
                   activeTimeframe === timeframe
                     ? "border-accent-blue bg-accent-blue text-slate-950"
-                    : "border-surface-line bg-surface-cardSoft text-slate-300"
+                    : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/60"
                 }`}
               >
                 {timeframe}
               </button>
             ))}
-          </div>
-          <div className="grid grid-cols-1 gap-2">
-            <button
-              type="button"
-              onClick={loadMarketBriefing}
-              disabled={!analysis || !activeAnalysis || marketBriefing.status === "loading"}
-              className="inline-flex min-h-10 items-center justify-center rounded-md bg-accent-blue px-3 text-xs font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              분석
-            </button>
           </div>
         </div>
       </div>

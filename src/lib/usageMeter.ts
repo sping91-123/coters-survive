@@ -30,7 +30,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "radarScan",
     label: "코인 레이더",
     shortLabel: "레이더",
-    description: "BTC, ETH, 알트 구조와 시장 감지를 불러온 횟수입니다.",
+    description: "BTC, ETH, 알트코인 구조와 시장 감지를 불러온 횟수입니다.",
     freeDailyLimit: 10,
     proDailyLimit: 200
   },

@@ -272,7 +272,7 @@ export function RadarCommandCenter() {
               {[
                 ["시장 보드 확인", "급등, 급락, 거래대금이 몰린 코인부터 변동성 위치를 확인하세요."],
                 ["상위 TF 대기", "1h, 4h, 1d MSB와 CHoCH가 다시 같은 쪽으로 정렬되는지 보세요."],
-                ["관심 코인 등록", "자주 보는 알트는 관심 코인에 넣어두면 레이더가 따로 훑어줍니다."]
+                ["관심 코인 등록", "자주 보는 알트코인은 관심 코인에 넣어두면 레이더가 따로 훑어줍니다."]
               ].map(([title, text], index) => (
                 <div key={title} className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-3">
                   <p className="text-[11px] font-black text-signal-warning">대기 플랜 {index + 1}</p>

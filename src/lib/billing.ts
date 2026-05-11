@@ -40,7 +40,7 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 0,
     monthlyValue: 0,
     description: "Chart Radar의 핵심 화면과 분석 흐름을 먼저 확인하는 무료 체험 플랜입니다.",
-    highlights: ["BTC / ETH 기본 레이더", "주요 알트 일부 감시", "AI 브리핑 미리보기"],
+    highlights: ["BTC / ETH 기본 레이더", "주요 알트코인 일부 감시", "AI 브리핑 미리보기"],
     limits: {
       radarScans: "일 10회",
       aiBriefings: "일 2회",

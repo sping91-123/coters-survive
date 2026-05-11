@@ -186,13 +186,13 @@ function getMainSentence(board: MarketBoardItem[], setups: ScoutSetup[], scope: 
 
   if (!top) {
     if (scope === "major") {
-      return `${tone.label} 흐름이지만 BTC와 ETH의 구조 감지는 아직 강하지 않습니다. 지금은 1h와 4h 방향을 먼저 확인하고, 알트는 별도 레이더에서만 좁혀보는 편이 좋습니다.`;
+      return `${tone.label} 흐름이지만 BTC와 ETH의 구조 감지는 아직 강하지 않습니다. 지금은 1h와 4h 방향을 먼저 확인하고, 알트코인은 별도 레이더에서만 좁혀보는 편이 좋습니다.`;
     }
     return `${tone.label} 흐름이지만 구조 감지는 아직 강하지 않습니다. 지금은 거래대금 상위와 뉴스 이슈가 겹치는 코인 위주로만 좁혀보는 편이 좋습니다.`;
   }
 
   if (scope === "major") {
-    return `${tone.label} 흐름 속에서 ${compactSymbol(top.symbol)} ${top.timeframe}가 먼저 볼 레이더 감지로 올라왔습니다. BTC와 ETH는 시장 기준선 역할이 크기 때문에, 이 화면에서는 알트보다 큰 방향과 위험 구간을 먼저 정리합니다.`;
+    return `${tone.label} 흐름 속에서 ${compactSymbol(top.symbol)} ${top.timeframe}가 먼저 볼 레이더 감지로 올라왔습니다. BTC와 ETH는 시장 기준선 역할이 크기 때문에, 이 화면에서는 알트코인보다 큰 방향과 위험 구간을 먼저 정리합니다.`;
   }
 
   return `${tone.label} 흐름 속에서 ${compactSymbol(top.symbol)} ${top.timeframe}가 가장 먼저 볼 레이더 감지로 올라왔습니다. 감지 코인이 ${readyCount}개라서 무작정 넓게 보기보다 TOP 감지와 뉴스 이슈를 함께 확인하는 흐름이 좋습니다.`;
@@ -202,7 +202,7 @@ function getNextAction(setups: ScoutSetup[], scope: BriefScope) {
   const top = uniqueTopSetups(setups, 1)[0] ?? null;
   if (!top) {
     if (scope === "major") {
-      return "BTC와 ETH의 1h, 4h 방향부터 확인하고 알트는 아직 넓게 보지 마세요.";
+      return "BTC와 ETH의 1h, 4h 방향부터 확인하고 알트코인은 아직 넓게 보지 마세요.";
     }
     return "오늘은 억지로 후보를 찾기보다 BTC, ETH, 레이더뉴스 순서로 시장 방향만 정리해보세요.";
   }
@@ -484,7 +484,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
                   href="/alts"
                   className="flex items-center justify-between rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm font-bold text-slate-200 hover:border-accent-blue/40 hover:text-white"
                 >
-                  알트 레이더에서 확산 확인
+                  알트코인 레이더에서 확산 확인
                   <ArrowUpRight size={15} aria-hidden />
                 </Link>
                 <Link
