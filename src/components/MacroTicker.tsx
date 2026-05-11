@@ -118,6 +118,12 @@ function stateClass(item: MacroTickerItem) {
   return "border-accent-blue/25 bg-accent-blue/10 text-accent-blue";
 }
 
+function compactStateClass(item: MacroTickerItem) {
+  if (item.state === "released") return "text-signal-success";
+  if (item.state === "watch") return "text-signal-warning";
+  return "text-accent-blue";
+}
+
 function importanceLabel(importance: MacroTickerItem["importance"]) {
   if (importance === 3) return "중요도 높음";
   if (importance === 2) return "중요도 중간";
@@ -141,8 +147,35 @@ function getTimeLabel(releaseAt: string) {
   return "지난 일정";
 }
 
-export function MacroTicker() {
+export function MacroTicker({ compact = false }: { compact?: boolean } = {}) {
   const repeatedItems = [...macroItems, ...macroItems];
+
+  if (compact) {
+    return (
+      <section className="overflow-hidden rounded-md border border-accent-blue/15 bg-surface-card/78 px-2 py-1.5 shadow-[0_10px_34px_rgba(0,0,0,0.22)]">
+        <div className="flex min-h-8 items-center gap-2">
+          <div className="inline-flex shrink-0 items-center gap-1.5 rounded border border-accent-blue/20 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
+            <Radio size={12} aria-hidden />
+            매크로
+          </div>
+          <div className="macro-marquee min-w-0 flex-1">
+            <div className="macro-marquee-track">
+              {repeatedItems.map((item, index) => (
+                <span key={`${item.label}-compact-${index}`} className="mx-3 inline-flex items-center gap-1.5 text-[11px] font-bold text-slate-400">
+                  <span className={`font-black ${compactStateClass(item)}`}>{stateLabel(item)}</span>
+                  <span className="text-white">{item.label}</span>
+                  <span>KST {item.dateKst}</span>
+                  <span className="text-slate-500">{importanceLabel(item.importance)}</span>
+                  <span className="max-w-[18rem] truncate text-slate-500">{item.marketImpact}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+          <span className="hidden shrink-0 text-[10px] font-bold text-slate-600 sm:inline">{updatedAt}</span>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="overflow-hidden rounded-lg border border-accent-blue/20 bg-surface-card shadow-glow">

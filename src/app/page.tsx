@@ -2,7 +2,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Coins, TrendingUp } from "lucide-react";
-import { MacroTicker } from "@/components/MacroTicker";
 
 const marketEntries = [
   {
@@ -29,8 +28,6 @@ export default function Home() {
   return (
     <main className="min-h-screen px-3 py-5 sm:px-6 sm:py-8">
       <div className="mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-6xl flex-col justify-center gap-4">
-        <MacroTicker />
-
         <section className="w-full rounded-lg border border-surface-line bg-surface-card/92 p-4 shadow-[0_26px_80px_rgba(0,0,0,0.30)] backdrop-blur sm:p-8">
           <div className="flex flex-col items-center text-center">
             <div className="relative h-16 w-16 overflow-hidden rounded-lg border border-cyan-300/25 bg-slate-950 shadow-[0_0_44px_rgba(34,211,238,0.26)] sm:h-20 sm:w-20">
