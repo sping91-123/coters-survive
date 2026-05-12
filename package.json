@@ -13,6 +13,7 @@
     "smoke:billing": "node scripts/smoke-billing.mjs",
     "smoke:api": "node scripts/smoke-api.mjs",
     "smoke:ops": "node scripts/smoke-ops.mjs",
+    "smoke:all": "node scripts/smoke-all.mjs",
     "backtest:btc": "npx tsc -p tsconfig.verify.json && node .verify-dist/scripts/backtest-btc-regimes.js",
     "app:add:android": "npx cap add android",
     "app:sync": "npx cap sync",
