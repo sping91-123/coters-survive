@@ -79,7 +79,7 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
       ? "오늘 무료 기준을 넘긴 항목이 있습니다."
       : summary.usedTotal > 0
         ? "오늘 레이더 사용량이 쌓이고 있습니다."
-        : "오늘 사용할 레이더 한도를 준비했습니다.";
+        : "오늘 사용할 레이더 한도가 열려 있습니다.";
 
   return (
     <section className="rounded-lg border border-cyan-300/25 bg-surface-card p-4 shadow-glow sm:p-5">
@@ -93,7 +93,7 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
             <h2 className="mt-1 text-lg font-black text-white">{title}</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
               {isPaid
-                ? "결제 권한이 확인된 계정은 Pro 기준 사용량으로 표시됩니다. 서버 권한과 결제 상태가 연결된 뒤에는 이 한도가 계정 단위로 동기화됩니다."
+                ? "결제 권한이 확인된 계정은 Pro 기준 사용량으로 표시됩니다. 로그인 계정 기준으로 사용 흐름을 관리해 여러 기기에서도 같은 권한을 확인할 수 있습니다."
                 : "Free는 핵심 흐름을 확인하는 체험 모드이고, Pro는 코인·글로벌·AI·알림을 매일 여러 번 돌리는 운영 모드입니다."}
             </p>
           </div>
@@ -126,7 +126,7 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
       <div className="mt-4 flex flex-col gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100 sm:flex-row sm:items-center sm:justify-between">
         <span className="flex items-start gap-2">
           <Zap className="mt-0.5 shrink-0" size={14} aria-hidden />
-          계정 결제 연결 후에는 이 사용량이 서버 기준으로 동기화됩니다.
+          로그인 계정 기준으로 Pro 한도와 사용량을 확인합니다.
         </span>
         {compact ? (
           <Link href="/pro" className="font-black text-cyan-200 hover:text-white">

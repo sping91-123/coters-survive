@@ -34,12 +34,12 @@ const alertMarketCopy = {
   crypto: {
     eyebrow: "Coin Radar Alerts",
     title: "코인 변동만 따로 감시합니다",
-    description: "BTC·ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 따로 감시하도록 준비하는 알림 센터입니다."
+    description: "BTC·ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 한곳에서 관리하는 알림 센터입니다."
   },
   stocks: {
     eyebrow: "Global Radar Alerts",
     title: "글로벌 시장 변동만 따로 감시합니다",
-    description: "미국주식, ETF, 실적, 매크로 발표, 지수·원자재 급변을 따로 감시하도록 준비하는 알림 센터입니다."
+    description: "미국주식, ETF, 실적, 매크로 발표, 지수·원자재 급변을 한곳에서 관리하는 알림 센터입니다."
   }
 } satisfies Record<AlertMarket, { eyebrow: string; title: string; description: string }>;
 
@@ -289,11 +289,11 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
       recordUsageEvent("alertRule");
       setPermission(result as PermissionState);
       if (result === "granted") {
-        new Notification("Chart Radar 알림 준비 완료", {
-          body: "A급 감지, 청산 압력, 뉴스 브리핑 알림을 받을 준비가 되었습니다.",
+        new Notification("Chart Radar 알림이 켜졌습니다", {
+          body: "A급 감지, 청산 압력, 뉴스 브리핑 알림을 받을 수 있습니다.",
           icon: "/brand/chart-radar-mark.png"
         });
-        setToast("브라우저 알림 권한이 켜졌습니다. 실제 푸시는 앱/서버 알림 단계에서 연결됩니다.");
+        setToast("브라우저 알림 권한이 켜졌습니다. 저장한 조건은 이 기기에서 바로 확인할 수 있습니다.");
       } else {
         setToast("알림 권한이 꺼져 있습니다. 설정에서 언제든 다시 허용할 수 있습니다.");
       }
@@ -326,7 +326,8 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             <h2 className="mt-1 text-xl font-black text-white">{copy.title}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
               {copy.description}
-              지금은 권한과 조건을 준비하고, 출시 단계에서는 웹푸시와 앱 알림으로 이어 붙이면 됩니다.
+              {" "}
+              저장한 조건과 시장별 레이더를 이 화면에서 관리합니다.
             </p>
           </div>
         </div>
@@ -364,8 +365,8 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
         </div>
         <div className="rounded-lg border border-emerald-300/20 bg-emerald-300/10 p-4">
           <Smartphone className="text-emerald-200" size={20} aria-hidden />
-          <p className="mt-3 text-sm font-black text-white">앱 알림 준비</p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">PWA와 앱스토어 출시 후 푸시 알림으로 확장합니다.</p>
+          <p className="mt-3 text-sm font-black text-white">앱 알림 연동</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">앱에서는 같은 조건을 푸시 알림으로 이어서 확인합니다.</p>
         </div>
       </div>
 
@@ -376,7 +377,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             {permissionLabel(permission)}
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            웹에서는 브라우저 알림으로 먼저 확인합니다. 앱 출시 후에는 같은 조건을 앱 푸시와 서버 감시로 확장합니다.
+            웹에서는 브라우저 알림으로 확인하고, 앱에서는 같은 조건을 푸시 알림으로 이어서 받습니다.
           </p>
         </div>
         <button

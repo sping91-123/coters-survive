@@ -294,8 +294,8 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-3 text-xs leading-5 text-signal-warning">
-            정식 서비스 오픈 전 기록은 데이터 구조 변경 과정에서 보존되지 않을 수 있습니다. 중요한 기록은 따로 백업해 주세요.
+          <div className="mt-4 rounded-lg border border-cyan-300/25 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100">
+            로그인한 기록은 계정 기준으로 저장됩니다. 로그인 전 기록은 이 브라우저에만 남으니, 중요한 복기는 계정 연결 후 저장해 주세요.
           </div>
 
           {stats.scoutEntries.length > 0 ? (
