@@ -294,7 +294,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
               <div>
                 <div className="inline-flex items-center gap-2 rounded-md border border-accent-blue/20 bg-accent-blue/10 px-2 py-1 text-[11px] font-black text-accent-blue">
                   <Sparkles size={13} aria-hidden />
-                  {briefing.model === "rules" ? "규칙 기반 브리핑" : "AI 종합 브리핑"}
+                  레이더 종합 브리핑
                 </div>
                 <h3 className="mt-3 text-2xl font-black text-white">{copy.summaryTitle}</h3>
                 <p className="mt-3 text-sm leading-7 text-slate-300 [word-break:keep-all]">{briefing.overview}</p>
