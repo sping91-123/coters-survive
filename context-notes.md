@@ -617,3 +617,9 @@
 - 문서를 한 번 고쳐도 이후 기능 수정 중 예전 `NEXT_PUBLIC_PRO_PAYMENT_URL` 중심 설명이나 `chart_radar_pro_monthly` 상품 ID가 다시 들어올 수 있다.
 - 결제 스모크 테스트가 코드와 환경변수만 보면 이런 회귀를 놓친다. 운영자가 실제로 따라 할 문서까지 검사해야 출시 전 실수가 줄어든다.
 - 이번 차수는 `scripts/smoke-billing.mjs`에 문서 검사 항목을 추가해, 코인·글로벌·올마켓 상품 구조와 결제 승인 확인 절차가 계속 문서에 남아 있는지 확인한다.
+
+# 2026-05-13 6시간 반복 점검 4차 세션 보호 회귀 방지.
+
+- 현재 Supabase 세션 저장은 기본값에서 refresh token을 localStorage에 남기지 않는다. 이건 정식 출시 전까지 유지해야 하는 중요한 보호 장치다.
+- 완전한 HttpOnly 쿠키 기반 SSR Auth 이전까지는 access token 노출 리스크가 남지만, 장기 refresh token을 기본 저장하지 않는 것만으로도 탈취 피해 시간을 줄일 수 있다.
+- 이 보호 장치가 나중에 리팩터링 중 사라지지 않도록 운영 스모크 테스트에 `allowLocalRefreshToken` 조건, 저장 시 refresh token 제거, 만료 세션 정리 검사를 넣는다.

@@ -48,6 +48,7 @@ const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
 const radarAlertCenter = read("src/components/RadarAlertCenter.tsx");
 const radarAlerts = read("src/lib/radarAlerts.ts");
+const supabaseClient = read("src/lib/supabase.ts");
 const launchCopyFiles = [
   "src/components/UsageMeterPanel.tsx",
   "src/components/RadarAlertCenter.tsx",
@@ -92,6 +93,10 @@ expectIncludes(radarAlertCenter, "`${baseStorageKey}.${market}`", "알림 규칙
 expectIncludes(radarAlerts, 'id: "stock-momentum"', "글로벌 모멘텀 알림 규칙", "src/lib/radarAlerts.ts");
 expectIncludes(radarAlerts, "글로벌 모멘텀 전환", "글로벌 모멘텀 알림 문구", "src/lib/radarAlerts.ts");
 expectIncludes(radarAlerts, "defaultEnabled: true", "기본 알림 활성화 유지", "src/lib/radarAlerts.ts");
+expectIncludes(supabaseClient, 'process.env.NEXT_PUBLIC_ALLOW_LOCAL_REFRESH_TOKEN === "true"', "refresh token 저장 명시 허용", "src/lib/supabase.ts");
+expectIncludes(supabaseClient, "allowLocalRefreshToken", "refresh token 보호 분기", "src/lib/supabase.ts");
+expectIncludes(supabaseClient, "delete session.refreshToken", "저장된 refresh token 정리", "src/lib/supabase.ts");
+expectIncludes(supabaseClient, "clearSupabaseSession();", "만료 세션 정리", "src/lib/supabase.ts");
 
 const launchRiskTerms = [
   "출시 단계",
