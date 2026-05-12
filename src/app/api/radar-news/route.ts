@@ -44,6 +44,8 @@ const GEMINI_MODEL = "gemini-3-flash-preview";
 const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 const GROQ_DEFAULT_MODEL = "qwen/qwen3-32b";
 const GROQ_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
+const USE_EXTERNAL_NEWS_TRANSLATION = process.env.NEWS_TRANSLATION_PROVIDER === "mymemory";
+const USE_GEMINI_NEWS_FALLBACK = process.env.ENABLE_GEMINI_NEWS_FALLBACK === "true";
 
 let cache: Record<
   RadarNewsMarket,
@@ -110,6 +112,45 @@ function hasKorean(value: string) {
 function knownCryptoTitle(title: string) {
   const normalized = title.toLowerCase();
 
+  if (normalized.includes("cftc") && normalized.includes("sports league") && normalized.includes("prediction market")) {
+    return "미 CFTC, 예측시장 감독을 위해 주요 스포츠 리그와 논의";
+  }
+  if (normalized.includes("senate confirms") && normalized.includes("fed board")) {
+    return "미 상원, 차기 의장 표결 앞두고 Kevin Warsh 연준 이사 인준";
+  }
+  if (normalized.includes("ethereum foundation") && normalized.includes("clear signing")) {
+    return "이더리움 재단, 악성 거래 승인 방지를 위한 Clear Signing 표준 공개";
+  }
+  if (normalized.includes("stablecoin yield infrastructure")) {
+    return "스테이블코인 수익 인프라 프로젝트, Sky Ecosystem 주도 투자 유치";
+  }
+  if (normalized.includes("bull-bear cycle indicator") && normalized.includes("turns green")) {
+    return "비트코인 불·베어 사이클 지표, 2023년 3월 이후 처음으로 녹색 전환";
+  }
+  if (normalized.includes("live markets") && normalized.includes("bitcoin") && normalized.includes("inflation")) {
+    return "비트코인, 8만 달러 일시 하회. 강한 물가 지표 여파로 주식 약세와 금리 상승";
+  }
+  if (normalized.includes("bitcoin briefly drops below") && normalized.includes("inflation")) {
+    return "비트코인, 8만 달러 일시 하회. 강한 물가 지표 여파로 주식 약세와 금리 상승";
+  }
+  if (normalized.includes("bitcoin digests") && normalized.includes("cpi")) {
+    return "비트코인, 예상보다 강한 미국 CPI 이후 변동성 확대";
+  }
+  if (normalized.includes("privacy emerges") && normalized.includes("killer app")) {
+    return "프라이버시, 암호화폐의 다음 핵심 사용처로 부각";
+  }
+  if (normalized.includes("binance") && normalized.includes("chief marketing officer")) {
+    return "바이낸스 최고마케팅책임자 Rachel Conlan, 거래소 떠날 예정";
+  }
+  if (normalized.includes("here") && normalized.includes("what happened in crypto today")) {
+    return "오늘 코인 시장에서 확인할 주요 이슈 정리";
+  }
+  if (normalized.includes("lmax group") && normalized.includes("collateral solution")) {
+    return "LMAX Group, 기관용 디지털자산 담보 솔루션 출시";
+  }
+  if (normalized.includes("exodus sells") && normalized.includes("bitcoin")) {
+    return "Exodus, 1분기 손실 확대 속 1,000개 이상 비트코인 매도";
+  }
   if (normalized.includes("kraken parent") && normalized.includes("occ charter")) {
     return "크라켄 모회사, 은행 라이선스 관련 이슈 부각";
   }
@@ -128,6 +169,7 @@ function knownCryptoTitle(title: string) {
 
 function localTranslateTitle(title: string) {
   return title
+    .replace(/\bEthereum Foundation\b/gi, "이더리움 재단")
     .replace(/\bBitcoin\b/gi, "비트코인")
     .replace(/\bEthereum\b/gi, "이더리움")
     .replace(/\bSolana\b/gi, "솔라나")
@@ -146,7 +188,16 @@ function localTranslateTitle(title: string) {
 }
 
 function polishKoreanTitle(title: string) {
-  return title.replace(/\s+%/g, "%").replace(/\s+/g, " ").trim();
+  return title
+    .replace(/\s+%/g, "%")
+    .replace(/\$\s+/g, "$")
+    .replace(/\$\s?10억\s?달러/g, "10억 달러")
+    .replace(/불베어/g, "불·베어")
+    .replace(/인플레이션 인쇄물/g, "물가 지표")
+    .replace(/추악한 물가 지표/g, "강한 물가 지표")
+    .replace(/미국 CPI를 소화합니다/g, "미국 CPI 이후 변동성을 소화하고 있습니다")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 async function translateTitleToKorean(title: string) {
@@ -157,9 +208,15 @@ async function translateTitleToKorean(title: string) {
   const cached = translationCache.get(title);
   if (cached) return cached;
 
+  if (!USE_EXTERNAL_NEWS_TRANSLATION) {
+    const fallback = polishKoreanTitle(localTranslateTitle(title));
+    translationCache.set(title, fallback);
+    return fallback;
+  }
+
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 2500);
+    const timer = setTimeout(() => controller.abort(), 900);
     let response: Response;
     try {
       const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(title)}&langpair=en|ko`;
@@ -488,6 +545,10 @@ async function generateGeminiNewsBriefing(items: RadarNewsItem[], market: RadarN
 async function generateNewsBriefing(items: RadarNewsItem[], market: RadarNewsMarket) {
   const groqBriefing = await generateGroqNewsBriefing(items, market);
   if (groqBriefing) return groqBriefing;
+
+  if (!USE_GEMINI_NEWS_FALLBACK) {
+    return fallbackNewsBriefing(items, "rules", market);
+  }
 
   const geminiBriefing = await generateGeminiNewsBriefing(items, market);
   if (geminiBriefing) return geminiBriefing;
