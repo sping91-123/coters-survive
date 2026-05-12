@@ -55,6 +55,7 @@ const supabaseClient = read("src/lib/supabase.ts");
 const aiProviderIndex = read("src/lib/ai/index.ts");
 const aiCommentaryRoute = read("src/app/api/ai/commentary/route.ts");
 const aiMarketBriefingRoute = read("src/app/api/ai/market-briefing/route.ts");
+const healthRoute = read("src/app/api/health/route.ts");
 const launchCopyFiles = [
   "src/components/AuthStatus.tsx",
   "src/components/UsageMeterPanel.tsx",
@@ -117,6 +118,9 @@ expectIncludes(aiProviderIndex, "providers.push(new GroqProvider", "Groq 우선 
 expectIncludes(aiProviderIndex, "providers.push(new GeminiProvider", "Gemini 예비 AI 후보", "src/lib/ai/index.ts");
 expectIncludes(aiCommentaryRoute, "다음 후보 확인", "AI 코멘트 후보 장애 대응", "src/app/api/ai/commentary/route.ts");
 expectIncludes(aiMarketBriefingRoute, "다음 후보 확인", "AI 브리핑 후보 장애 대응", "src/app/api/ai/market-briefing/route.ts");
+expectIncludes(healthRoute, "TOSS_PAYMENTS_SECRET_KEY", "헬스체크 결제 secret 기준", "src/app/api/health/route.ts");
+expectIncludes(healthRoute, "NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY", "헬스체크 결제 client 기준", "src/app/api/health/route.ts");
+expectIncludes(healthRoute, "macroStaleAfterHours", "헬스체크 매크로 신선도 기준", "src/app/api/health/route.ts");
 
 const launchRiskTerms = [
   "출시 단계",
