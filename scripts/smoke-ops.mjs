@@ -48,6 +48,16 @@ const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
 const radarAlertCenter = read("src/components/RadarAlertCenter.tsx");
 const radarAlerts = read("src/lib/radarAlerts.ts");
+const launchCopyFiles = [
+  "src/components/UsageMeterPanel.tsx",
+  "src/components/RadarAlertCenter.tsx",
+  "src/app/journal/page.tsx",
+  "src/app/stocks/page.tsx",
+  "src/app/survival/page.tsx",
+  "src/app/alts/page.tsx",
+  "src/app/global/page.tsx",
+  "src/app/pro/page.tsx"
+];
 const apiRoutes = walk("src/app/api", [".ts"]);
 const userFacingSources = [
   ...walk("src/app", [".ts", ".tsx"]),
@@ -82,6 +92,29 @@ expectIncludes(radarAlertCenter, "`${baseStorageKey}.${market}`", "알림 규칙
 expectIncludes(radarAlerts, 'id: "stock-momentum"', "글로벌 모멘텀 알림 규칙", "src/lib/radarAlerts.ts");
 expectIncludes(radarAlerts, "글로벌 모멘텀 전환", "글로벌 모멘텀 알림 문구", "src/lib/radarAlerts.ts");
 expectIncludes(radarAlerts, "defaultEnabled: true", "기본 알림 활성화 유지", "src/lib/radarAlerts.ts");
+
+const launchRiskTerms = [
+  "출시 단계",
+  "출시 후",
+  "정식 서비스 오픈 전",
+  "보존되지 않을 수",
+  "알림 준비 완료",
+  "서버 권한과 결제 상태가 연결된 뒤",
+  "Beta",
+  "베타"
+];
+const launchCopyOffenders = launchCopyFiles.flatMap((file) => {
+  const source = read(file);
+  return launchRiskTerms
+    .filter((term) => source.includes(term))
+    .map((term) => `${file}: ${term}`);
+});
+
+if (launchCopyOffenders.length === 0) {
+  pass("정식 출시 문구 회귀 방지", "핵심 사용자 화면에 베타/개발 단계 문구가 남아 있지 않습니다.");
+} else {
+  fail("정식 출시 문구 회귀 방지", launchCopyOffenders.join(", "));
+}
 
 const releaseMatches = [...macroEvents.matchAll(/releaseAt:\s*"([^"]+)"/g)].map((match) => Date.parse(match[1]));
 if (releaseMatches.some((time) => Number.isFinite(time) && time > Date.now())) {
