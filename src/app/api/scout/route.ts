@@ -119,6 +119,14 @@ export async function GET(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "레이더 자동 스캔에 실패했습니다.";
     console.error("[api/scout] 레이더 오류:", error);
+    if (cache) {
+      return NextResponse.json({
+        setups: cache.setups,
+        cachedAt: cache.cachedAt,
+        cached: true,
+        stale: true
+      });
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
