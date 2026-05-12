@@ -155,7 +155,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         error?: string;
       };
 
-      if (!response.ok) throw new Error(data.error ?? "결제 준비 중 오류가 발생했습니다.");
+      if (!response.ok) throw new Error(data.error ?? "결제 연결 중 오류가 발생했습니다.");
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
         return;

@@ -245,6 +245,6 @@ export function parsePlanIdFromOrderId(orderId: string | null | undefined): Bill
 
 export const subscriptionTrustNotes = [
   "코인과 글로벌 시장은 별도 상품으로 운영하고, 두 시장을 모두 쓰는 사용자는 All Market 플랜으로 할인받을 수 있습니다.",
-  "앱스토어 출시 전에는 각 상품을 App Store 구독 상품 ID와 연결합니다.",
+  "웹 결제와 앱 구독 모두 시장별 플랜 권한이 같은 계정 기준으로 이어지도록 설계되어 있습니다.",
   "Chart Radar는 매수·매도 신호가 아니라 시장 구조와 위험 요소를 빠르게 정리하는 분석 도구입니다."
 ];

@@ -51,7 +51,7 @@ export default function RefundPage() {
             <div>
               <h1 className="text-2xl font-black text-white">구독 해지와 환불 안내</h1>
               <p className="mt-2 text-sm leading-6 text-slate-400">
-                시행일: 2026년 5월 11일 · 정식 서비스 결제 준비 기준
+                시행일: 2026년 5월 11일 · 정식 서비스 결제 기준
               </p>
             </div>
           </div>
@@ -72,9 +72,9 @@ export default function RefundPage() {
         </section>
 
         <section className="rounded-lg border border-amber-300/25 bg-amber-300/10 p-4 text-sm leading-6 text-amber-100">
-          <p className="font-black text-amber-200">출시 전 확인 사항</p>
+          <p className="font-black text-amber-200">결제 전 확인 사항</p>
           <p className="mt-2 [word-break:keep-all]">
-            실제 결제 오픈 전에는 사업자 정보, 고객센터 이메일, 결제 대행사 약관, App Store 구독 상품 정보를 최종 값으로 교체해야 합니다.
+            사업자 정보, 고객센터 이메일, 결제 대행사 약관, App Store 구독 상품 정보는 실제 운영 기준에 맞춰 고지합니다.
             이 페이지는 사용자가 결제 전 해지와 환불 흐름을 이해하도록 돕는 기본 안내입니다.
           </p>
         </section>

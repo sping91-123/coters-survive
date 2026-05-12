@@ -27,7 +27,7 @@ export default function LoginPage() {
           </div>
         <h1 className="mt-5 text-2xl font-black text-white">차트 레이더 로그인</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            서버 복기, 구독 기능, 추후 알림 기능을 위한 계정 시스템입니다.
+            서버 복기, 구독 권한, 레이더 알림을 한 계정에서 이어 쓰기 위한 로그인입니다.
           </p>
 
           {!configured ? (

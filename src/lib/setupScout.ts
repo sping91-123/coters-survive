@@ -59,7 +59,7 @@ export interface ScoutSetup {
   status?: "entry" | "active" | "watch";
   watchKind?: "aligned" | "counter";
   watchReason?: string;
-  /** 사용자에게 보여줄 짧은 헤드라인 (룰 기반, AI 코멘트는 추후 덧붙임) */
+  /** 사용자에게 보여줄 짧은 헤드라인. */
   headline: string;
   /** 진입 영역까지 현재가 거리(%). 음수면 가격이 영역 아래(롱은 진입 후, 숏은 더 멀어짐). */
   distancePercent: number;

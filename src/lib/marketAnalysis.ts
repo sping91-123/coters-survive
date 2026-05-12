@@ -1557,7 +1557,7 @@ function buildCheckpoints(active: TimeframeAnalysis | undefined) {
 }
 
 function buildCurrentLocationLabel(active: TimeframeAnalysis | undefined, bias: BiasSide) {
-  if (!active) return "판독 준비 중";
+  if (!active) return "판독 대기";
 
   if (active.volumeProfile?.position === "near") {
     return "POC 근처 균형 / 휩쏘 주의 구간";
