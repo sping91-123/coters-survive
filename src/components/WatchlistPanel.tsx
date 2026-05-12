@@ -14,13 +14,14 @@ import {
   X
 } from "lucide-react";
 import { watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
 import { recordUsageEvent } from "@/lib/usageMeter";
 import {
   addToWatchlist,
+  getWatchlistLimit,
   getWatchlist,
   removeFromWatchlist,
   symbolToName,
-  WATCHLIST_LIMIT,
   type WatchlistPlan
 } from "@/lib/watchlist";
 
@@ -118,7 +119,7 @@ function AddCoinModal({
   onRemove: (symbol: string) => void;
   onClose: () => void;
 }) {
-  const limit = WATCHLIST_LIMIT[plan];
+  const limit = getWatchlistLimit(plan);
   const pool = symbols.length > 0 ? symbols : (watchlistSymbolPool as readonly string[]);
   const [query, setQuery] = useState("");
   const normalizedQuery = query.trim().toUpperCase();
@@ -208,7 +209,7 @@ function AddCoinModal({
         </div>
 
         <p className="mt-4 text-[10px] leading-5 text-slate-600">
-          추가한 코인은 3분 단위로 레이더가 돌며 확인합니다. 정식 서비스 전까지 저장 조건과 제공 범위는 바뀔 수 있습니다.
+          추가한 코인은 3분 단위로 레이더가 돌며 구조 변화를 확인합니다.
         </p>
       </div>
     </div>
@@ -224,8 +225,9 @@ type ScanState =
 
 // ─── 메인 패널 ────────────────────────────────────────────────────────────────
 export function WatchlistPanel() {
-  const plan: WatchlistPlan = "admin";
-  const limit = WATCHLIST_LIMIT[plan];
+  const { profile } = useSupabaseAuth();
+  const plan: WatchlistPlan = profile?.plan ?? "free";
+  const limit = getWatchlistLimit(plan);
 
   const [watchlist, setWatchlist] = useState<string[]>([]);
   const [availableSymbols, setAvailableSymbols] = useState<string[]>([]);
