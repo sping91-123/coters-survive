@@ -32,12 +32,18 @@ const envExample = read(".env.example");
 const confirmRoute = read("src/app/api/billing/confirm/route.ts");
 const watchlist = read("src/lib/watchlist.ts");
 const watchlistPanel = read("src/components/WatchlistPanel.tsx");
+const launchChecklist = read("LAUNCH_CHECKLIST.md");
+const paymentGuide = read("docs/payment-launch.md");
+const appStoreGuide = read("docs/app-store-release.md");
 
 if (!billing) fail("결제 플랜 소스", "src/lib/billing.ts 파일을 읽지 못했습니다.");
 if (!envExample) fail("환경변수 예시", ".env.example 파일을 읽지 못했습니다.");
 if (!confirmRoute) fail("결제 승인 확인 API", "src/app/api/billing/confirm/route.ts 파일을 읽지 못했습니다.");
 if (!watchlist) fail("관심코인 한도 소스", "src/lib/watchlist.ts 파일을 읽지 못했습니다.");
 if (!watchlistPanel) fail("관심코인 패널", "src/components/WatchlistPanel.tsx 파일을 읽지 못했습니다.");
+if (!launchChecklist) fail("출시 체크리스트", "LAUNCH_CHECKLIST.md 파일을 읽지 못했습니다.");
+if (!paymentGuide) fail("결제 출시 가이드", "docs/payment-launch.md 파일을 읽지 못했습니다.");
+if (!appStoreGuide) fail("앱스토어 출시 가이드", "docs/app-store-release.md 파일을 읽지 못했습니다.");
 
 const planIds = [
   "free",
@@ -84,6 +90,49 @@ for (const productId of productIds) {
 
 for (const envName of paymentEnvNames) {
   expectIncludes(envExample, envName, `결제 환경변수 ${envName}`, ".env.example");
+}
+
+for (const envName of [
+  "NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL",
+  "NEXT_PUBLIC_GLOBAL_MONTHLY_PAYMENT_URL",
+  "NEXT_PUBLIC_BUNDLE_MONTHLY_PAYMENT_URL",
+  "TOSS_PAYMENTS_SECRET_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY"
+]) {
+  expectIncludes(launchChecklist, envName, `출시 체크리스트 환경변수 ${envName}`, "LAUNCH_CHECKLIST.md");
+  expectIncludes(paymentGuide, envName, `결제 가이드 환경변수 ${envName}`, "docs/payment-launch.md");
+}
+
+for (const phrase of [
+  "Coin Pro",
+  "Global Pro",
+  "All Market Pro",
+  "/api/billing/confirm",
+  "토스페이먼츠 승인 API",
+  "Supabase의 `profiles.plan`과 `subscriptions`"
+]) {
+  expectIncludes(paymentGuide, phrase, `결제 가이드 최신 문구 ${phrase}`, "docs/payment-launch.md");
+}
+
+for (const productId of productIds) {
+  expectIncludes(appStoreGuide, productId, `앱스토어 가이드 상품 ID ${productId}`, "docs/app-store-release.md");
+}
+
+for (const [fileName, source] of [
+  ["LAUNCH_CHECKLIST.md", launchChecklist],
+  ["docs/payment-launch.md", paymentGuide],
+  ["docs/app-store-release.md", appStoreGuide]
+]) {
+  for (const stale of [
+    "월간 Pro와 연간 Pro 상품",
+    "웹훅과 구독 권한 동기화",
+    "chart_radar_pro_monthly",
+    "chart_radar_pro_yearly"
+  ]) {
+    if (source.includes(stale)) {
+      fail(`오래된 결제 문구 방지 ${fileName}`, `${stale} 문구가 남아 있습니다.`);
+    }
+  }
 }
 
 expectIncludes(confirmRoute, "https://api.tosspayments.com/v1/payments/confirm", "토스 승인 확인 엔드포인트", "src/app/api/billing/confirm/route.ts");

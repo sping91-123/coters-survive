@@ -74,7 +74,7 @@ App Store Connect에는 아래 상품 ID로 생성합니다.
 | Global Pro | `chart_radar_global_monthly` | `chart_radar_global_yearly` |
 | All Market Pro | `chart_radar_bundle_monthly` | `chart_radar_bundle_yearly` |
 
-이전 설계의 `chart_radar_pro_monthly`, `chart_radar_pro_yearly`는 사용하지 않습니다.
+이전 단일 Pro 상품 ID는 사용하지 않습니다.
 
 ## 5. 출시 전 필수 정책 페이지
 
