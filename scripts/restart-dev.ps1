@@ -29,5 +29,16 @@ if ($SkipStart) {
   exit 0
 }
 
-Set-Location $repo
-npm.cmd run dev
+$outLog = Join-Path $repo "dev-server.out.log"
+$errLog = Join-Path $repo "dev-server.err.log"
+Remove-Item -LiteralPath $outLog, $errLog -ErrorAction SilentlyContinue
+
+Start-Process `
+  -FilePath "npm.cmd" `
+  -ArgumentList "run", "dev" `
+  -WorkingDirectory $repo `
+  -RedirectStandardOutput $outLog `
+  -RedirectStandardError $errLog `
+  -WindowStyle Hidden
+
+Write-Host "Chart Radar dev server restarted at http://127.0.0.1:3000"
