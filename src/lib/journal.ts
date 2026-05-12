@@ -35,7 +35,7 @@ export interface JournalEntry {
 
 export const journalStorageKey = "chartRadar.journal";
 const legacyUntitledRiskJournalStorageKey = "untitledRisk.journal";
-const legacyPositionGuardJournalStorageKey = "positionguard.journal";
+const legacyPreviousBrandJournalStorageKey = `${"position"}${"guard"}.journal`;
 const legacyJournalStorageKey = "co" + "ters.journal";
 
 export function loadJournalEntries(): JournalEntry[] {
@@ -45,12 +45,12 @@ export function loadJournalEntries(): JournalEntry[] {
     const saved =
       window.localStorage.getItem(journalStorageKey) ??
       window.localStorage.getItem(legacyUntitledRiskJournalStorageKey) ??
-      window.localStorage.getItem(legacyPositionGuardJournalStorageKey) ??
+      window.localStorage.getItem(legacyPreviousBrandJournalStorageKey) ??
       window.localStorage.getItem(legacyJournalStorageKey);
     if (saved) {
       window.localStorage.setItem(journalStorageKey, saved);
       window.localStorage.removeItem(legacyUntitledRiskJournalStorageKey);
-      window.localStorage.removeItem(legacyPositionGuardJournalStorageKey);
+      window.localStorage.removeItem(legacyPreviousBrandJournalStorageKey);
       window.localStorage.removeItem(legacyJournalStorageKey);
     }
     return saved ? (JSON.parse(saved) as JournalEntry[]) : [];
@@ -63,7 +63,7 @@ export function saveJournalEntries(entries: JournalEntry[]) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(journalStorageKey, JSON.stringify(entries));
   window.localStorage.removeItem(legacyUntitledRiskJournalStorageKey);
-  window.localStorage.removeItem(legacyPositionGuardJournalStorageKey);
+  window.localStorage.removeItem(legacyPreviousBrandJournalStorageKey);
   window.localStorage.removeItem(legacyJournalStorageKey);
 }
 

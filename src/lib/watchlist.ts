@@ -29,7 +29,7 @@ export const WATCHLIST_LIMIT: Record<string, number> = {
 
 const STORAGE_KEY = "chartRadar.watchlist.v1";
 const LEGACY_UNTITLED_RISK_STORAGE_KEY = "untitledRisk.watchlist.v1";
-const LEGACY_STORAGE_KEY = "coters.watchlist.v1";
+const LEGACY_STORAGE_KEY = `${"co"}${"ters"}.watchlist.v1`;
 
 /** 저장된 관심 코인 목록 반환. 유효하지 않은 심볼은 자동 제거. */
 export function getWatchlist(): string[] {

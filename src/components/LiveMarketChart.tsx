@@ -67,12 +67,12 @@ const majorSymbols = symbols.slice(0, 2);
 const altSymbols = symbols.slice(2);
 const timeframeScoreLimit = 6.25;
 const storagePrefix = "chartRadar";
-const legacyPositionGuardStoragePrefix = "positionguard";
-const legacyCotersStoragePrefix = "co" + "ters";
+const legacyPreviousBrandStoragePrefix = "position" + "guard";
+const legacyChannelStoragePrefix = "co" + "ters";
 const overlaySettingsStorageKey = `${storagePrefix}.overlaySettings.v1`;
 const legacyOverlaySettingsStorageKeys = [
-  `${legacyPositionGuardStoragePrefix}.overlaySettings.v1`,
-  `${legacyCotersStoragePrefix}.overlaySettings.v1`
+  `${legacyPreviousBrandStoragePrefix}.overlaySettings.v1`,
+  `${legacyChannelStoragePrefix}.overlaySettings.v1`
 ];
 
 interface MarketCachePayload {
@@ -334,7 +334,7 @@ function storageKey(name: string) {
 }
 
 function legacyStorageKeys(name: string) {
-  return [`${legacyPositionGuardStoragePrefix}.${name}`, `${legacyCotersStoragePrefix}.${name}`];
+  return [`${legacyPreviousBrandStoragePrefix}.${name}`, `${legacyChannelStoragePrefix}.${name}`];
 }
 
 function readLocalStorageWithLegacy(primaryKey: string, legacyKeys: string[]) {

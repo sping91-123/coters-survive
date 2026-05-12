@@ -1,4 +1,4 @@
--- PositionGuard - Supabase phase 1 schema
+-- Chart Radar - Supabase phase 1 schema
 -- Run this once in Supabase SQL Editor.
 
 create extension if not exists pgcrypto;

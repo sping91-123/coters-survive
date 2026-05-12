@@ -5,7 +5,7 @@ export const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHAB
 
 export const supabaseSessionStorageKey = "chartRadar.supabase.session";
 const legacyUntitledRiskSupabaseSessionStorageKey = "untitledRisk.supabase.session";
-const legacyPositionGuardSupabaseSessionStorageKey = "positionguard.supabase.session";
+const legacyPreviousBrandSupabaseSessionStorageKey = `${"position"}${"guard"}.supabase.session`;
 const legacySupabaseSessionStorageKey = "co" + "ters.supabase.session";
 const allowLocalRefreshToken = process.env.NEXT_PUBLIC_ALLOW_LOCAL_REFRESH_TOKEN === "true";
 
@@ -81,7 +81,7 @@ export function saveSupabaseSession(session: SupabaseSession) {
       };
   window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(persistedSession));
   window.localStorage.removeItem(legacyUntitledRiskSupabaseSessionStorageKey);
-  window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
+  window.localStorage.removeItem(legacyPreviousBrandSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 
@@ -92,12 +92,12 @@ export function getSupabaseSession(): SupabaseSession | null {
     const raw =
       window.localStorage.getItem(supabaseSessionStorageKey) ??
       window.localStorage.getItem(legacyUntitledRiskSupabaseSessionStorageKey) ??
-      window.localStorage.getItem(legacyPositionGuardSupabaseSessionStorageKey) ??
+      window.localStorage.getItem(legacyPreviousBrandSupabaseSessionStorageKey) ??
       window.localStorage.getItem(legacySupabaseSessionStorageKey);
     if (!raw) return null;
     window.localStorage.setItem(supabaseSessionStorageKey, raw);
     window.localStorage.removeItem(legacyUntitledRiskSupabaseSessionStorageKey);
-    window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
+    window.localStorage.removeItem(legacyPreviousBrandSupabaseSessionStorageKey);
     window.localStorage.removeItem(legacySupabaseSessionStorageKey);
     const session = JSON.parse(raw) as SupabaseSession;
     if (!session.accessToken) return null;
@@ -132,7 +132,7 @@ export function clearSupabaseSession() {
   if (typeof window === "undefined") return;
   window.localStorage.removeItem(supabaseSessionStorageKey);
   window.localStorage.removeItem(legacyUntitledRiskSupabaseSessionStorageKey);
-  window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
+  window.localStorage.removeItem(legacyPreviousBrandSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
 

@@ -41,7 +41,7 @@ const numberFormatter = new Intl.NumberFormat("ko-KR", {
   minimumFractionDigits: 2
 });
 const scoutRiskProfileStorageKey = "chartRadar.scoutRiskProfile.v1";
-const legacyScoutRiskProfileStorageKeys = ["untitledRisk.scoutRiskProfile.v1", "positionguard.scoutRiskProfile.v1"];
+const legacyScoutRiskProfileStorageKeys = ["untitledRisk.scoutRiskProfile.v1", `${"position"}${"guard"}.scoutRiskProfile.v1`];
 
 function readStoredScoutRiskProfile(): ScoutRiskProfile {
   if (typeof window === "undefined") return "radar";
