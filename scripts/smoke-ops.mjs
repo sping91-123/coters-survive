@@ -43,6 +43,8 @@ function hasMojibake(source) {
 
 const rateLimit = read("src/lib/server/rateLimit.ts");
 const envExample = read(".env.example");
+const packageJson = read("package.json");
+const restartDev = read("scripts/restart-dev.ps1");
 const macroEvents = read("src/data/macroEvents.ts");
 const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
@@ -78,6 +80,9 @@ expectIncludes(envExample, "NEXT_PUBLIC_ALLOW_LOCAL_REFRESH_TOKEN=", "로컬 ref
 expectIncludes(envExample, "SUPABASE_SERVICE_ROLE_KEY=", "서버 권한 반영 키 예시", ".env.example");
 expectIncludes(envExample, "NEWS_TRANSLATION_PROVIDER=", "뉴스 번역 속도 옵션", ".env.example");
 expectIncludes(envExample, "ENABLE_GEMINI_NEWS_FALLBACK=", "뉴스 AI fallback 옵션", ".env.example");
+expectIncludes(packageJson, '"dev:clean"', "개발 서버 복구 명령", "package.json");
+expectIncludes(restartDev, "Refusing to delete outside repo", "개발 캐시 삭제 보호", "scripts/restart-dev.ps1");
+expectIncludes(restartDev, "Get-NetTCPConnection -LocalPort $port", "3000번 포트 정리", "scripts/restart-dev.ps1");
 expectIncludes(macroEvents, "macroCalendarUpdatedAt", "매크로 갱신 기준 표시", "src/data/macroEvents.ts");
 expectIncludes(macroEvents, "macroCalendarUpdatedAtIso", "매크로 갱신 ISO 기준", "src/data/macroEvents.ts");
 expectIncludes(radarNewsApi, "fallbackNewsBriefing", "레이더뉴스 fallback 브리핑", "src/app/api/radar-news/route.ts");
