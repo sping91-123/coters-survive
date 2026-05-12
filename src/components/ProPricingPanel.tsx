@@ -225,7 +225,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           <p className="font-black text-white">무료와 Pro의 차이</p>
           <p className="mt-2 text-slate-400">
-            무료는 맛보기, Pro는 반복 감시와 저장을 위한 작업 공간입니다.
+            무료는 핵심 확인, Pro는 반복 감시와 저장을 위한 작업 공간입니다.
           </p>
         </div>
       </div>
