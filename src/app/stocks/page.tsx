@@ -38,14 +38,14 @@ function GlobalProRoutine() {
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
-            Global Pro Workflow
+            Global Radar Workflow
           </p>
           <h2 className="mt-2 text-2xl font-black text-white">
-            글로벌 Pro는 “매일 켜는 루틴”까지 포함해야 합니다.
+            글로벌 레이더 사용 루틴.
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400 [word-break:keep-all]">
-            글로벌 레이더는 단순 차트 뷰어가 아니라 장전, 장중, 마감 후에 무엇을 확인해야 하는지 줄여주는 화면입니다.
-            아래 흐름을 한 번에 쓰면 오늘 볼 시장, 뉴스 영향, 기준선, 알림까지 이어집니다.
+            장전, 장중, 마감 후에 무엇을 확인해야 하는지 줄여주는 화면입니다.
+            오늘 볼 시장, 뉴스 영향, 기준선, 알림까지 한 흐름으로 이어집니다.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -83,8 +83,8 @@ export default function StocksPage() {
         <Header market="stocks" />
         <RadarTopNav />
         <MacroTicker compact market="stocks" />
-        <GlobalProRoutine />
         <StockRadarApp />
+        <GlobalProRoutine />
         <RadarNewsPanel market="stocks" />
         <RadarAlertCenter compact market="stocks" />
         <AppFooter />
