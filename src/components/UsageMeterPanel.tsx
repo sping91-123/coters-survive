@@ -1,5 +1,5 @@
 "use client";
-// 무료 체험과 Pro 사용량 차이를 보여주는 일일 사용량 패널이다.
+// Free와 Pro 사용량 차이를 보여주는 일일 사용량 패널이다.
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Crown, Gauge, RotateCcw, Zap } from "lucide-react";
@@ -96,7 +96,7 @@ export function UsageMeterPanel({ compact = false }: { compact?: boolean }) {
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
               {isPaid
                 ? "결제 권한이 확인된 계정은 Pro 기준 사용량으로 표시됩니다. 로그인 계정 기준으로 사용 흐름을 관리해 여러 기기에서도 같은 권한을 확인할 수 있습니다."
-                : "Free는 핵심 흐름을 확인하는 체험 모드이고, Pro는 코인·글로벌·AI·알림을 매일 여러 번 돌리는 운영 모드입니다."}
+                : "Free는 핵심 흐름을 확인하는 기본 모드이고, Pro는 코인·글로벌·AI·알림을 매일 여러 번 돌리는 운영 모드입니다."}
             </p>
           </div>
         </div>

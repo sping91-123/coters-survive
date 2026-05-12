@@ -56,6 +56,7 @@ const aiProviderIndex = read("src/lib/ai/index.ts");
 const aiCommentaryRoute = read("src/app/api/ai/commentary/route.ts");
 const aiMarketBriefingRoute = read("src/app/api/ai/market-briefing/route.ts");
 const launchCopyFiles = [
+  "src/components/AuthStatus.tsx",
   "src/components/UsageMeterPanel.tsx",
   "src/components/RadarAlertCenter.tsx",
   "src/app/journal/page.tsx",
@@ -63,7 +64,8 @@ const launchCopyFiles = [
   "src/app/survival/page.tsx",
   "src/app/alts/page.tsx",
   "src/app/global/page.tsx",
-  "src/app/pro/page.tsx"
+  "src/app/pro/page.tsx",
+  "src/lib/billing.ts"
 ];
 const apiRoutes = walk("src/app/api", [".ts"]);
 const userFacingSources = [
@@ -123,6 +125,7 @@ const launchRiskTerms = [
   "보존되지 않을 수",
   "알림 준비 완료",
   "서버 권한과 결제 상태가 연결된 뒤",
+  "무료 체험",
   "Beta",
   "베타"
 ];
