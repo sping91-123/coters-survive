@@ -105,21 +105,9 @@ Chart Radar is a market analysis and education tool. It provides market structur
 - 앱 아이콘이 1024px 정사각형 기준으로 깨지지 않음.
 - 모바일 Safari와 Android Chrome에서 결제, 로그인, 주요 페이지가 열림.
 - iOS 앱에서는 디지털 구독 결제가 App Store IAP로 연결됨.
-- 웹에서는 `NEXT_PUBLIC_PRO_PAYMENT_URL`이 실제 결제 링크로 연결됨.
+- 웹에서는 코인, 글로벌, 올마켓 상품별 결제 URL이 실제 결제 링크로 연결됨.
+- 웹 결제 성공 후 `/api/billing/confirm`이 결제 승인과 Supabase 권한 반영을 확인함.
+- `TOSS_PAYMENTS_SECRET_KEY`와 `SUPABASE_SERVICE_ROLE_KEY`가 운영 서버에만 설정되어 있음.
 - 알림 기능은 브라우저 알림 권한 요청 실패 시에도 앱이 멈추지 않음.
 - AI API 호출 제한이 켜져 있음.
 - 앱 설명에 수익 보장, 매수 신호, 자동매매처럼 오해될 표현이 없음.
-# 2026-05-11 App Store 상품 ID 최신 구조.
-
-정식 출시용 구독 상품은 코인, 글로벌, 올마켓으로 나눕니다.
-
-| 상품 | 상품 ID | 표시 이름 |
-| --- | --- | --- |
-| Crypto 월간 | `chart_radar_crypto_monthly` | Chart Radar Crypto 월간 |
-| Crypto 연간 | `chart_radar_crypto_yearly` | Chart Radar Crypto 연간 |
-| Global 월간 | `chart_radar_global_monthly` | Chart Radar Global 월간 |
-| Global 연간 | `chart_radar_global_yearly` | Chart Radar Global 연간 |
-| Bundle 월간 | `chart_radar_bundle_monthly` | Chart Radar All Market 월간 |
-| Bundle 연간 | `chart_radar_bundle_yearly` | Chart Radar All Market 연간 |
-
-기존 `chart_radar_pro_monthly`, `chart_radar_pro_yearly`는 이전 설계 메모로만 남기고 새 상품 생성에는 사용하지 않습니다.
