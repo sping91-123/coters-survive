@@ -1,6 +1,7 @@
 // 서비스 운영 상태와 주요 설정 신선도를 확인하는 헬스체크 API입니다.
 import { NextResponse } from "next/server";
 import { macroCalendarUpdatedAtIso } from "@/data/macroEvents";
+import { paidBillingPlans } from "@/lib/billing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,29 @@ function hoursSince(iso: string) {
   return Math.max(0, Math.round(((Date.now() - updatedAt) / (60 * 60 * 1000)) * 10) / 10);
 }
 
+function getDirectPaymentUrl(planId: string) {
+  const paymentUrlByPlan: Record<string, string | undefined> = {
+    crypto_monthly: process.env.NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL,
+    crypto_yearly: process.env.NEXT_PUBLIC_CRYPTO_YEARLY_PAYMENT_URL,
+    stocks_monthly: process.env.NEXT_PUBLIC_GLOBAL_MONTHLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_STOCKS_MONTHLY_PAYMENT_URL,
+    stocks_yearly: process.env.NEXT_PUBLIC_GLOBAL_YEARLY_PAYMENT_URL ?? process.env.NEXT_PUBLIC_STOCKS_YEARLY_PAYMENT_URL,
+    bundle_monthly: process.env.NEXT_PUBLIC_BUNDLE_MONTHLY_PAYMENT_URL,
+    bundle_yearly: process.env.NEXT_PUBLIC_BUNDLE_YEARLY_PAYMENT_URL
+  };
+
+  return paymentUrlByPlan[planId] ?? "";
+}
+
+function getFallbackPaymentUrl(planId: string) {
+  return (
+    (planId.endsWith("_yearly")
+      ? process.env.NEXT_PUBLIC_PRO_YEARLY_PAYMENT_URL
+      : process.env.NEXT_PUBLIC_PRO_MONTHLY_PAYMENT_URL) ??
+    process.env.NEXT_PUBLIC_PRO_PAYMENT_URL ??
+    ""
+  );
+}
+
 export async function GET() {
   const macroAgeHours = hoursSince(macroCalendarUpdatedAtIso);
   const hasGroq = hasValue(process.env.GROQ_API_KEY);
@@ -28,14 +52,32 @@ export async function GET() {
   const hasSiteUrl = hasValue(process.env.NEXT_PUBLIC_SITE_URL);
   const hasAIProvider = hasGroq || hasGemini;
   const hasPaymentProvider = hasTossSecret && hasTossClient;
+  const planPaymentLinks = paidBillingPlans.map((plan) => {
+    const directUrl = getDirectPaymentUrl(plan.id);
+    const fallbackUrl = getFallbackPaymentUrl(plan.id);
+    const usesFallback = !hasValue(directUrl) && hasValue(fallbackUrl);
+
+    return {
+      planId: plan.id,
+      name: plan.name,
+      configured: hasValue(directUrl) || usesFallback,
+      productSpecific: hasValue(directUrl),
+      usesFallback
+    };
+  });
+  const paymentLinksReady = planPaymentLinks.every((item) => item.configured);
+  const missingPlanPaymentLinks = planPaymentLinks.filter((item) => !item.configured).map((item) => item.planId);
+  const fallbackPlanPaymentLinks = planPaymentLinks.filter((item) => item.usesFallback).map((item) => item.planId);
   const isMacroStale = macroAgeHours === null ? true : macroAgeHours > macroStaleAfterHours;
   const coreReady = hasSupabaseUrl && hasSupabaseKey && hasAIProvider && !isMacroStale;
-  const readyForPaidLaunch = coreReady && hasSiteUrl && hasPaymentProvider;
+  const readyForPaidLaunch = coreReady && hasSiteUrl && hasPaymentProvider && paymentLinksReady;
   const warnings = [
     hasSupabaseUrl && hasSupabaseKey ? null : "Supabase public env is missing.",
     hasAIProvider ? null : "AI provider env is missing.",
     hasSiteUrl ? null : "NEXT_PUBLIC_SITE_URL is missing.",
     hasPaymentProvider ? null : "TossPayments env is missing.",
+    paymentLinksReady ? null : `Plan payment links are missing: ${missingPlanPaymentLinks.join(", ")}.`,
+    fallbackPlanPaymentLinks.length === 0 ? null : `Shared payment link fallback is used: ${fallbackPlanPaymentLinks.join(", ")}.`,
     isMacroStale ? "Macro calendar is stale." : null
   ].filter((item): item is string => Boolean(item));
 
@@ -51,7 +93,9 @@ export async function GET() {
       supabasePublic: hasSupabaseUrl && hasSupabaseKey,
       siteUrl: hasSiteUrl,
       aiProvider: hasGroq ? "groq" : hasGemini ? "gemini" : "not-configured",
-      paymentProvider: hasPaymentProvider ? "toss-payments" : "not-configured"
+      paymentProvider: hasPaymentProvider ? "toss-payments" : "not-configured",
+      paymentLinksReady,
+      planPaymentLinks
     },
     macroCalendar: {
       updatedAtIso: macroCalendarUpdatedAtIso,
