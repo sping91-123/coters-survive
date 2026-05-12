@@ -6,6 +6,7 @@ const checks = [
   { label: "홈", path: "/" },
   { label: "BTC/ETH", path: "/survival" },
   { label: "알트코인", path: "/alts" },
+  { label: "글로벌", path: "/global" },
   { label: "해외주식", path: "/stocks" },
   { label: "레이더 뉴스", path: "/news" },
   { label: "알림 센터", path: "/alerts" },
@@ -31,6 +32,30 @@ const checks = [
     method: "POST",
     body: { planId: "bundle_yearly", platform: "web" },
   },
+  {
+    label: "결제 승인 로그인 보호",
+    path: "/api/billing/confirm",
+    method: "POST",
+    body: {
+      planId: "crypto_monthly",
+      orderId: "cr_crypto_monthly_smoke",
+      amount: 14900,
+      paymentKey: "smoke_payment_key",
+    },
+    expectedStatus: [401],
+  },
+  {
+    label: "결제 승인 금액 검증",
+    path: "/api/billing/confirm",
+    method: "POST",
+    body: {
+      planId: "crypto_monthly",
+      orderId: "cr_crypto_monthly_smoke",
+      amount: 1,
+      paymentKey: "smoke_payment_key",
+    },
+    expectedStatus: [400],
+  },
 ];
 
 async function fetchWithTimeout(check) {
@@ -46,9 +71,10 @@ async function fetchWithTimeout(check) {
     });
 
     const text = await response.text();
+    const expectedStatus = check.expectedStatus ?? [200, 201, 202, 204];
     return {
       check,
-      ok: response.ok,
+      ok: expectedStatus.includes(response.status),
       status: response.status,
       detail: text.slice(0, 180).replace(/\s+/g, " ").trim(),
     };
