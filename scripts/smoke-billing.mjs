@@ -195,8 +195,8 @@ const watchlistLimitChecks = [
   ["crypto_yearly", 100],
   ["bundle_monthly", 100],
   ["bundle_yearly", 150],
-  ["stocks_monthly", 5],
-  ["stocks_yearly", 5]
+  ["stocks_monthly", 50],
+  ["stocks_yearly", 100]
 ];
 
 for (const [planId, expectedLimit] of watchlistLimitChecks) {

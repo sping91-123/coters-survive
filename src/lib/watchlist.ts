@@ -5,6 +5,8 @@
  *  - free / 비로그인 : 5개
  *  - Coin Pro 월간  : 50개
  *  - Coin Pro 연간  : 100개
+ *  - Global Pro 월간: 50개
+ *  - Global Pro 연간: 100개
  *  - All Market 월간: 100개
  *  - All Market 연간: 150개
  */
@@ -23,8 +25,8 @@ export const WATCHLIST_LIMIT: Record<string, number> = {
   crypto_yearly: 100,
   bundle_monthly: 100,
   bundle_yearly: 150,
-  stocks_monthly: 5,
-  stocks_yearly: 5
+  stocks_monthly: 50,
+  stocks_yearly: 100
 };
 
 const STORAGE_KEY = "chartRadar.watchlist.v1";
