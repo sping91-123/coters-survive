@@ -8,6 +8,8 @@ import { chartTimeframes, type Candle, type ChartTimeframe } from "@/lib/marketA
 import { analyzeTechnicalRadar, type TechnicalRadarReport } from "@/lib/technicalRadar";
 import type { StockSymbolInfo } from "@/lib/stockMarket";
 import { recordUsageEvent } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { getWatchlistLimit } from "@/lib/watchlist";
 
 const fallbackUniverse: StockSymbolInfo[] = [
   { symbol: "SPY", name: "S&P 500 ETF", group: "index_etf" },
@@ -32,6 +34,7 @@ const groupLabels: Record<StockSymbolInfo["group"], string> = {
 const groupOrder: StockSymbolInfo["group"][] = ["index_etf", "mega_cap", "ai_chip", "growth", "finance", "commodity"];
 const featuredSymbols = ["SPY", "QQQ", "NVDA", "AAPL", "TSLA", "GLD"];
 const globalWatchlistStorageKey = "chart-radar.globalWatchlist.v1";
+const globalWatchlistMaxItems = 150;
 
 type LoadState =
   | { status: "idle" }
@@ -56,7 +59,7 @@ function readGlobalWatchlist() {
     const raw = window.localStorage.getItem(globalWatchlistStorageKey);
     const parsed = raw ? (JSON.parse(raw) as unknown) : null;
     if (!Array.isArray(parsed)) return ["SPY", "QQQ", "NVDA"];
-    const symbols = parsed.filter((item): item is string => typeof item === "string").slice(0, 30);
+    const symbols = parsed.filter((item): item is string => typeof item === "string").slice(0, globalWatchlistMaxItems);
     return symbols.length ? symbols : ["SPY", "QQQ", "NVDA"];
   } catch {
     return ["SPY", "QQQ", "NVDA"];
@@ -65,7 +68,7 @@ function readGlobalWatchlist() {
 
 function writeGlobalWatchlist(symbols: string[]) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(globalWatchlistStorageKey, JSON.stringify(symbols.slice(0, 30)));
+  window.localStorage.setItem(globalWatchlistStorageKey, JSON.stringify(symbols.slice(0, globalWatchlistMaxItems)));
 }
 
 function formatPercent(value: number | null) {
@@ -277,6 +280,7 @@ function StockSnapshot({
 }
 
 export function StockRadarApp() {
+  const { profile } = useSupabaseAuth();
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartApiRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -288,6 +292,7 @@ export function StockRadarApp() {
   const [state, setState] = useState<LoadState>({ status: "idle" });
   const [sessionState, setSessionState] = useState<ReturnType<typeof getGlobalSessionState> | null>(null);
   const [savedSymbols, setSavedSymbols] = useState<string[]>([]);
+  const watchlistLimit = getWatchlistLimit(profile?.plan ?? "free");
 
   const selectedInfo = useMemo(() => universe.find((item) => item.symbol === symbol) ?? null, [symbol, universe]);
   const featuredItems = useMemo(
@@ -305,18 +310,21 @@ export function StockRadarApp() {
     () => savedSymbols.map((savedSymbol) => universe.find((item) => item.symbol === savedSymbol)).filter(Boolean) as StockSymbolInfo[],
     [savedSymbols, universe]
   );
+  const visibleSavedItems = useMemo(() => savedItems.slice(0, watchlistLimit), [savedItems, watchlistLimit]);
   const isSavedSymbol = savedSymbols.includes(symbol);
+  const canSaveSelectedSymbol = isSavedSymbol || savedSymbols.length < watchlistLimit;
 
   const toggleSavedSymbol = useCallback((targetSymbol: string) => {
     setSavedSymbols((current) => {
       const normalized = targetSymbol.toUpperCase();
+      if (!current.includes(normalized) && current.length >= watchlistLimit) return current;
       const next = current.includes(normalized)
         ? current.filter((item) => item !== normalized)
-        : [normalized, ...current].slice(0, 30);
+        : [normalized, ...current].slice(0, globalWatchlistMaxItems);
       writeGlobalWatchlist(next);
       return next;
     });
-  }, []);
+  }, [watchlistLimit]);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
@@ -503,24 +511,27 @@ export function StockRadarApp() {
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-black text-white">관심 글로벌 종목</p>
-              <p className="mt-1 text-[11px] font-bold text-slate-500">매일 보는 ETF와 종목을 저장해 장전 점검을 빠르게 시작하세요.</p>
+              <p className="mt-1 text-[11px] font-bold text-slate-500">
+                매일 보는 ETF와 종목을 저장해 장전 점검을 빠르게 시작하세요. 현재 한도 {savedSymbols.length}/{watchlistLimit}개.
+              </p>
             </div>
             <button
               type="button"
               onClick={() => toggleSavedSymbol(symbol)}
-              className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md border px-3 text-xs font-black transition ${
+              disabled={!canSaveSelectedSymbol}
+              className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md border px-3 text-xs font-black transition disabled:cursor-not-allowed disabled:border-slate-500/30 disabled:bg-slate-500/10 disabled:text-slate-500 ${
                 isSavedSymbol
                   ? "border-emerald-300/35 bg-emerald-300/15 text-emerald-200"
                   : "border-accent-blue/30 bg-accent-blue/10 text-accent-blue hover:bg-accent-blue hover:text-slate-950"
               }`}
             >
               {isSavedSymbol ? <BookmarkCheck size={13} aria-hidden /> : <Bookmark size={13} aria-hidden />}
-              {isSavedSymbol ? "저장됨" : "관심 추가"}
+              {isSavedSymbol ? "저장됨" : canSaveSelectedSymbol ? "관심 추가" : "한도 도달"}
             </button>
           </div>
 
           <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-            {savedItems.map((item) => (
+            {visibleSavedItems.map((item) => (
               <button
                 key={item.symbol}
                 type="button"

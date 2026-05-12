@@ -37,6 +37,7 @@ const supabaseClient = read("src/lib/supabase.ts");
 const supabaseAuthHook = read("src/lib/useSupabaseAuth.ts");
 const watchlist = read("src/lib/watchlist.ts");
 const watchlistPanel = read("src/components/WatchlistPanel.tsx");
+const stockRadarApp = read("src/components/StockRadarApp.tsx");
 const launchChecklist = read("LAUNCH_CHECKLIST.md");
 const paymentGuide = read("docs/payment-launch.md");
 const appStoreGuide = read("docs/app-store-release.md");
@@ -214,6 +215,18 @@ if (watchlistPanel.includes('const plan: WatchlistPlan = "admin"')) {
   pass("관심코인 플랜 연동", "WatchlistPanel이 실제 플랜 한도를 사용합니다.");
 } else {
   fail("관심코인 플랜 연동", "WatchlistPanel에서 getWatchlistLimit(plan)을 찾지 못했습니다.");
+}
+
+if (stockRadarApp.includes("getWatchlistLimit(profile?.plan ?? \"free\")")) {
+  pass("글로벌 관심종목 플랜 연동", "StockRadarApp이 로그인 플랜 기준 관심종목 한도를 사용합니다.");
+} else {
+  fail("글로벌 관심종목 플랜 연동", "StockRadarApp에서 getWatchlistLimit(profile?.plan ?? \"free\")을 찾지 못했습니다.");
+}
+
+if (stockRadarApp.includes("globalWatchlistMaxItems = 150") && !stockRadarApp.includes("slice(0, 30)")) {
+  pass("글로벌 관심종목 하드코딩 한도 제거", "글로벌 관심종목 저장 한도가 30개로 고정되지 않습니다.");
+} else {
+  fail("글로벌 관심종목 하드코딩 한도 제거", "StockRadarApp에 30개 고정 저장 한도가 남아 있습니다.");
 }
 
 const failures = checks.filter((check) => !check.ok);
