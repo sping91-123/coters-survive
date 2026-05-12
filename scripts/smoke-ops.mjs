@@ -46,6 +46,7 @@ const envExample = read(".env.example");
 const macroEvents = read("src/data/macroEvents.ts");
 const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
+const radarAlertCenter = read("src/components/RadarAlertCenter.tsx");
 const apiRoutes = walk("src/app/api", [".ts"]);
 const userFacingSources = [
   ...walk("src/app", [".ts", ".tsx"]),
@@ -74,6 +75,8 @@ expectIncludes(radarNewsApi, "USE_EXTERNAL_NEWS_TRANSLATION", "레이더뉴스 �
 expectIncludes(radarNewsApi, "USE_GEMINI_NEWS_FALLBACK", "레이더뉴스 Gemini fallback 옵션화", "src/app/api/radar-news/route.ts");
 expectIncludes(radarNewsPanel, "오늘의 코인 이슈 요약", "코인 뉴스 요약 화면", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarNewsPanel, "참고 뉴스", "참고 뉴스 목록 화면", "src/components/RadarNewsPanel.tsx");
+expectIncludes(radarAlertCenter, "getMarketRuleStorageKey", "알림 규칙 시장별 저장 키", "src/components/RadarAlertCenter.tsx");
+expectIncludes(radarAlertCenter, "`${baseStorageKey}.${market}`", "알림 규칙 시장별 localStorage", "src/components/RadarAlertCenter.tsx");
 
 const releaseMatches = [...macroEvents.matchAll(/releaseAt:\s*"([^"]+)"/g)].map((match) => Date.parse(match[1]));
 if (releaseMatches.some((time) => Number.isFinite(time) && time > Date.now())) {

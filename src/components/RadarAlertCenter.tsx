@@ -25,7 +25,7 @@ import {
 } from "@/lib/setupAlertPresets";
 import { recordUsageEvent } from "@/lib/usageMeter";
 
-const storageKey = "chartRadar.alertRules.v1";
+const baseStorageKey = "chartRadar.alertRules.v1";
 
 type PermissionState = "unsupported" | "default" | "granted" | "denied";
 type AlertMarket = "crypto" | "stocks";
@@ -43,18 +43,41 @@ const alertMarketCopy = {
   }
 } satisfies Record<AlertMarket, { eyebrow: string; title: string; description: string }>;
 
-function readStoredRuleIds(): RadarAlertRuleId[] {
-  if (typeof window === "undefined") return getDefaultRadarAlertRuleIds();
+function getMarketRuleStorageKey(market: AlertMarket) {
+  return `${baseStorageKey}.${market}`;
+}
+
+function getMarketDefaultRuleIds(market: AlertMarket): RadarAlertRuleId[] {
+  return getDefaultRadarAlertRuleIds().filter((id) => {
+    const rule = radarAlertRules.find((item) => item.id === id);
+    if (!rule) return false;
+    if (rule.category === "news" || rule.category === "system") return true;
+    return market === "stocks" ? rule.category === "stocks" : rule.category === "crypto";
+  });
+}
+
+function readStoredRuleIds(market: AlertMarket): RadarAlertRuleId[] {
+  const defaults = getMarketDefaultRuleIds(market);
+  if (typeof window === "undefined") return defaults;
 
   try {
-    const raw = window.localStorage.getItem(storageKey);
-    if (!raw) return getDefaultRadarAlertRuleIds();
+    const raw =
+      window.localStorage.getItem(getMarketRuleStorageKey(market)) ??
+      (market === "crypto" ? window.localStorage.getItem(baseStorageKey) : null);
+    if (!raw) return defaults;
     const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) return getDefaultRadarAlertRuleIds();
+    if (!Array.isArray(parsed)) return defaults;
     const allowed = new Set(radarAlertRules.map((rule) => rule.id));
-    return parsed.filter((id): id is RadarAlertRuleId => typeof id === "string" && allowed.has(id as RadarAlertRuleId));
+    return parsed
+      .filter((id): id is RadarAlertRuleId => typeof id === "string" && allowed.has(id as RadarAlertRuleId))
+      .filter((id) => {
+        const rule = radarAlertRules.find((item) => item.id === id);
+        if (!rule) return false;
+        if (rule.category === "news" || rule.category === "system") return true;
+        return market === "stocks" ? rule.category === "stocks" : rule.category === "crypto";
+      });
   } catch {
-    return getDefaultRadarAlertRuleIds();
+    return defaults;
   }
 }
 
@@ -170,7 +193,8 @@ function RuleCard({
 export function RadarAlertCenter({ compact = false, market = "crypto" }: { compact?: boolean; market?: AlertMarket }) {
   const copy = alertMarketCopy[market];
   const isGlobal = market === "stocks";
-  const [enabledRuleIds, setEnabledRuleIds] = useState<RadarAlertRuleId[]>(() => getDefaultRadarAlertRuleIds());
+  const [enabledRuleIds, setEnabledRuleIds] = useState<RadarAlertRuleId[]>(() => readStoredRuleIds(market));
+  const [rulesMarket, setRulesMarket] = useState<AlertMarket>(market);
   const [setupPresets, setSetupPresets] = useState<SetupAlertPreset[]>([]);
   const [setupMatches, setSetupMatches] = useState<SetupAlertMatch[]>([]);
   const [monitorStatus, setMonitorStatus] = useState<SetupAlertMonitorStatus | null>(null);
@@ -180,7 +204,8 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    setEnabledRuleIds(readStoredRuleIds());
+    setEnabledRuleIds(readStoredRuleIds(market));
+    setRulesMarket(market);
     setSetupPresets(readSetupAlertPresets(market));
     setSetupMatches(readSetupAlertMatches(market));
     setMonitorStatus(readSetupAlertMonitorStatus(market));
@@ -225,8 +250,9 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    window.localStorage.setItem(storageKey, JSON.stringify(enabledRuleIds));
-  }, [enabledRuleIds]);
+    if (rulesMarket !== market) return;
+    window.localStorage.setItem(getMarketRuleStorageKey(market), JSON.stringify(enabledRuleIds));
+  }, [enabledRuleIds, market, rulesMarket]);
 
   const scopedRules = useMemo(
     () =>
