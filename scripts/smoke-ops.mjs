@@ -47,6 +47,7 @@ const macroEvents = read("src/data/macroEvents.ts");
 const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
 const radarAlertCenter = read("src/components/RadarAlertCenter.tsx");
+const radarAlerts = read("src/lib/radarAlerts.ts");
 const apiRoutes = walk("src/app/api", [".ts"]);
 const userFacingSources = [
   ...walk("src/app", [".ts", ".tsx"]),
@@ -77,6 +78,9 @@ expectIncludes(radarNewsPanel, "오늘의 코인 이슈 요약", "코인 뉴스 
 expectIncludes(radarNewsPanel, "참고 뉴스", "참고 뉴스 목록 화면", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarAlertCenter, "getMarketRuleStorageKey", "알림 규칙 시장별 저장 키", "src/components/RadarAlertCenter.tsx");
 expectIncludes(radarAlertCenter, "`${baseStorageKey}.${market}`", "알림 규칙 시장별 localStorage", "src/components/RadarAlertCenter.tsx");
+expectIncludes(radarAlerts, 'id: "stock-momentum"', "글로벌 모멘텀 알림 규칙", "src/lib/radarAlerts.ts");
+expectIncludes(radarAlerts, "글로벌 모멘텀 전환", "글로벌 모멘텀 알림 문구", "src/lib/radarAlerts.ts");
+expectIncludes(radarAlerts, "defaultEnabled: true", "기본 알림 활성화 유지", "src/lib/radarAlerts.ts");
 
 const releaseMatches = [...macroEvents.matchAll(/releaseAt:\s*"([^"]+)"/g)].map((match) => Date.parse(match[1]));
 if (releaseMatches.some((time) => Number.isFinite(time) && time > Date.now())) {
