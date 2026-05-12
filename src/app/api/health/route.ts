@@ -25,22 +25,38 @@ export async function GET() {
   const hasTossClient = hasValue(process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY);
   const hasSupabaseUrl = hasValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasSupabaseKey = hasValue(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
+  const hasSiteUrl = hasValue(process.env.NEXT_PUBLIC_SITE_URL);
+  const hasAIProvider = hasGroq || hasGemini;
+  const hasPaymentProvider = hasTossSecret && hasTossClient;
+  const isMacroStale = macroAgeHours === null ? true : macroAgeHours > macroStaleAfterHours;
+  const coreReady = hasSupabaseUrl && hasSupabaseKey && hasAIProvider && !isMacroStale;
+  const readyForPaidLaunch = coreReady && hasSiteUrl && hasPaymentProvider;
+  const warnings = [
+    hasSupabaseUrl && hasSupabaseKey ? null : "Supabase public env is missing.",
+    hasAIProvider ? null : "AI provider env is missing.",
+    hasSiteUrl ? null : "NEXT_PUBLIC_SITE_URL is missing.",
+    hasPaymentProvider ? null : "TossPayments env is missing.",
+    isMacroStale ? "Macro calendar is stale." : null
+  ].filter((item): item is string => Boolean(item));
 
   return NextResponse.json({
-    ok: true,
+    ok: coreReady,
     service: "chart-radar",
+    status: readyForPaidLaunch ? "ready" : coreReady ? "degraded" : "attention_required",
+    readyForPaidLaunch,
     checkedAt: new Date().toISOString(),
     runtime: "nextjs",
+    warnings,
     checks: {
       supabasePublic: hasSupabaseUrl && hasSupabaseKey,
-      siteUrl: hasValue(process.env.NEXT_PUBLIC_SITE_URL),
+      siteUrl: hasSiteUrl,
       aiProvider: hasGroq ? "groq" : hasGemini ? "gemini" : "not-configured",
-      paymentProvider: hasTossSecret && hasTossClient ? "toss-payments" : "not-configured"
+      paymentProvider: hasPaymentProvider ? "toss-payments" : "not-configured"
     },
     macroCalendar: {
       updatedAtIso: macroCalendarUpdatedAtIso,
       ageHours: macroAgeHours,
-      stale: macroAgeHours === null ? true : macroAgeHours > macroStaleAfterHours,
+      stale: isMacroStale,
       staleAfterHours: macroStaleAfterHours
     }
   });
