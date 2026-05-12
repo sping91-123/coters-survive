@@ -1,4 +1,4 @@
-// Chart Radar Pro 결제 모델과 구독 플랜을 보여주는 페이지.
+// Chart Radar Pro 결제 모델과 구독 플랜을 보여주는 페이지입니다.
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
 import { ProPricingPanel } from "@/components/ProPricingPanel";
