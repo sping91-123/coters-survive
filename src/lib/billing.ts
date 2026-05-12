@@ -11,6 +11,9 @@ export type BillingPlanId =
   | "bundle_monthly"
   | "bundle_yearly";
 
+export type LegacyAccountPlan = "member" | "premium" | "admin";
+export type BillingEntitlementPlan = BillingPlanId | LegacyAccountPlan | null | undefined;
+
 export interface BillingPlan {
   id: BillingPlanId;
   marketScope: BillingMarketScope;
@@ -167,6 +170,7 @@ export const billingPlans: BillingPlan[] = [
 ];
 
 export const paidBillingPlans = billingPlans.filter((plan) => plan.id !== "free");
+export const paidBillingPlanIds = paidBillingPlans.map((plan) => plan.id);
 
 export function findBillingPlan(planId: string | null | undefined) {
   return billingPlans.find((plan) => plan.id === planId) ?? null;
@@ -195,6 +199,29 @@ export function formatKrw(value: number) {
 export function isPaidPlan(planId: string | null | undefined) {
   const plan = findBillingPlan(planId);
   return Boolean(plan && plan.id !== "free");
+}
+
+export function hasAnyPaidEntitlement(planId: BillingEntitlementPlan) {
+  if (!planId || planId === "free") return false;
+  if (planId === "member" || planId === "premium" || planId === "admin") return true;
+  return isPaidPlan(planId);
+}
+
+export function hasMarketEntitlement(planId: BillingEntitlementPlan, scope: Exclude<BillingPageScope, "all">) {
+  if (!hasAnyPaidEntitlement(planId)) return false;
+  if (planId === "admin" || planId === "premium" || planId === "member") return true;
+
+  const plan = findBillingPlan(planId);
+  if (!plan) return false;
+  if (plan.marketScope === "bundle") return true;
+  return plan.marketScope === scope;
+}
+
+export function getEntitlementLabel(planId: BillingEntitlementPlan) {
+  if (!planId || planId === "free") return "Free";
+  if (planId === "admin") return "Admin";
+  if (planId === "premium" || planId === "member") return "Legacy Pro";
+  return findBillingPlan(planId)?.name ?? "Pro";
 }
 
 export function isYearlyBillingPlan(planId: BillingPlanId) {

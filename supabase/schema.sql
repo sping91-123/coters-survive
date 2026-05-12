@@ -8,7 +8,7 @@ create table if not exists public.profiles (
   email text,
   display_name text,
   avatar_url text,
-  plan text not null default 'free' check (plan in ('free', 'member', 'premium', 'admin')),
+  plan text not null default 'free' check (plan in ('free', 'member', 'premium', 'admin', 'crypto_monthly', 'crypto_yearly', 'stocks_monthly', 'stocks_yearly', 'bundle_monthly', 'bundle_yearly')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -61,11 +61,13 @@ create table if not exists public.subscriptions (
   user_id uuid not null references auth.users(id) on delete cascade,
   provider text not null default 'manual',
   status text not null default 'inactive' check (status in ('inactive', 'trialing', 'active', 'past_due', 'canceled')),
-  plan text not null default 'free' check (plan in ('free', 'member', 'premium')),
+  plan text not null default 'free' check (plan in ('free', 'member', 'premium', 'crypto_monthly', 'crypto_yearly', 'stocks_monthly', 'stocks_yearly', 'bundle_monthly', 'bundle_yearly')),
+  market_scope text not null default 'trial' check (market_scope in ('trial', 'crypto', 'stocks', 'bundle')),
   current_period_start timestamptz,
   current_period_end timestamptz,
   provider_customer_id text,
   provider_subscription_id text,
+  provider_order_id text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -134,10 +136,8 @@ on public.profiles for select
 using (auth.uid() = id);
 
 drop policy if exists "profiles_update_own" on public.profiles;
-create policy "profiles_update_own"
-on public.profiles for update
-using (auth.uid() = id)
-with check (auth.uid() = id);
+-- 결제 권한이 profiles.plan에 들어가므로 공개 클라이언트가 임의로 plan을 바꾸지 못하게 합니다.
+-- 프로필 수정은 별도 서버 함수 또는 관리자 경로를 통해 열어 주세요.
 
 drop policy if exists "journals_select_own" on public.journals;
 create policy "journals_select_own"

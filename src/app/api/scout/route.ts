@@ -1,10 +1,10 @@
-﻿/**
+/**
  * GET /api/scout
  *
- * ?쒕쾭 ?ъ씠??Setup Scout ??5遺??몃찓紐⑤━ 罹먯떆.
- * - ?대씪?댁뼵?멸? Binance??吏곸젒 ?붿껌?섏? ?딄퀬 ?ш린????踰덈쭔 吏묎퀎
- * - ???놁쓬 / ?몄쬆 ?놁쓬 (寃곌낵??plan-gating??SetupScoutPanel??泥섎━)
- * - rate limit: 5遺?罹먯떆濡??먯뿰?ㅻ읇寃?諛⑹뼱
+ * 서버 사이드 레이더 스캔 결과를 5분간 메모리 캐시합니다.
+ * - 클라이언트가 Binance를 직접 때리지 않고 서버에서 한 번만 집계합니다.
+ * - 권한 제한은 별도 사용량 시스템에서 처리합니다.
+ * - rate limit과 inflight 재사용으로 급격한 중복 요청을 줄입니다.
  */
 
 import { NextResponse } from "next/server";
@@ -16,7 +16,7 @@ import type { TradingMode } from "@/lib/marketAnalysis";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5遺?
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5분.
 interface ServerCache {
   setups: ScoutSetup[];
   cachedAt: number;
@@ -60,7 +60,7 @@ export async function GET(request: Request) {
   const limit = await rateLimit(request, { key: "scout", limit: 20, windowMs: 5 * 60 * 1000 });
   if (!limit.allowed) {
     return NextResponse.json(
-        { error: "?덉씠???붿껌???덈Т 留롮뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?섏꽭??" },
+        { error: "레이더 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
       { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
     );
   }
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
   const now = Date.now();
   const cache = cacheByKey.get(cacheKey) ?? null;
 
-  // ?좏슚??罹먯떆媛 ?덉쑝硫?利됱떆 諛섑솚
+  // 유효한 캐시가 있으면 즉시 반환합니다.
   if (cache && now - cache.cachedAt < CACHE_TTL_MS) {
     return NextResponse.json({
       setups: cache.setups,
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
     });
   }
 
-  // ?숈떆 ?붿껌 以?inflight媛 ?덉쑝硫??ъ궗??(thundering-herd 諛⑹?)
+  // 같은 요청이 이미 진행 중이면 같은 Promise를 재사용합니다.
   if (!inflightByKey.has(cacheKey)) {
     const promise = getScannerSymbols(scope)
       .then((symbols) => scanAllSetups({ mode, riskProfile, symbols }))
@@ -105,8 +105,8 @@ export async function GET(request: Request) {
       cached: false
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "?덉씠???먮룆???ㅽ뙣?덉뒿?덈떎.";
-    console.error("[api/scout] ?덉씠???ㅻ쪟:", error);
+    const message = error instanceof Error ? error.message : "레이더 자동 스캔에 실패했습니다.";
+    console.error("[api/scout] 레이더 오류:", error);
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

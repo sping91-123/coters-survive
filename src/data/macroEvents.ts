@@ -18,7 +18,7 @@ export type MacroEventItem = {
   sourceUrl: string;
 };
 
-export const macroCalendarUpdatedAt = "2026년 5월 11일 기준";
+export const macroCalendarUpdatedAt = "2026년 5월 13일 기준";
 
 export const macroCalendarSourceNote =
   "화면 시간은 모두 한국시간입니다. 실제 발표값은 공식 발표 후 24시간 동안 최근 발표 영역에 남기고, 정식 자동 캘린더 연동 전까지 주요 일정은 수동으로 갱신합니다.";
@@ -28,9 +28,9 @@ export const macroItems: MacroEventItem[] = [
     label: "Existing Home Sales",
     releaseAt: "2026-05-11T23:00:00+09:00",
     dateKst: "5월 11일 23:00",
-    state: "upcoming",
+    state: "released",
     importance: 2,
-    actual: "발표 전",
+    actual: "결과 확인 중",
     forecast: "4.05M",
     previous: "3.98M",
     summary: "미국 기존주택 판매 흐름을 확인하는 지표입니다. 금리 부담 속에서도 주택 수요가 버티는지 보는 일정입니다.",
@@ -42,9 +42,9 @@ export const macroItems: MacroEventItem[] = [
     label: "CPI / Core CPI",
     releaseAt: "2026-05-12T21:30:00+09:00",
     dateKst: "5월 12일 21:30",
-    state: "upcoming",
+    state: "released",
     importance: 3,
-    actual: "발표 전",
+    actual: "결과 확인 중",
     forecast: "컨센서스 확인 필요",
     previous: "이전 물가 흐름 확인",
     summary: "미국 소비자물가가 다시 둔화되는지 확인하는 핵심 발표입니다.",

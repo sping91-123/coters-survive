@@ -1,12 +1,12 @@
-﻿/**
+/**
  * POST /api/ai/commentary
  *
- * Setup Scout 移대뱶 1?μ뿉 ???AI ??以?肄붾찘???앹꽦.
- * - ?ㅻ뒗 ?덈? ?대씪?댁뼵?몃줈 ?몄텧?섏? ?딆쓬 (?쒕쾭?먯꽌留??ъ슜).
- * - ?숈씪 ?낅젰 5遺꾧컙 硫붾え由?罹먯떆 (rate limit 蹂댄샇 + ?묐떟 ?띾룄).
- * - ?낅젰 寃利???GeminiProvider???꾩엫.
+ * 레이더 카드 1개에 대한 AI 코멘트를 생성합니다.
+ * - 키는 서버에서만 사용하고 클라이언트에 노출하지 않습니다.
+ * - 같은 입력은 5분간 메모리 캐시로 재사용합니다.
+ * - 입력 검증과 rate limit을 먼저 적용합니다.
  *
- * ?대씪?댁뼵?몃뒗 ?⑥닚 fetch:
+ * 클라이언트는 단순 fetch로 호출합니다.
  *   const r = await fetch("/api/ai/commentary", { method: "POST", body: JSON.stringify(input) });
  *   const { commentary } = await r.json();
  */
@@ -23,7 +23,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, { text: string; expiresAt: number }>();
 
 function cacheKey(input: CommentaryInput): string {
-  // 媛寃⑹? ?뚯닔???섏㎏?먮━源뚯?留?諛섏쁺 (?붾??숈쑝濡?罹먯떆 ????컻 諛⑹?)
+  // 가격은 소수 둘째 자리까지만 반영해 캐시 폭증을 줄입니다.
   const r = (n: number) => Math.round(n * 100) / 100;
   return [
     input.symbol,
@@ -74,24 +74,24 @@ export async function POST(request: Request) {
   const limit = await rateLimit(request, { key: "ai-commentary", limit: 30, windowMs: 10 * 60 * 1000 });
   if (!limit.allowed) {
     return NextResponse.json(
-      { error: "AI 肄붾찘???붿껌???덈Т 留롮뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?섏꽭??" },
+      { error: "AI 코멘트 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
       { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
     );
   }
 
   if (isBodyTooLarge(request, 40_000)) {
-    return NextResponse.json({ error: "?붿껌 蹂몃Ц???덈Т ?쎈땲??" }, { status: 413 });
+    return NextResponse.json({ error: "요청 본문이 너무 큽니다." }, { status: 413 });
   }
 
   let body: unknown;
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "?좏슚??JSON 蹂몃Ц???꾩슂?⑸땲??" }, { status: 400 });
+    return NextResponse.json({ error: "유효한 JSON 본문이 필요합니다." }, { status: 400 });
   }
 
   if (!isValidInput(body)) {
-    return NextResponse.json({ error: "?꾩닔 ?꾨뱶媛 ?꾨씫?섏뿀?듬땲??" }, { status: 400 });
+    return NextResponse.json({ error: "필수 입력값이 부족합니다." }, { status: 400 });
   }
 
   const input = body as CommentaryInput;
@@ -107,8 +107,8 @@ export async function POST(request: Request) {
   try {
     provider = getAIProvider();
   } catch (error) {
-    const message = error instanceof Error ? error.message : "AI Provider 珥덇린???ㅽ뙣";
-    console.warn("[ai/commentary] Provider ?놁쓬, ?대갚 ?ъ슜:", message);
+    const message = error instanceof Error ? error.message : "AI Provider 초기화 실패";
+    console.warn("[ai/commentary] Provider 없음, 폴백 사용:", message);
     const fallback = generateFallbackCommentary(input);
     cache.set(key, { text: fallback, expiresAt: now + CACHE_TTL_MS });
     return NextResponse.json({ commentary: fallback, model: "fallback", cached: false });
@@ -120,12 +120,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ commentary: text, model: provider.model, cached: false });
   } catch (error) {
     if (error instanceof AIProviderError) {
-      console.warn(`[ai/commentary] ${error.provider} ?ㅽ뙣, ?대갚 ?ъ슜:`, error.message);
+      console.warn(`[ai/commentary] ${error.provider} 실패, 폴백 사용:`, error.message);
       const fallback = generateFallbackCommentary(input);
       return NextResponse.json({ commentary: fallback, model: "fallback", cached: false });
     }
-    console.error("[ai/commentary] ?????녿뒗 ?ㅻ쪟:", error);
-    // ?????녿뒗 ?ㅻ쪟???대갚?쇰줈 泥섎━
+    console.error("[ai/commentary] 알 수 없는 오류:", error);
+    // 알 수 없는 오류도 폴백으로 처리합니다.
     const fallback = generateFallbackCommentary(input);
     return NextResponse.json({ commentary: fallback, model: "fallback", cached: false });
   }

@@ -12,7 +12,7 @@ import {
 } from "@/data/macroEvents";
 
 const RECENT_RELEASE_WINDOW_MS = 24 * 60 * 60 * 1000;
-const EMPTY_ACTUAL_VALUES = new Set(["발표 전", "회의 전", "미정", "-"]);
+const EMPTY_ACTUAL_VALUES = new Set(["발표 전", "결과 확인 중", "회의 전", "미정", "-"]);
 
 function hasActualValue(item: MacroEventItem) {
   if (!item.actual) return false;

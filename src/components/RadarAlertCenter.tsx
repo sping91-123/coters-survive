@@ -285,7 +285,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
     setIsManualChecking(true);
     setToast("저장된 감시 조건을 현재 레이더 결과와 다시 비교하는 중입니다.");
-    window.dispatchEvent(new CustomEvent(REQUEST_SETUP_ALERT_CHECK_EVENT));
+    window.dispatchEvent(new CustomEvent(REQUEST_SETUP_ALERT_CHECK_EVENT, { detail: { market } }));
   }
 
   return (

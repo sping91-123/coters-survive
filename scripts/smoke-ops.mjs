@@ -34,6 +34,7 @@ function walk(dir) {
 
 const rateLimit = read("src/lib/server/rateLimit.ts");
 const envExample = read(".env.example");
+const macroEvents = read("src/data/macroEvents.ts");
 const apiRoutes = walk("src/app/api");
 
 expectIncludes(rateLimit, "UPSTASH_REDIS_REST_URL", "Upstash URL 연결", "src/lib/server/rateLimit.ts");
@@ -42,6 +43,15 @@ expectIncludes(rateLimit, "memoryRateLimit", "메모리 fallback 유지", "src/l
 expectIncludes(rateLimit, "export async function rateLimit", "비동기 rateLimit export", "src/lib/server/rateLimit.ts");
 expectIncludes(envExample, "UPSTASH_REDIS_REST_URL=", "환경변수 예시 URL", ".env.example");
 expectIncludes(envExample, "UPSTASH_REDIS_REST_TOKEN=", "환경변수 예시 토큰", ".env.example");
+expectIncludes(envExample, "NEXT_PUBLIC_ALLOW_LOCAL_REFRESH_TOKEN=", "로컬 refresh token 보호 옵션", ".env.example");
+expectIncludes(macroEvents, "macroCalendarUpdatedAt", "매크로 갱신 기준 표시", "src/data/macroEvents.ts");
+
+const releaseMatches = [...macroEvents.matchAll(/releaseAt:\s*"([^"]+)"/g)].map((match) => Date.parse(match[1]));
+if (releaseMatches.some((time) => Number.isFinite(time) && time > Date.now())) {
+  pass("매크로 미래 일정 유지", "적어도 하나 이상의 다가오는 일정이 남아 있습니다.");
+} else {
+  fail("매크로 미래 일정 유지", "등록된 매크로 일정이 모두 과거입니다. src/data/macroEvents.ts를 갱신해 주세요.");
+}
 
 const offenders = [];
 for (const route of apiRoutes) {
@@ -55,6 +65,22 @@ if (offenders.length === 0) {
   pass("API route await rateLimit", "모든 API route가 비동기 제한 결과를 기다립니다.");
 } else {
   fail("API route await rateLimit", offenders.join(", "));
+}
+
+const mojibakeFiles = [];
+for (const route of apiRoutes) {
+  const source = read(route);
+  const hasBrokenText = Array.from(source).some((char) => {
+    const code = char.codePointAt(0);
+    return code === 0xfffd || (code >= 0x4e00 && code <= 0x9fff);
+  });
+  if (hasBrokenText) mojibakeFiles.push(route);
+}
+
+if (mojibakeFiles.length === 0) {
+  pass("API 한글 인코딩", "API route에 깨진 한글 문자열이 남아 있지 않습니다.");
+} else {
+  fail("API 한글 인코딩", mojibakeFiles.join(", "));
 }
 
 let failed = 0;

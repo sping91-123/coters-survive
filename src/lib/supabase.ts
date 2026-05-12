@@ -1,9 +1,12 @@
+import type { BillingEntitlementPlan } from "@/lib/billing";
+
 export const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 export const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 
 export const supabaseSessionStorageKey = "untitledRisk.supabase.session";
 const legacyPositionGuardSupabaseSessionStorageKey = "positionguard.supabase.session";
 const legacySupabaseSessionStorageKey = "co" + "ters.supabase.session";
+const allowLocalRefreshToken = process.env.NEXT_PUBLIC_ALLOW_LOCAL_REFRESH_TOKEN === "true";
 
 export interface SupabaseSession {
   accessToken: string;
@@ -28,7 +31,7 @@ export interface SupabaseProfile {
   email: null | string;
   display_name: null | string;
   avatar_url: null | string;
-  plan: "free" | "member" | "premium" | "admin";
+  plan: BillingEntitlementPlan;
   created_at: string;
   updated_at: string;
 }
@@ -68,7 +71,14 @@ export function parseSessionFromHash(hash: string): SupabaseSession | null {
 
 export function saveSupabaseSession(session: SupabaseSession) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(session));
+  const persistedSession: SupabaseSession = allowLocalRefreshToken
+    ? session
+    : {
+        accessToken: session.accessToken,
+        expiresAt: session.expiresAt,
+        tokenType: session.tokenType
+      };
+  window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(persistedSession));
   window.localStorage.removeItem(legacyPositionGuardSupabaseSessionStorageKey);
   window.localStorage.removeItem(legacySupabaseSessionStorageKey);
 }
@@ -87,6 +97,10 @@ export function getSupabaseSession(): SupabaseSession | null {
     window.localStorage.removeItem(legacySupabaseSessionStorageKey);
     const session = JSON.parse(raw) as SupabaseSession;
     if (!session.accessToken) return null;
+    if (!allowLocalRefreshToken && session.refreshToken) {
+      delete session.refreshToken;
+      window.localStorage.setItem(supabaseSessionStorageKey, JSON.stringify(session));
+    }
     if (session.expiresAt && session.expiresAt < Math.floor(Date.now() / 1000)) {
       if (session.refreshToken) return session;
       clearSupabaseSession();

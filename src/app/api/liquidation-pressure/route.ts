@@ -1,4 +1,4 @@
-﻿// Binance 怨듦컻 ?곗씠?곕줈 泥?궛 ?뺣젰 ?덉씠??由ы룷?몃? ?쒓났?섎뒗 API ?쇱슦??
+// Binance 공개 데이터로 청산 압력 레이더 리포트를 제공하는 API 라우트입니다.
 import { NextResponse } from "next/server";
 import { buildLiquidationPressureReport, type LongShortSnapshot, type TakerFlowSnapshot } from "@/lib/liquidationPressure";
 import { rateLimit } from "@/lib/server/rateLimit";
@@ -128,7 +128,7 @@ export async function GET(request: Request) {
   const limit = await rateLimit(request, { key: "liquidation-pressure", limit: 40, windowMs: 5 * 60 * 1000 });
   if (!limit.allowed) {
     return NextResponse.json(
-      { error: "泥?궛 ?뺣젰 ?덉씠???붿껌???덈Т 留롮뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?댁＜?몄슂." },
+      { error: "청산 압력 레이더 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
       { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
     );
   }
@@ -185,6 +185,6 @@ export async function GET(request: Request) {
     if (cached) {
       return NextResponse.json({ report: cached.report, cachedAt: cached.cachedAt, cached: true, stale: true });
     }
-    return NextResponse.json({ error: "泥?궛 ?뺣젰 ?곗씠?곕? 遺덈윭?ㅼ? 紐삵뻽?듬땲??" }, { status: 500 });
+    return NextResponse.json({ error: "청산 압력 데이터를 불러오지 못했습니다." }, { status: 500 });
   }
 }

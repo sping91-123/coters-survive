@@ -1,4 +1,4 @@
-﻿// 湲濡쒕쾶 ?쒖옣 二쇱슂 醫낅ぉ??罹붾뱾 ?곗씠?곕? ?쒓났?섎뒗 API ?쇱슦??
+// 글로벌 시장 주요 종목의 캔들 데이터를 제공하는 API 라우트입니다.
 import { NextResponse } from "next/server";
 import { fetchStockCandles, findStockSymbol, normalizeStockSymbol, stockSymbols } from "@/lib/stockMarket";
 import { chartTimeframes, type ChartTimeframe } from "@/lib/marketAnalysis";
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
   const limit = await rateLimit(request, { key: "stocks-candles", limit: 50, windowMs: 5 * 60 * 1000 });
   if (!limit.allowed) {
     return NextResponse.json(
-      { error: "湲濡쒕쾶 ?쒖옣 ?곗씠???붿껌???덈Т 留롮뒿?덈떎. ?좎떆 ???ㅼ떆 ?쒕룄?섏꽭??" },
+      { error: "글로벌 시장 데이터 요청이 잠시 많습니다. 잠시 후 다시 시도해 주세요." },
       { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
     );
   }
@@ -37,8 +37,8 @@ export async function GET(request: Request) {
       cachedAt: Date.now()
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "湲濡쒕쾶 ?쒖옣 ?곗씠?곕? 遺덈윭?ㅼ? 紐삵뻽?듬땲??";
-    console.error("[api/stocks/candles] ?ㅻ쪟:", error);
+    const message = error instanceof Error ? error.message : "글로벌 시장 데이터를 불러오지 못했습니다.";
+    console.error("[api/stocks/candles] 오류:", error);
     return NextResponse.json(
       {
         error: message,
