@@ -84,8 +84,8 @@ export default function TermsPage() {
           <div className="flex items-start gap-3">
             <ShieldAlert className="mt-0.5 shrink-0" size={18} aria-hidden />
             <p>
-              본 약관은 Chart Radar 서비스 이용을 위한 기본 문서입니다. 사업자 결제, 앱스토어 출시,
-              해외 서비스 확장 전에는 전문가 검토를 권장합니다.
+              본 약관은 Chart Radar 서비스 이용을 위한 기본 문서입니다. 결제, 앱 이용, 데이터 제공 범위,
+              해외 서비스 이용 조건은 실제 운영 정책과 관련 법령에 따라 적용됩니다.
             </p>
           </div>
         </section>
