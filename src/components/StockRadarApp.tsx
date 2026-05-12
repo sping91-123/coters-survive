@@ -2,7 +2,7 @@
 // 글로벌 시장 주요 종목을 차트와 기술지표 레이더로 보여주는 화면.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CandlestickSeries, createChart, type IChartApi, type ISeriesApi, type Time } from "lightweight-charts";
-import { Activity, AlertTriangle, BarChart3, Clock3, Compass, Gauge, Loader2, RefreshCw, Search, Shield, Sparkles, Target } from "lucide-react";
+import { Activity, AlertTriangle, BarChart3, Bookmark, BookmarkCheck, Clock3, Compass, Gauge, Loader2, RefreshCw, Search, Shield, Sparkles, Target } from "lucide-react";
 import { TechnicalRadarPanel } from "@/components/TechnicalRadarPanel";
 import { chartTimeframes, type Candle, type ChartTimeframe } from "@/lib/marketAnalysis";
 import { analyzeTechnicalRadar, type TechnicalRadarReport } from "@/lib/technicalRadar";
@@ -31,6 +31,7 @@ const groupLabels: Record<StockSymbolInfo["group"], string> = {
 
 const groupOrder: StockSymbolInfo["group"][] = ["index_etf", "mega_cap", "ai_chip", "growth", "finance", "commodity"];
 const featuredSymbols = ["SPY", "QQQ", "NVDA", "AAPL", "TSLA", "GLD"];
+const globalWatchlistStorageKey = "chart-radar.globalWatchlist.v1";
 
 type LoadState =
   | { status: "idle" }
@@ -46,6 +47,25 @@ function formatPrice(value: number | null) {
 function symbolName(symbol: string, universe: StockSymbolInfo[]) {
   const found = universe.find((item) => item.symbol === symbol);
   return found ? found.name : symbol;
+}
+
+function readGlobalWatchlist() {
+  if (typeof window === "undefined") return ["SPY", "QQQ", "NVDA"];
+
+  try {
+    const raw = window.localStorage.getItem(globalWatchlistStorageKey);
+    const parsed = raw ? (JSON.parse(raw) as unknown) : null;
+    if (!Array.isArray(parsed)) return ["SPY", "QQQ", "NVDA"];
+    const symbols = parsed.filter((item): item is string => typeof item === "string").slice(0, 30);
+    return symbols.length ? symbols : ["SPY", "QQQ", "NVDA"];
+  } catch {
+    return ["SPY", "QQQ", "NVDA"];
+  }
+}
+
+function writeGlobalWatchlist(symbols: string[]) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(globalWatchlistStorageKey, JSON.stringify(symbols.slice(0, 30)));
 }
 
 function formatPercent(value: number | null) {
@@ -267,6 +287,7 @@ export function StockRadarApp() {
   const [searchQuery, setSearchQuery] = useState("");
   const [state, setState] = useState<LoadState>({ status: "idle" });
   const [sessionState, setSessionState] = useState<ReturnType<typeof getGlobalSessionState> | null>(null);
+  const [savedSymbols, setSavedSymbols] = useState<string[]>([]);
 
   const selectedInfo = useMemo(() => universe.find((item) => item.symbol === symbol) ?? null, [symbol, universe]);
   const featuredItems = useMemo(
@@ -280,6 +301,22 @@ export function StockRadarApp() {
       .filter((item) => !query || item.symbol.toLowerCase().includes(query) || item.name.toLowerCase().includes(query))
       .slice(0, 24);
   }, [searchQuery, selectedGroup, universe]);
+  const savedItems = useMemo(
+    () => savedSymbols.map((savedSymbol) => universe.find((item) => item.symbol === savedSymbol)).filter(Boolean) as StockSymbolInfo[],
+    [savedSymbols, universe]
+  );
+  const isSavedSymbol = savedSymbols.includes(symbol);
+
+  const toggleSavedSymbol = useCallback((targetSymbol: string) => {
+    setSavedSymbols((current) => {
+      const normalized = targetSymbol.toUpperCase();
+      const next = current.includes(normalized)
+        ? current.filter((item) => item !== normalized)
+        : [normalized, ...current].slice(0, 30);
+      writeGlobalWatchlist(next);
+      return next;
+    });
+  }, []);
 
   const load = useCallback(async () => {
     setState({ status: "loading" });
@@ -320,6 +357,10 @@ export function StockRadarApp() {
     setSessionState(getGlobalSessionState());
     const timer = window.setInterval(() => setSessionState(getGlobalSessionState()), 60_000);
     return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    setSavedSymbols(readGlobalWatchlist());
   }, []);
 
   useEffect(() => {
@@ -456,6 +497,50 @@ export function StockRadarApp() {
               </span>
             </button>
           ))}
+        </div>
+
+        <div className="mt-3 rounded-lg border border-white/10 bg-black/20 p-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black text-white">관심 글로벌 종목</p>
+              <p className="mt-1 text-[11px] font-bold text-slate-500">매일 보는 ETF와 종목을 저장해 장전 점검을 빠르게 시작하세요.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => toggleSavedSymbol(symbol)}
+              className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md border px-3 text-xs font-black transition ${
+                isSavedSymbol
+                  ? "border-emerald-300/35 bg-emerald-300/15 text-emerald-200"
+                  : "border-accent-blue/30 bg-accent-blue/10 text-accent-blue hover:bg-accent-blue hover:text-slate-950"
+              }`}
+            >
+              {isSavedSymbol ? <BookmarkCheck size={13} aria-hidden /> : <Bookmark size={13} aria-hidden />}
+              {isSavedSymbol ? "저장됨" : "관심 추가"}
+            </button>
+          </div>
+
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            {savedItems.map((item) => (
+              <button
+                key={item.symbol}
+                type="button"
+                onClick={() => {
+                  setSymbol(item.symbol);
+                  setSearchQuery("");
+                }}
+                className={`min-h-10 shrink-0 rounded-md border px-3 text-left transition ${
+                  symbol === item.symbol
+                    ? "border-emerald-300 bg-emerald-300 text-slate-950"
+                    : "border-white/10 bg-surface-cardSoft text-slate-200 hover:border-emerald-300/60"
+                }`}
+              >
+                <span className="block text-xs font-black">{item.symbol}</span>
+                <span className={`block max-w-[110px] truncate text-[10px] font-bold ${symbol === item.symbol ? "text-slate-800" : "text-slate-500"}`}>
+                  {item.name}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-1.5">
