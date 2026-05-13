@@ -24,6 +24,9 @@ import { createRemoteJournalEntry } from "@/lib/remoteJournal";
 import { getActiveSupabaseSession } from "@/lib/supabase";
 import type { CommentaryInput } from "@/lib/ai/types";
 import type { TradingMode } from "@/lib/marketAnalysis";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 
 type ScanState =
   | { status: "idle" }
@@ -651,6 +654,8 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
   const [state, setState] = useState<ScanState>({ status: "idle" });
   const [riskProfile, setRiskProfile] = useState<ScoutRiskProfile>("radar");
   const [hasLoadedPreferences, setHasLoadedPreferences] = useState(false);
+  const { profile } = useSupabaseAuth();
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const scoutScope: ScoutScope = excludeMajor ? "alts" : "all";
 
   useEffect(() => {
@@ -676,6 +681,12 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
       }
     }
 
+    const usageGate = getUsageGate("radarScan", isPaid);
+    if (!usageGate.allowed) {
+      setState({ status: "error", message: usageGate.message });
+      return;
+    }
+
     setState({ status: "loading" });
     try {
       const fetchMode = async (mode: TradingMode) => {
@@ -695,11 +706,12 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
         setups: scopedSetups,
         cachedAt: Math.max(scalp.cachedAt, swing.cachedAt)
       });
+      recordUsageEvent("radarScan");
     } catch (error) {
       const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setState({ status: "error", message });
     }
-  }, [excludeMajor, riskProfile, scoutScope]);
+  }, [excludeMajor, isPaid, riskProfile, scoutScope]);
 
   useEffect(() => {
     if (!hasLoadedPreferences) return;

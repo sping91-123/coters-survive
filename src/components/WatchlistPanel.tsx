@@ -15,7 +15,8 @@ import {
 } from "lucide-react";
 import { watchlistSymbolPool, type ScoutSetup } from "@/lib/setupScout";
 import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
-import { recordUsageEvent } from "@/lib/usageMeter";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 import {
   addToWatchlist,
   getWatchlistLimit,
@@ -227,6 +228,7 @@ type ScanState =
 export function WatchlistPanel() {
   const { profile } = useSupabaseAuth();
   const plan: WatchlistPlan = profile?.plan ?? "free";
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const limit = getWatchlistLimit(plan);
 
   const [watchlist, setWatchlist] = useState<string[]>([]);
@@ -264,6 +266,12 @@ export function WatchlistPanel() {
       setScanState({ status: "idle" });
       return;
     }
+    const usageGate = getUsageGate("watchlistScan", isPaid);
+    if (!usageGate.allowed) {
+      setScanState({ status: "error", message: usageGate.message });
+      return;
+    }
+
     setScanState({ status: "loading" });
     try {
       const res = await fetch("/api/watchlist-scan", {
@@ -283,7 +291,7 @@ export function WatchlistPanel() {
       const message = error instanceof Error ? error.message : "레이더 판독에 실패했습니다.";
       setScanState({ status: "error", message });
     }
-  }, []);
+  }, [isPaid]);
 
   // watchlist 변경 시 자동 레이더 판독
   useEffect(() => {

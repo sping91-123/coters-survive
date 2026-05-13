@@ -142,6 +142,37 @@ export function getUsageBucketStates(snapshot: UsageSnapshot): UsageBucketState[
   });
 }
 
+export function getUsageBucketState(bucketId: UsageBucketId, snapshot = readUsageSnapshot()) {
+  return getUsageBucketStates(snapshot).find((state) => state.id === bucketId) ?? null;
+}
+
+export function getUsageGate(bucketId: UsageBucketId, isPaid: boolean) {
+  const state = getUsageBucketState(bucketId);
+  if (!state) {
+    return {
+      allowed: true,
+      limit: Number.POSITIVE_INFINITY,
+      remaining: Number.POSITIVE_INFINITY,
+      message: ""
+    };
+  }
+
+  const limit = isPaid ? state.proDailyLimit : state.freeDailyLimit;
+  const remaining = Math.max(0, limit - state.used);
+  const allowed = remaining > 0;
+
+  return {
+    allowed,
+    limit,
+    remaining,
+    message: allowed
+      ? ""
+      : isPaid
+        ? `오늘 ${state.label} Pro 한도를 모두 사용했습니다. 잠시 후 다시 확인해 주세요.`
+        : `오늘 무료 ${state.label} 한도를 모두 사용했습니다. Pro에서는 더 넓게 반복 확인할 수 있습니다.`
+  };
+}
+
 export function summarizeUsage(snapshot: UsageSnapshot) {
   const states = getUsageBucketStates(snapshot);
   const usedTotal = states.reduce((sum, state) => sum + state.used, 0);

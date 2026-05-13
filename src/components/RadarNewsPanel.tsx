@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ExternalLink, Newspaper, Radar, RefreshCcw, ShieldAlert, Sparkles, Target, TrendingDown, TrendingUp } from "lucide-react";
 import type { RadarNewsBriefing, RadarNewsDirection, RadarNewsItem } from "@/lib/radarNews";
-import { recordUsageEvent } from "@/lib/usageMeter";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 
 type NewsPayload = {
   updatedAt: number;
@@ -151,11 +153,20 @@ function BulletList({ items, tone = "blue" }: { items: string[]; tone?: "blue" |
 
 export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket } = {}) {
   const copy = marketCopy[market];
+  const { profile } = useSupabaseAuth();
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const [payload, setPayload] = useState<NewsPayload | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [error, setError] = useState("");
 
   const loadNews = useCallback(async () => {
+    const usageGate = getUsageGate("aiBriefing", isPaid);
+    if (!usageGate.allowed) {
+      setStatus("error");
+      setError(usageGate.message);
+      return;
+    }
+
     setStatus("loading");
     setError("");
     try {
@@ -169,7 +180,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
       setError(caught instanceof Error ? caught.message : "레이더뉴스를 불러오지 못했습니다.");
       setStatus("error");
     }
-  }, [market]);
+  }, [isPaid, market]);
 
   useEffect(() => {
     void loadNews();

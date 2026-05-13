@@ -25,7 +25,9 @@ import {
   readSetupAlertPresets,
   writeSetupAlertPresets
 } from "@/lib/setupAlertPresets";
-import { recordUsageEvent } from "@/lib/usageMeter";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 
 interface MarketBoardItem {
   symbol: string;
@@ -264,11 +266,19 @@ function MiniSetupCard({
 }
 
 export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
+  const { profile } = useSupabaseAuth();
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const [state, setState] = useState<DailyBriefState>({ status: "loading" });
   const [savedPresetIds, setSavedPresetIds] = useState<Set<string>>(() => new Set());
   const [alertToast, setAlertToast] = useState<string | null>(null);
 
   const loadBrief = useCallback(async () => {
+    const usageGate = getUsageGate("radarScan", isPaid);
+    if (!usageGate.allowed) {
+      setState({ status: "error", message: usageGate.message });
+      return;
+    }
+
     setState({ status: "loading" });
     try {
       const boardResponse = await fetch("/api/market-board", { cache: "no-store" });
@@ -314,7 +324,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
         message: error instanceof Error ? error.message : "오늘의 레이더를 불러오지 못했습니다."
       });
     }
-  }, [scope]);
+  }, [isPaid, scope]);
 
   useEffect(() => {
     void loadBrief();
@@ -329,6 +339,14 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
     const current = readSetupAlertPresets("crypto");
     const exists = current.some((item) => item.id === preset.id);
     const next = exists ? current.filter((item) => item.id !== preset.id) : [preset, ...current.filter((item) => item.id !== preset.id)];
+
+    if (!exists) {
+      const usageGate = getUsageGate("alertRule", isPaid);
+      if (!usageGate.allowed) {
+        setAlertToast(usageGate.message);
+        return;
+      }
+    }
 
     writeSetupAlertPresets(next, "crypto");
     setSavedPresetIds(new Set(next.map((item) => item.id)));

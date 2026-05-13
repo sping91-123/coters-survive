@@ -7,8 +7,9 @@ import { TechnicalRadarPanel } from "@/components/TechnicalRadarPanel";
 import { chartTimeframes, type Candle, type ChartTimeframe } from "@/lib/marketAnalysis";
 import { analyzeTechnicalRadar, type TechnicalRadarReport } from "@/lib/technicalRadar";
 import type { StockSymbolInfo } from "@/lib/stockMarket";
-import { recordUsageEvent } from "@/lib/usageMeter";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
 import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 import { getWatchlistLimit } from "@/lib/watchlist";
 
 const fallbackUniverse: StockSymbolInfo[] = [
@@ -281,6 +282,7 @@ function StockSnapshot({
 
 export function StockRadarApp() {
   const { profile } = useSupabaseAuth();
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const chartRef = useRef<HTMLDivElement | null>(null);
   const chartApiRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -327,6 +329,12 @@ export function StockRadarApp() {
   }, [watchlistLimit]);
 
   const load = useCallback(async () => {
+    const usageGate = getUsageGate("stockRadar", isPaid);
+    if (!usageGate.allowed) {
+      setState({ status: "error", message: usageGate.message });
+      return;
+    }
+
     setState({ status: "loading" });
     try {
       const response = await fetch(`/api/stocks/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${timeframe}`, {
@@ -355,7 +363,7 @@ export function StockRadarApp() {
       const message = error instanceof Error ? error.message : "글로벌 시장 데이터를 불러오지 못했습니다.";
       setState({ status: "error", message });
     }
-  }, [symbol, timeframe]);
+  }, [isPaid, symbol, timeframe]);
 
   useEffect(() => {
     void load();

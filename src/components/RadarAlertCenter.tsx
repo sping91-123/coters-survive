@@ -23,7 +23,9 @@ import {
   type SetupAlertMonitorStatus,
   type SetupAlertPreset
 } from "@/lib/setupAlertPresets";
-import { recordUsageEvent } from "@/lib/usageMeter";
+import { getUsageGate, recordUsageEvent } from "@/lib/usageMeter";
+import { useSupabaseAuth } from "@/lib/useSupabaseAuth";
+import { hasAnyPaidEntitlement } from "@/lib/billing";
 
 const baseStorageKey = "chartRadar.alertRules.v1";
 
@@ -191,6 +193,8 @@ function RuleCard({
 }
 
 export function RadarAlertCenter({ compact = false, market = "crypto" }: { compact?: boolean; market?: AlertMarket }) {
+  const { profile } = useSupabaseAuth();
+  const isPaid = hasAnyPaidEntitlement(profile?.plan);
   const copy = alertMarketCopy[market];
   const isGlobal = market === "stocks";
   const [enabledRuleIds, setEnabledRuleIds] = useState<RadarAlertRuleId[]>(() => getMarketDefaultRuleIds(market));
@@ -271,6 +275,11 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
   function toggleRule(ruleId: RadarAlertRuleId) {
     if (!enabledRuleIds.includes(ruleId)) {
+      const usageGate = getUsageGate("alertRule", isPaid);
+      if (!usageGate.allowed) {
+        setToast(usageGate.message);
+        return;
+      }
       recordUsageEvent("alertRule");
     }
     setEnabledRuleIds((current) => {
@@ -280,6 +289,12 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   }
 
   async function requestNotificationPermission() {
+    const usageGate = getUsageGate("alertRule", isPaid);
+    if (!usageGate.allowed) {
+      setToast(usageGate.message);
+      return;
+    }
+
     if (typeof window === "undefined" || !("Notification" in window)) {
       setPermission("unsupported");
       setToast("현재 브라우저에서는 알림 권한을 요청할 수 없습니다.");
