@@ -272,15 +272,16 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   const scopedEnabledRuleIds = enabledRuleIds.filter((id) => scopedRules.some((rule) => rule.id === id));
   const summary = useMemo(() => summarizeRadarAlerts(scopedEnabledRuleIds), [scopedEnabledRuleIds]);
   const visibleRules = compact ? scopedRules.slice(0, 3) : scopedRules;
+  const alertUsageBucketId = market === "stocks" ? "stocksAlertRule" : "cryptoAlertRule";
 
   function toggleRule(ruleId: RadarAlertRuleId) {
     if (!enabledRuleIds.includes(ruleId)) {
-      const usageGate = getUsageGate("alertRule", isPaid);
+      const usageGate = getUsageGate(alertUsageBucketId, isPaid);
       if (!usageGate.allowed) {
         setToast(usageGate.message);
         return;
       }
-      recordUsageEvent("alertRule");
+      recordUsageEvent(alertUsageBucketId);
     }
     setEnabledRuleIds((current) => {
       if (current.includes(ruleId)) return current.filter((id) => id !== ruleId);
@@ -289,7 +290,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   }
 
   async function requestNotificationPermission() {
-    const usageGate = getUsageGate("alertRule", isPaid);
+    const usageGate = getUsageGate(alertUsageBucketId, isPaid);
     if (!usageGate.allowed) {
       setToast(usageGate.message);
       return;
@@ -304,7 +305,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
     setIsRequesting(true);
     try {
       const result = await Notification.requestPermission();
-      recordUsageEvent("alertRule");
+      recordUsageEvent(alertUsageBucketId);
       setPermission(result as PermissionState);
       if (result === "granted") {
         new Notification("Chart Radar 알림이 켜졌습니다", {

@@ -341,7 +341,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
     const next = exists ? current.filter((item) => item.id !== preset.id) : [preset, ...current.filter((item) => item.id !== preset.id)];
 
     if (!exists) {
-      const usageGate = getUsageGate("alertRule", isPaid);
+      const usageGate = getUsageGate("cryptoAlertRule", isPaid);
       if (!usageGate.allowed) {
         setAlertToast(usageGate.message);
         return;
@@ -351,7 +351,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
     writeSetupAlertPresets(next, "crypto");
     setSavedPresetIds(new Set(next.map((item) => item.id)));
     if (!exists) {
-      recordUsageEvent("alertRule");
+      recordUsageEvent("cryptoAlertRule");
       setAlertToast(`${compactSymbol(setup.symbol)} ${setup.timeframe} ${sideLabel(setup.plan.side)} 조건을 감시 목록에 저장했습니다.`);
     } else {
       setAlertToast(`${compactSymbol(setup.symbol)} ${setup.timeframe} 감시 조건을 해제했습니다.`);

@@ -1,5 +1,12 @@
 // Chart Radar의 일일 사용량 기준과 브라우저 저장 로직을 관리한다.
-export type UsageBucketId = "radarScan" | "aiBriefing" | "watchlistScan" | "stockRadar" | "alertRule";
+export type UsageBucketId =
+  | "radarScan"
+  | "cryptoAiBriefing"
+  | "stocksAiBriefing"
+  | "watchlistScan"
+  | "stockRadar"
+  | "cryptoAlertRule"
+  | "stocksAlertRule";
 
 export interface UsageBucket {
   id: UsageBucketId;
@@ -35,10 +42,10 @@ export const usageBuckets: UsageBucket[] = [
     proDailyLimit: 200
   },
   {
-    id: "aiBriefing",
-    label: "AI 브리핑",
-    shortLabel: "AI",
-    description: "뉴스와 시장 흐름을 AI로 정리한 횟수입니다.",
+    id: "cryptoAiBriefing",
+    label: "코인 AI 브리핑",
+    shortLabel: "코인 AI",
+    description: "코인 뉴스와 시장 흐름을 AI로 정리한 횟수입니다.",
     freeDailyLimit: 1,
     proDailyLimit: 30
   },
@@ -59,10 +66,26 @@ export const usageBuckets: UsageBucket[] = [
     proDailyLimit: 100
   },
   {
-    id: "alertRule",
-    label: "알림 설정",
-    shortLabel: "알림",
-    description: "레이더 알림 조건을 설정하거나 테스트한 횟수입니다.",
+    id: "stocksAiBriefing",
+    label: "글로벌 AI 브리핑",
+    shortLabel: "글로벌 AI",
+    description: "글로벌 뉴스와 매크로 흐름을 AI로 정리한 횟수입니다.",
+    freeDailyLimit: 1,
+    proDailyLimit: 30
+  },
+  {
+    id: "cryptoAlertRule",
+    label: "코인 알림 설정",
+    shortLabel: "코인 알림",
+    description: "코인 레이더 알림 조건을 설정하거나 테스트한 횟수입니다.",
+    freeDailyLimit: 1,
+    proDailyLimit: 20
+  },
+  {
+    id: "stocksAlertRule",
+    label: "글로벌 알림 설정",
+    shortLabel: "글로벌 알림",
+    description: "글로벌 레이더 알림 조건을 설정하거나 테스트한 횟수입니다.",
     freeDailyLimit: 1,
     proDailyLimit: 20
   }

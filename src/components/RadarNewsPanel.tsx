@@ -189,13 +189,14 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
   const copy = marketCopy[market];
   const { profile } = useSupabaseAuth();
   const isPaid = hasAnyPaidEntitlement(profile?.plan);
+  const usageBucketId = market === "stocks" ? "stocksAiBriefing" : "cryptoAiBriefing";
   const [payload, setPayload] = useState<NewsPayload | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [error, setError] = useState("");
   const [limitNotice, setLimitNotice] = useState("");
 
   const loadNews = useCallback(async () => {
-    const usageGate = getUsageGate("aiBriefing", isPaid);
+    const usageGate = getUsageGate(usageBucketId, isPaid);
     if (!usageGate.allowed) {
       const cached = readCachedNews(market);
       if (cached) {
@@ -221,12 +222,12 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
       setPayload(data);
       writeCachedNews(market, data);
       setStatus("ready");
-      recordUsageEvent("aiBriefing");
+      recordUsageEvent(usageBucketId);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "레이더뉴스를 불러오지 못했습니다.");
       setStatus("error");
     }
-  }, [isPaid, market]);
+  }, [isPaid, market, usageBucketId]);
 
   useEffect(() => {
     const cached = readCachedNews(market);

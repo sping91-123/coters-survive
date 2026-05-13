@@ -75,11 +75,11 @@ const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; pr
 
 function bucketMatchesScope(id: UsageBucketId, marketScope: BillingPageScope) {
   if (marketScope === "crypto") {
-    return id === "radarScan" || id === "watchlistScan" || id === "aiBriefing" || id === "alertRule";
+    return id === "radarScan" || id === "watchlistScan" || id === "cryptoAiBriefing" || id === "cryptoAlertRule";
   }
 
   if (marketScope === "stocks") {
-    return id === "stockRadar" || id === "aiBriefing" || id === "alertRule";
+    return id === "stockRadar" || id === "stocksAiBriefing" || id === "stocksAlertRule";
   }
 
   return true;
