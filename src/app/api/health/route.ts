@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { macroCalendarUpdatedAtIso } from "@/data/macroEvents";
 import { paidBillingPlans } from "@/lib/billing";
+import { getConfiguredSiteUrl } from "@/lib/siteUrl";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function GET() {
   const hasTossClient = hasValue(process.env.NEXT_PUBLIC_TOSS_PAYMENTS_CLIENT_KEY);
   const hasSupabaseUrl = hasValue(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasSupabaseKey = hasValue(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY);
-  const hasSiteUrl = hasValue(process.env.NEXT_PUBLIC_SITE_URL);
+  const hasSiteUrl = hasValue(getConfiguredSiteUrl());
   const hasAIProvider = hasGroq || hasGemini;
   const hasPaymentProvider = hasTossSecret && hasTossClient;
   const planPaymentLinks = paidBillingPlans.map((plan) => {

@@ -2,9 +2,10 @@
 import type { Metadata, Viewport } from "next";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 import { RadarAlertMonitor } from "@/components/RadarAlertMonitor";
+import { getSiteUrlWithLocalFallback } from "@/lib/siteUrl";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "http://127.0.0.1:3000";
+const siteUrl = getSiteUrlWithLocalFallback();
 const appIcon = "/brand/chart-radar-icon.png";
 
 export const metadata: Metadata = {

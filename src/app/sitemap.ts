@@ -1,13 +1,7 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrlWithLocalFallback } from "@/lib/siteUrl";
 
-function getSiteUrl() {
-  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
-  if (fromEnv) return fromEnv;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
-  return "http://127.0.0.1:3000";
-}
-
-const siteUrl = getSiteUrl();
+const siteUrl = getSiteUrlWithLocalFallback();
 
 const routes = [
   "",
