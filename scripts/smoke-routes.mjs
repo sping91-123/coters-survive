@@ -70,6 +70,18 @@ const checks = [
     },
     expectedStatus: [400],
   },
+  {
+    label: "결제 승인 플랜 불일치 검증",
+    path: "/api/billing/confirm",
+    method: "POST",
+    body: {
+      planId: "stocks_monthly",
+      orderId: "cr_crypto_monthly_smoke",
+      amount: 14900,
+      paymentKey: "smoke_payment_key",
+    },
+    expectedStatus: [400],
+  },
 ];
 
 async function fetchWithTimeout(check) {
