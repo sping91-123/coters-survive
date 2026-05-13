@@ -133,7 +133,7 @@ export async function fetchStockCandles(symbol: string, timeframe: ChartTimefram
     cache: "no-store"
   });
 
-  if (!response.ok) throw new Error(`Yahoo Finance ${response.status}`);
+  if (!response.ok) throw new Error(`글로벌 시장 데이터 응답 오류 (${response.status})`);
 
   const payload = (await response.json()) as YahooChartResponse;
   const result = payload.chart?.result?.[0];

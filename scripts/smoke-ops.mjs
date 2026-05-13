@@ -56,6 +56,7 @@ const rootLayout = read("src/app/layout.tsx");
 const themeToggle = read("src/components/ThemeToggle.tsx");
 const radarAlerts = read("src/lib/radarAlerts.ts");
 const technicalRadar = read("src/lib/technicalRadar.ts");
+const stockMarket = read("src/lib/stockMarket.ts");
 const supabaseClient = read("src/lib/supabase.ts");
 const aiProviderIndex = read("src/lib/ai/index.ts");
 const aiCommentaryRoute = read("src/app/api/ai/commentary/route.ts");
@@ -143,6 +144,12 @@ if (!stockRadarApp.includes("비공식 지연 데이터") && !stockRadarApp.incl
   pass("글로벌 화면 데이터 문구", "글로벌 정상 화면에 약한 데이터 출처 문구가 노출되지 않습니다.");
 } else {
   fail("글로벌 화면 데이터 문구", "src/components/StockRadarApp.tsx에 비공식 또는 보조 데이터 문구가 남아 있습니다.");
+}
+
+if (!stockMarket.includes("Yahoo Finance")) {
+  pass("글로벌 데이터 에러 문구", "글로벌 데이터 실패 시 내부 제공자명이 노출되지 않습니다.");
+} else {
+  fail("글로벌 데이터 에러 문구", "src/lib/stockMarket.ts에 내부 제공자명이 남아 있습니다.");
 }
 
 if (!technicalRadar.includes("ICT 구조와 별도로")) {
