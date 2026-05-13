@@ -31,12 +31,12 @@ const conversionPoints = [
   {
     icon: Sparkles,
     title: "근거를 실행 언어로 정리",
-    body: "차트와 뉴스가 따로 놀지 않게 지금 우세한 방향, 위험 요인, 다음 확인 조건을 한 번에 정리합니다."
+    body: "차트와 뉴스가 따로 놀지 않게 지금 우세 방향, 위험 요인, 다음 확인 조건을 한 번에 정리합니다."
   },
   {
     icon: BellRing,
     title: "켜두면 대신 감시",
-    body: "관심종목 구조 변화, 큰 변동, 브리핑 업데이트를 직접 새로고침하지 않아도 확인하게 돕습니다."
+    body: "관심종목, 구조 변화, 뉴스 브리핑 업데이트를 직접 새로고침하지 않아도 확인할 수 있게 만듭니다."
   }
 ];
 
@@ -49,19 +49,19 @@ const valueRows = [
   {
     icon: ShieldCheck,
     title: "장중에는 변화 감시",
-    body: "TOP 레이더, 관심종목, 알림 조건으로 지금 움직이는 자산과 변동성 확대 구간을 빠르게 확인합니다."
+    body: "TOP 레이더, 관심종목, 알림 조건으로 지금 움직이는 자산과 변동성 높은 구간을 빠르게 확인합니다."
   },
   {
     icon: Crown,
     title: "마감 전에는 복기",
-    body: "오늘 본 근거와 실제 움직임을 복기해 다음 매매에서 반복할 것과 피할 것을 남깁니다."
+    body: "오늘 본 근거와 실제 움직임을 다음 매매에서 반복할 것과 버릴 것으로 나누기 쉽게 만듭니다."
   }
 ];
 
 const proDifferenceRows = [
-  "무료는 하루 확인용입니다. Pro는 장중에 반복해서 레이더를 돌리고 변화가 생긴 자산을 계속 확인하는 용도입니다.",
+  "무료는 하루 흐름을 확인하는 체험판입니다. Pro는 장중에 반복해서 레이더를 돌리고 변화가 생긴 자산을 계속 확인하는 작업 공간입니다.",
   "Pro는 AI 브리핑, 관심종목, 알림 규칙의 한도를 넓혀 직접 찾아보는 시간을 줄이는 구독입니다.",
-  "매수·매도 신호를 단정하지 않고 시장 구조, 뉴스, 매크로, 위험도를 함께 정리하는 분석형 작업 공간입니다."
+  "Chart Radar는 매수와 매도를 대신 결정하지 않습니다. 대신 시장 구조, 뉴스, 매크로, 위험 요소를 빠르게 모아 판단 시간을 줄여줍니다."
 ];
 
 function getFreeVsProRows(scope: BillingPageScope) {
@@ -85,9 +85,9 @@ function getFreeVsProRows(scope: BillingPageScope) {
 
   return [
     { label: "레이더 스캔", free: "코인 3회 · 글로벌 2회", pro: "코인 200회 · 글로벌 100회" },
-    { label: "AI 브리핑", free: "시장별 하루 1회", pro: "시장별 하루 30회" },
+    { label: "AI 브리핑", free: "시장별 하루 1회", pro: "시장별 하루 30회 이상" },
     { label: "관심종목", free: "시장별 2개 저장", pro: "시장별 50개 이상 감시" },
-    { label: "알림", free: "시장별 조건 1개", pro: "시장별 조건 20개" }
+    { label: "알림", free: "시장별 조건 1개", pro: "시장별 조건 20개 이상" }
   ];
 }
 
@@ -107,39 +107,39 @@ const scopeCopy: Record<
 > = {
   all: {
     eyebrow: "Chart Radar Pro",
-    title: "매일 시장을 확인하는 시간을 줄이고, 놓칠 만한 변화는 먼저 띄워드립니다.",
+    title: "매일 시장을 확인하는 시간을 줄이고, 놓치기 쉬운 변화는 먼저 띄워드립니다.",
     body:
-      "무료로 핵심 흐름을 먼저 확인하고, Pro에서는 전체 코인 레이더, 글로벌 레이더, AI 브리핑, 관심종목 알림과 저장 기능을 더 넓게 사용합니다. 신호를 판매하는 서비스가 아니라 매일 시장을 빠르게 정리하는 레이더입니다.",
+      "무료로 핵심 흐름을 먼저 확인하고, Pro에서는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넉넉하게 사용합니다. 신호를 대신 매매하는 서비스가 아니라 매일 시장을 빠르게 정리하는 레이더입니다.",
     representativePrice: "월 24,900원",
-    representativeBody: "두 시장을 모두 보는 사용자에게 코인, 글로벌 시장, AI 브리핑, 관심종목 알림을 하나로 묶었습니다.",
+    representativeBody: "두 시장을 모두 보는 사용자에게 코인, 글로벌 시장, AI 브리핑, 관심종목, 알림을 하나로 묶었습니다.",
     highlightedPlanId: "bundle_monthly",
     freeHref: "/survival",
-    filterNotice: "전체 요금제를 보고 있습니다. 코인과 글로벌 시장을 모두 보면 All Market 플랜이 유리합니다.",
+    filterNotice: "전체 요금제를 보고 있습니다. 코인과 글로벌 시장을 모두 보면 All Market Pro가 유리합니다.",
     priceAnchor: "코인과 글로벌을 따로 결제하는 것보다 월 4,900원을 줄이면서 두 시장을 함께 감시합니다."
   },
   crypto: {
     eyebrow: "Coin Radar Pro",
     title: "코인 화면에서는 코인 전용 플랜과 All Market 플랜만 보여드립니다.",
     body:
-      "BTC·ETH, 알트코인, 코인뉴스, 코인알림을 중심으로 쓰는 사용자라면 Coin Pro로 충분합니다. 글로벌 시장까지 함께 볼 예정이면 All Market 플랜을 선택하면 됩니다.",
+      "BTC, ETH, 알트코인, 코인뉴스, 코인 알림을 중심으로 쓰는 사용자라면 Coin Pro로 충분합니다. 글로벌 시장까지 함께 볼 예정이라면 All Market Pro를 선택하면 됩니다.",
     representativePrice: "월 14,900원",
-    representativeBody: "코인 레이더, ICT 판독, 기술지표, 코인뉴스, 코인알림을 코인 시장에 맞춰 씁니다.",
+    representativeBody: "코인 레이더, ICT 구조, 기술지표, 코인뉴스, 코인 알림을 코인 시장에 맞춰 엽니다.",
     highlightedPlanId: "crypto_monthly",
     freeHref: "/survival",
     filterNotice: "코인 전용 화면입니다. 글로벌 전용 플랜은 숨기고 All Market 플랜만 함께 보여드립니다.",
-    priceAnchor: "하루 500원대 비용으로 코인 레이더, 뉴스 브리핑, 관심종목 알림을 매일 확인하는 구조입니다."
+    priceAnchor: "하루 500원 정도의 비용으로 코인 레이더, 뉴스 브리핑, 관심코인, 알림을 매일 확인하는 구조입니다."
   },
   stocks: {
     eyebrow: "Global Radar Pro",
     title: "글로벌 화면에서는 글로벌 전용 플랜과 All Market 플랜만 보여드립니다.",
     body:
-      "미국주식, ETF, 지수, 자산군과 매크로 흐름을 중심으로 쓰는 사용자라면 Global Pro로 충분합니다. 코인까지 함께 볼 예정이면 All Market 플랜을 선택하면 됩니다.",
+      "미국주식, ETF, 지수, 매크로 흐름을 중심으로 쓰는 사용자라면 Global Pro로 충분합니다. 코인까지 함께 볼 예정이라면 All Market Pro를 선택하면 됩니다.",
     representativePrice: "월 14,900원",
-    representativeBody: "글로벌 레이더, 기술지표, 글로벌뉴스, 매크로 브리핑, 관심 자산 알림을 한 화면으로 씁니다.",
+    representativeBody: "글로벌 레이더, 기술지표, 글로벌뉴스, 매크로 브리핑, 관심자산 알림을 한 화면으로 엽니다.",
     highlightedPlanId: "stocks_monthly",
     freeHref: "/global",
     filterNotice: "글로벌 전용 화면입니다. 코인 전용 플랜은 숨기고 All Market 플랜만 함께 보여드립니다.",
-    priceAnchor: "하루 500원대 비용으로 미국장, ETF, 지수, 매크로 이벤트를 한 화면에서 점검합니다."
+    priceAnchor: "하루 500원 정도의 비용으로 미국주식, ETF, 지수, 매크로 이벤트를 한 화면에서 점검합니다."
   }
 };
 
@@ -150,12 +150,12 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
     return {
       ...plan,
       description: "글로벌 레이더의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
-      highlights: ["QQQ / SPY 기본 레이더 확인", "글로벌 뉴스 제한 확인", "AI 브리핑 하루 1회 확인"],
+      highlights: ["QQQ / SPY 기본 레이더 확인", "글로벌 뉴스 제한 확인", "AI 브리핑 하루 1회"],
       limits: {
         ...plan.limits,
-        radarScans: "일 2회",
-        watchlist: "글로벌 종목 2개",
-        alerts: "알림 저장 제한",
+        radarScans: "하루 2회",
+        watchlist: "글로벌 자산 2개",
+        alerts: "알림 조건 1개",
         markets: "글로벌 기본 확인"
       }
     };
@@ -165,12 +165,12 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
     return {
       ...plan,
       description: "코인 레이더의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
-      highlights: ["BTC / ETH 기본 레이더 확인", "주요 알트코인 제한 감시", "AI 브리핑 하루 1회 확인"],
+      highlights: ["BTC / ETH 기본 레이더 확인", "주요 알트코인 제한 감시", "AI 브리핑 하루 1회"],
       limits: {
         ...plan.limits,
-        radarScans: "일 3회",
+        radarScans: "하루 3회",
         watchlist: "코인 2개",
-        alerts: "알림 저장 제한",
+        alerts: "알림 조건 1개",
         markets: "코인 기본 확인"
       }
     };
@@ -351,141 +351,97 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           <p className="font-black text-white">무료와 Pro의 차이</p>
           <p className="mt-2 text-slate-400">
-            무료는 핵심 확인, Pro는 반복 감시와 저장을 위한 작업 공간입니다.
+            무료는 맛보기, Pro는 장중 반복 감시와 알림을 위한 작업 공간입니다.
           </p>
         </div>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-surface-line bg-surface-card">
         <div className="border-b border-white/10 p-4">
-          <p className="text-lg font-black text-white">무료는 확인용, Pro는 매일 쓰는 레이더입니다.</p>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            무료에서도 방향은 볼 수 있게 열어두되, 반복 확인과 감시 자동화는 Pro에서 차이가 나도록 설계했습니다.
-          </p>
+          <p className="text-xs font-black tracking-[0.2em] text-cyan-300">FREE VS PRO</p>
+          <h3 className="mt-1 text-xl font-black text-white">돈을 내면 무엇이 달라지는지 먼저 보여드립니다.</h3>
         </div>
-        <div className="grid divide-y divide-white/10 text-sm md:grid-cols-4 md:divide-x md:divide-y-0">
+        <div className="grid divide-y divide-white/10 md:grid-cols-4 md:divide-x md:divide-y-0">
           {freeVsProRows.map((row) => (
             <div key={row.label} className="p-4">
-              <p className="font-black text-cyan-200">{row.label}</p>
-              <div className="mt-3 space-y-2">
-                <p className="rounded-md border border-white/10 bg-black/20 p-2 text-slate-400">
-                  무료 · {row.free}
-                </p>
-                <p className="rounded-md border border-cyan-300/25 bg-cyan-300/10 p-2 font-bold text-cyan-100">
-                  Pro · {row.pro}
-                </p>
-              </div>
+              <p className="text-sm font-black text-white">{row.label}</p>
+              <p className="mt-3 text-xs font-bold text-slate-500">Free</p>
+              <p className="mt-1 text-sm text-slate-300">{row.free}</p>
+              <p className="mt-3 text-xs font-bold text-cyan-300">Pro</p>
+              <p className="mt-1 text-sm font-black text-cyan-100">{row.pro}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-3">
-        {valueRows.map(({ icon: Icon, title, body }) => (
-          <div key={title} className="rounded-lg border border-surface-line bg-surface-card p-4">
-            <Icon className="text-cyan-300" size={20} aria-hidden />
-            <p className="mt-3 font-black text-white">{title}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-400">{body}</p>
-          </div>
-        ))}
-      </div>
+      <UsageMeterPanel marketScope={marketScope} />
 
-      <div className="rounded-lg border border-surface-line bg-surface-card p-4">
-        <p className="font-black text-white">Pro가 필요한 순간</p>
-        <div className="mt-3 grid gap-2 lg:grid-cols-3">
-          {proDifferenceRows.map((item) => (
-            <p key={item} className="rounded-md border border-white/10 bg-black/20 p-3 text-sm leading-6 text-slate-300">
-              {item}
-            </p>
-          ))}
-        </div>
-      </div>
-
-      {nativePurchaseAvailable ? (
-        <div className="rounded-lg border border-cyan-300/20 bg-cyan-300/10 p-4 text-sm leading-6 text-cyan-100">
-          <p className="font-black text-cyan-50">앱 구독 복원</p>
-          <p className="mt-2 text-cyan-100/85">
-            이미 Google Play에서 구독하셨다면 새 기기나 재설치 후에도 구매 복원으로 Pro 권한을 다시 연결할 수 있습니다.
-          </p>
-          <button
-            type="button"
-            onClick={restoreCheckout}
-            disabled={checkoutState.status === "loading" || checkoutState.status === "restoring" || isAuthLoading}
-            className="mt-3 inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-cyan-300/35 bg-black/20 px-4 text-sm font-black text-cyan-100 transition hover:bg-cyan-300 hover:text-slate-950 disabled:cursor-wait disabled:opacity-70"
-          >
-            {checkoutState.status === "restoring" ? <Loader2 className="animate-spin" size={16} aria-hidden /> : null}
-            {checkoutState.status === "restoring" ? "구매 복원 확인 중" : "구매 복원하기"}
-          </button>
-        </div>
-      ) : null}
-
-      <div id="plans" className="grid scroll-mt-28 gap-4 lg:grid-cols-3">
-        {visiblePlans.map((plan) => {
-          const displayPlan = getScopedDisplayPlan(plan, marketScope);
-          const highlighted = plan.id === copy.highlightedPlanId;
+      <div id="plans" className="grid gap-4 lg:grid-cols-3">
+        {visiblePlans.map((rawPlan) => {
+          const plan = getScopedDisplayPlan(rawPlan, marketScope);
+          const isFree = plan.id === "free";
+          const isHighlighted = plan.id === copy.highlightedPlanId;
           const isYearly = isYearlyBillingPlan(plan.id);
           const isLoading = checkoutState.status === "loading" && checkoutState.planId === plan.id;
 
           return (
             <article
               key={plan.id}
-              className={`rounded-lg border p-5 ${
-                highlighted
-                  ? "border-cyan-300/40 bg-cyan-300/10 shadow-[0_0_35px_rgba(34,211,238,0.16)]"
+              className={`relative rounded-lg border p-5 ${
+                isHighlighted
+                  ? "border-cyan-300 bg-cyan-300/10 shadow-glow"
                   : "border-surface-line bg-surface-card"
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <span className="rounded-full border border-white/10 bg-black/25 px-2.5 py-1 text-xs font-black text-slate-300">
-                    {plan.badge}
-                  </span>
-                  <h3 className="mt-4 text-xl font-black text-white">{displayPlan.name}</h3>
-                </div>
-                {highlighted ? <Crown className="text-cyan-300" size={22} aria-hidden /> : null}
+              <div className="flex items-center justify-between gap-3">
+                <span className={`rounded-full px-2.5 py-1 text-xs font-black ${isHighlighted ? "bg-cyan-300 text-slate-950" : "bg-white/10 text-slate-300"}`}>
+                  {plan.badge}
+                </span>
+                {isYearly ? <span className="text-xs font-black text-amber-300">연간 할인</span> : null}
               </div>
-              <p className="mt-4 text-3xl font-black text-white">{displayPlan.priceLabel}</p>
-              {isYearly && plan.id !== "free" ? (
-                <p className="mt-1 text-xs font-bold text-cyan-200">월 환산 약 {plan.monthlyValue.toLocaleString("ko-KR")}원</p>
+              <h3 className="mt-4 text-xl font-black text-white">{plan.name}</h3>
+              <p className="mt-2 text-3xl font-black text-white">{plan.priceLabel}</p>
+              {plan.monthlyValue > 0 ? (
+                <p className="mt-1 text-xs font-bold text-slate-500">월 환산 약 {plan.monthlyValue.toLocaleString("ko-KR")}원</p>
               ) : null}
-              <p className="mt-4 min-h-16 text-sm leading-6 text-slate-400">{displayPlan.description}</p>
+              <p className="mt-4 min-h-16 text-sm leading-6 text-slate-400">{plan.description}</p>
 
-              <div className="mt-5 space-y-2">
-                {displayPlan.highlights.map((item) => (
-                  <p key={item} className="flex items-start gap-2 text-sm text-slate-200">
+              <div className="mt-4 space-y-2">
+                {plan.highlights.map((item) => (
+                  <p key={item} className="flex gap-2 text-sm text-slate-300">
                     <Check className="mt-0.5 shrink-0 text-cyan-300" size={15} aria-hidden />
-                    {item}
+                    <span>{item}</span>
                   </p>
                 ))}
               </div>
 
-              <div className="mt-5 grid gap-2 rounded-md border border-white/10 bg-black/20 p-3 text-xs text-slate-400">
-                <p>레이더: <span className="font-bold text-slate-200">{displayPlan.limits.radarScans}</span></p>
-                <p>AI 브리핑: <span className="font-bold text-slate-200">{displayPlan.limits.aiBriefings}</span></p>
-                <p>관심종목: <span className="font-bold text-slate-200">{displayPlan.limits.watchlist}</span></p>
-                <p>알림: <span className="font-bold text-slate-200">{displayPlan.limits.alerts}</span></p>
+              <div className="mt-5 rounded-md border border-white/10 bg-black/20 p-3 text-xs leading-5 text-slate-400">
+                <p>레이더 {plan.limits.radarScans}</p>
+                <p>AI 브리핑 {plan.limits.aiBriefings}</p>
+                <p>관심종목 {plan.limits.watchlist}</p>
+                <p>알림 {plan.limits.alerts}</p>
               </div>
 
-              {plan.id === "free" ? (
+              {isFree ? (
                 <Link
                   href={copy.freeHref}
-                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/10 bg-white/5 px-4 text-sm font-black text-white transition hover:bg-white/10"
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/15 px-4 text-sm font-black text-white transition hover:bg-white/10"
                 >
-                  무료로 확인하기
+                  무료로 먼저 보기
                 </Link>
               ) : (
                 <button
-          type="button"
-          onClick={() => startCheckout(plan)}
-          disabled={checkoutState.status === "loading" || isAuthLoading}
+                  type="button"
+                  onClick={() => startCheckout(plan)}
+                  disabled={checkoutState.status === "loading" || isAuthLoading}
                   className={`mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-md px-4 text-sm font-black transition ${
-                    highlighted
+                    isHighlighted
                       ? "bg-cyan-300 text-slate-950 hover:bg-cyan-200"
-                      : "border border-cyan-300/30 bg-cyan-300/10 text-cyan-200 hover:bg-cyan-300 hover:text-slate-950"
-                  } disabled:cursor-wait disabled:opacity-70`}
+                      : "bg-white text-slate-950 hover:bg-slate-200"
+                  } disabled:cursor-not-allowed disabled:opacity-60`}
                 >
-                  {isLoading ? <Loader2 className="animate-spin" size={16} aria-hidden /> : null}
-          {isAuthLoading ? "로그인 확인 중" : isLoading ? "결제 상태 확인 중" : nativePurchaseAvailable ? "앱 구독으로 시작하기" : isYearly ? "연간으로 시작하기" : "월간으로 시작하기"}
+                  {isLoading ? <Loader2 className="animate-spin" size={16} aria-hidden /> : <Crown size={16} aria-hidden />}
+                  {nativePurchaseAvailable ? "앱 구독으로 시작하기" : isYearly ? "연간으로 시작하기" : "월간으로 시작하기"}
                 </button>
               )}
             </article>
@@ -493,9 +449,19 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         })}
       </div>
 
-      <UsageMeterPanel marketScope={marketScope} />
-
-      <RadarAlertCenter market={marketScope === "stocks" ? "stocks" : "crypto"} />
+      {nativePurchaseAvailable ? (
+        <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-center">
+          <button
+            type="button"
+            onClick={restoreCheckout}
+            disabled={checkoutState.status === "restoring" || isAuthLoading}
+            className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md border border-white/15 px-4 text-sm font-black text-white transition hover:bg-white/10 disabled:opacity-60"
+          >
+            {checkoutState.status === "restoring" ? <Loader2 className="animate-spin" size={16} aria-hidden /> : null}
+            구매 복원하기
+          </button>
+        </div>
+      ) : null}
 
       {checkoutState.status === "message" ? (
         <div
@@ -509,23 +475,41 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         </div>
       ) : null}
 
-      <div className="rounded-lg border border-surface-line bg-surface-card p-4">
-        <p className="font-black text-white">구독 전 확인해 주세요.</p>
-        <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-400">
-          {subscriptionTrustNotes.map((item) => (
-            <p key={item} className="flex gap-2">
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300" />
-              {item}
-            </p>
+      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+        <div className="rounded-lg border border-surface-line bg-surface-card p-5">
+          <p className="text-xs font-black tracking-[0.2em] text-cyan-300">WHY PAY</p>
+          <h3 className="mt-2 text-xl font-black text-white">유료 상품의 핵심은 더 많은 예측이 아니라 더 적은 누락입니다.</h3>
+          <div className="mt-4 space-y-3">
+            {proDifferenceRows.map((row) => (
+              <p key={row} className="text-sm leading-6 text-slate-400">{row}</p>
+            ))}
+          </div>
+        </div>
+        <div className="grid gap-3">
+          {valueRows.map(({ icon: Icon, title, body }) => (
+            <div key={title} className="rounded-lg border border-surface-line bg-surface-card p-4">
+              <div className="flex gap-3">
+                <Icon className="mt-1 shrink-0 text-cyan-300" size={20} aria-hidden />
+                <div>
+                  <p className="font-black text-white">{title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-400">{body}</p>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
-        <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
-          <Link href="/terms" className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
-            이용약관
-          </Link>
-          <Link href="/privacy" className="rounded-md border border-white/10 bg-black/20 px-3 py-2 text-slate-300">
-            개인정보 처리방침
-          </Link>
+      </div>
+
+      <RadarAlertCenter market={marketScope === "stocks" ? "stocks" : "crypto"} />
+
+      <div className="rounded-lg border border-surface-line bg-surface-card p-5">
+        <p className="text-xs font-black tracking-[0.2em] text-cyan-300">운영 원칙</p>
+        <div className="mt-3 grid gap-2 md:grid-cols-3">
+          {subscriptionTrustNotes.map((note) => (
+            <p key={note} className="rounded-md border border-white/10 bg-black/20 p-3 text-sm leading-6 text-slate-400">
+              {note}
+            </p>
+          ))}
         </div>
       </div>
     </section>

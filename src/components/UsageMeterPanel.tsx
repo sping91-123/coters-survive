@@ -1,5 +1,5 @@
 "use client";
-// Free와 Pro 사용량 차이를 보여주는 일일 사용량 패널이다.
+// 무료와 Pro의 일일 사용량 차이를 보여주는 패널입니다.
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Crown, Gauge, Zap } from "lucide-react";
@@ -21,7 +21,7 @@ function barColor(percent: number, isOverFree: boolean) {
 }
 
 function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketStates>[number]; isPaid: boolean }) {
-  const activeLimit = isPaid ? state.proDailyLimit : state.freeDailyLimit;
+  const activeLimit = Math.max(1, isPaid ? state.proDailyLimit : state.freeDailyLimit);
   const activeRemaining = Math.max(0, activeLimit - state.used);
   const activePercent = Math.min(100, Math.round((state.used / activeLimit) * 100));
   const isOverActiveLimit = state.used >= activeLimit;
@@ -33,11 +33,12 @@ function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketSt
           <p className="text-sm font-black text-white">{state.label}</p>
           <p className="mt-1 line-clamp-1 text-[11px] text-slate-500">{state.description}</p>
         </div>
-        <span className={`shrink-0 rounded border px-2 py-1 text-[11px] font-black ${
-          isOverActiveLimit
-            ? "border-rose-400/30 bg-rose-500/10 text-rose-300"
-            : "border-cyan-300/30 bg-cyan-300/10 text-cyan-200"
-        }`}
+        <span
+          className={`shrink-0 rounded border px-2 py-1 text-[11px] font-black ${
+            isOverActiveLimit
+              ? "border-rose-400/30 bg-rose-500/10 text-rose-300"
+              : "border-cyan-300/30 bg-cyan-300/10 text-cyan-200"
+          }`}
         >
           {state.used}/{activeLimit}
         </span>
@@ -57,18 +58,18 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Free는 핵심 화면과 분석 흐름을 확인하는 기본 모드입니다. Pro는 코인·글로벌·AI·알림을 매일 반복해서 돌리는 감시 모드입니다.",
-    paid: "결제 권한이 확인된 계정은 Pro 기준 한도로 표시됩니다. 로그인 계정 기준으로 여러 기기에서도 같은 권한을 확인할 수 있습니다.",
+    free: "Free는 전체 시장의 핵심 흐름을 맛보는 체험 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
+    paid: "현재 계정 권한으로 Pro 한도를 사용 중입니다. 로그인 계정 기준으로 여러 기기에서도 같은 권한을 확인할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
-    free: "Free는 코인 레이더의 핵심 흐름을 확인하는 기본 모드입니다. Coin Pro는 코인 판독, 관심종목, AI 브리핑, 알림을 더 넓게 반복 감시하는 모드입니다.",
-    paid: "Coin Pro 또는 All Market 권한 기준으로 코인 레이더 한도를 확인합니다. 코인 화면에서 쓰는 기능만 따로 모아 보여드립니다.",
+    free: "Free는 코인 레이더의 흐름을 가볍게 확인하는 모드입니다. Coin Pro는 코인 스캔, 관심코인, AI 브리핑, 알림을 넉넉하게 반복 감시하는 모드입니다.",
+    paid: "Coin Pro 또는 All Market 권한으로 코인 레이더 한도를 사용 중입니다. 코인 화면에서 필요한 기능만 따로 모아 보여드립니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "Free는 글로벌 레이더의 핵심 흐름을 확인하는 기본 모드입니다. Global Pro는 글로벌 종목, 매크로, 뉴스 브리핑, 알림을 더 넓게 반복 감시하는 모드입니다.",
-    paid: "Global Pro 또는 All Market 권한 기준으로 글로벌 레이더 한도를 확인합니다. 글로벌 화면에서 쓰는 기능만 따로 모아 보여드립니다.",
+    free: "Free는 글로벌 레이더의 흐름을 가볍게 확인하는 모드입니다. Global Pro는 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 감시하는 모드입니다.",
+    paid: "Global Pro 또는 All Market 권한으로 글로벌 레이더 한도를 사용 중입니다. 글로벌 화면에서 필요한 기능만 따로 모아 보여드립니다.",
     proHref: "/pro?market=stocks"
   }
 };
@@ -118,10 +119,10 @@ export function UsageMeterPanel({
     isPaid
       ? `${entitlementLabel} 권한으로 사용 중입니다.`
       : scopedOverCount > 0
-      ? "오늘 무료 기준을 넘긴 항목이 있습니다."
-      : scopedUsedTotal > 0
-        ? "오늘 레이더 사용량이 쌓이고 있습니다."
-        : "오늘 사용할 레이더 한도가 열려 있습니다.";
+        ? "오늘 무료 한도에 걸린 항목이 있습니다."
+        : scopedUsedTotal > 0
+          ? "오늘 레이더 사용량이 쌓이고 있습니다."
+          : "오늘 레이더 한도가 열려 있습니다.";
 
   return (
     <section className="rounded-lg border border-cyan-300/25 bg-surface-card p-4 shadow-glow sm:p-5">

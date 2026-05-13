@@ -53,7 +53,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "watchlistScan",
     label: "관심코인 감시",
     shortLabel: "관심",
-    description: "관심 코인 레이더를 갱신한 횟수입니다.",
+    description: "관심코인 레이더를 갱신한 횟수입니다.",
     freeDailyLimit: 2,
     proDailyLimit: 100
   },
@@ -61,7 +61,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "stockRadar",
     label: "글로벌 레이더",
     shortLabel: "글로벌",
-    description: "미국주식, ETF, 글로벌 레이더를 불러온 횟수입니다.",
+    description: "미국주식, ETF, 글로벌 자산 레이더를 불러온 횟수입니다.",
     freeDailyLimit: 2,
     proDailyLimit: 100
   },
@@ -191,8 +191,8 @@ export function getUsageGate(bucketId: UsageBucketId, isPaid: boolean) {
     message: allowed
       ? ""
       : isPaid
-        ? `오늘 ${state.label} Pro 한도를 모두 사용했습니다. 잠시 후 다시 확인해 주세요.`
-        : `오늘 무료 ${state.label} 한도를 모두 사용했습니다. Pro에서는 더 넓게 반복 확인할 수 있습니다.`
+        ? `오늘 ${state.label} Pro 한도를 모두 사용했습니다. 잠시 뒤 다시 확인해 주세요.`
+        : `오늘 무료 ${state.label} 한도를 모두 사용했습니다. Pro에서는 더 넉넉하게 반복 확인할 수 있습니다.`
   };
 }
 
