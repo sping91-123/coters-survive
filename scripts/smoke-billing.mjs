@@ -152,6 +152,8 @@ expectIncludes(confirmRoute, "https://api.tosspayments.com/v1/payments/confirm",
 expectIncludes(confirmRoute, "supabaseAdminRest", "Supabase 권한 반영 경로", "src/app/api/billing/confirm/route.ts");
 expectIncludes(confirmRoute, "rateLimit(request", "결제 승인 호출 제한", "src/app/api/billing/confirm/route.ts");
 expectIncludes(confirmRoute, "isBodyTooLarge(request, 8_000)", "결제 승인 본문 크기 제한", "src/app/api/billing/confirm/route.ts");
+expectIncludes(confirmRoute, "directPlan.id !== parsedPlan", "결제 승인 플랜 불일치 차단", "src/app/api/billing/confirm/route.ts");
+expectIncludes(confirmRoute, "return parsedPlan;", "결제 승인 주문번호 플랜 우선", "src/app/api/billing/confirm/route.ts");
 expectIncludes(checkoutRoute, "fetchSupabaseUserOnServer", "결제 시작 전 로그인 검증", "src/app/api/billing/checkout/route.ts");
 expectIncludes(checkoutRoute, "결제를 시작하려면 먼저 로그인해 주세요.", "비로그인 결제 차단 문구", "src/app/api/billing/checkout/route.ts");
 expectIncludes(checkoutRoute, "rateLimit(request", "결제 시작 호출 제한", "src/app/api/billing/checkout/route.ts");

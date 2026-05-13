@@ -35,11 +35,15 @@ function getBearerToken(request: Request) {
 }
 
 function resolvePlanId(body: ConfirmRequest): BillingPlanId | null {
-  const directPlan = findBillingPlan(body.planId);
-  if (directPlan && directPlan.id !== "free") return directPlan.id;
-
   const parsedPlan = parsePlanIdFromOrderId(body.orderId);
-  if (parsedPlan && parsedPlan !== "free") return parsedPlan;
+  const directPlan = findBillingPlan(body.planId);
+
+  if (parsedPlan && parsedPlan !== "free") {
+    if (directPlan && directPlan.id !== "free" && directPlan.id !== parsedPlan) return null;
+    return parsedPlan;
+  }
+
+  if (directPlan && directPlan.id !== "free") return directPlan.id;
 
   return null;
 }
