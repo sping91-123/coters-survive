@@ -7,6 +7,27 @@ $ErrorActionPreference = "Stop"
 $repo = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $port = 3000
 
+function Remove-DirectoryWithRetry {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Path,
+    [int]$Attempts = 5,
+    [int]$DelayMs = 400
+  )
+
+  for ($attempt = 1; $attempt -le $Attempts; $attempt += 1) {
+    try {
+      Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+      return
+    } catch {
+      if ($attempt -eq $Attempts) {
+        throw
+      }
+      Start-Sleep -Milliseconds $DelayMs
+    }
+  }
+}
+
 $connections = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
 $processIds = @($connections | Select-Object -ExpandProperty OwningProcess -Unique)
 foreach ($processId in $processIds) {
@@ -21,7 +42,7 @@ if ($nextPath) {
   if (-not $resolved.StartsWith($repo, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Refusing to delete outside repo: $resolved"
   }
-  Remove-Item -LiteralPath $resolved -Recurse -Force
+  Remove-DirectoryWithRetry -Path $resolved
 }
 
 if ($SkipStart) {

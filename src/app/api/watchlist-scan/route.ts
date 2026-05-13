@@ -62,10 +62,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "symbols는 배열이어야 합니다." }, { status: 400 });
   }
 
-  // 바이낸스 USDT-M 형식만 허용합니다. 실제 존재 여부는 스캔 단계에서 자연스럽게 걸러집니다.
-  const symbols: string[] = (rawSymbols as unknown[])
-    .filter((s): s is string => typeof s === "string" && isLikelyUsdtPerpSymbol(s))
-    .slice(0, MAX_SYMBOLS);
+  const invalidSymbol = rawSymbols.find((symbol) => typeof symbol !== "string" || !isLikelyUsdtPerpSymbol(symbol));
+  if (invalidSymbol !== undefined) {
+    return NextResponse.json(
+      { error: "지원하지 않는 관심코인 심볼이 포함되어 있습니다. Binance USDT-M 형식의 심볼만 요청해 주세요." },
+      { status: 400 }
+    );
+  }
+
+  const symbols = (rawSymbols as string[]).slice(0, MAX_SYMBOLS);
 
   if (symbols.length === 0) {
     return NextResponse.json({ setups: [], cachedAt: Date.now(), cached: false });

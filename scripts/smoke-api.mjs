@@ -71,6 +71,13 @@ const checks = [
     expectedStatus: [400]
   },
   {
+    label: "관심코인 스캔 비정상 심볼 차단",
+    path: "/api/watchlist-scan",
+    method: "POST",
+    body: { symbols: ["BTCUSDT.P", "NOTREAL"] },
+    expectedStatus: [400]
+  },
+  {
     label: "결제 시작 대용량 요청 차단",
     path: "/api/billing/checkout",
     method: "POST",
