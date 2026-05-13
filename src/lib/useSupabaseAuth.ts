@@ -13,6 +13,29 @@ import {
   type SupabaseUser
 } from "@/lib/supabase";
 
+const ownerProEmails = (process.env.NEXT_PUBLIC_OWNER_PRO_EMAILS ?? "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
+const ownerProPlan = process.env.NEXT_PUBLIC_OWNER_PRO_PLAN === "premium" ? "premium" : "admin";
+
+function applyOwnerProPreview(user: SupabaseUser, profile: SupabaseProfile | null) {
+  const email = user.email?.trim().toLowerCase();
+  if (!email || !ownerProEmails.includes(email)) return profile;
+
+  const now = new Date().toISOString();
+  return {
+    id: user.id,
+    email: user.email ?? profile?.email ?? null,
+    display_name: profile?.display_name ?? user.user_metadata?.name ?? user.user_metadata?.full_name ?? null,
+    avatar_url: profile?.avatar_url ?? user.user_metadata?.avatar_url ?? user.user_metadata?.picture ?? null,
+    plan: ownerProPlan,
+    created_at: profile?.created_at ?? now,
+    updated_at: profile?.updated_at ?? now
+  } satisfies SupabaseProfile;
+}
+
 export function useSupabaseAuth() {
   const [session, setSession] = useState<SupabaseSession | null>(null);
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -61,7 +84,7 @@ export function useSupabaseAuth() {
         if (!isMounted || !result) return;
         const [nextUser, nextProfile] = result;
         setUser(nextUser);
-        setProfile(nextProfile ?? null);
+        setProfile(applyOwnerProPreview(nextUser, nextProfile ?? null));
     }
 
     function handleAuthError() {
