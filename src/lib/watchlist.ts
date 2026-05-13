@@ -2,7 +2,7 @@
  * 관심 코인 (Watchlist) — 로컬 스토리지 기반 관리.
  *
  * 플랜별 최대 종목:
- *  - free / 비로그인 : 5개
+ *  - free / 비로그인 : 2개
  *  - Coin Pro 월간  : 50개
  *  - Coin Pro 연간  : 100개
  *  - Global Pro 월간: 50개
@@ -17,8 +17,8 @@ import { isLikelyUsdtPerpSymbol } from "./cryptoUniverse";
 export type WatchlistPlan = NonNullable<BillingEntitlementPlan>;
 
 export const WATCHLIST_LIMIT: Record<string, number> = {
-  free: 5,
-  member: 5,
+  free: 2,
+  member: 2,
   premium: 100,
   admin: 150,
   crypto_monthly: 50,

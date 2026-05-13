@@ -73,9 +73,21 @@ function asArray<T>(value: T | T[] | undefined): T[] {
   return Array.isArray(value) ? value : [value];
 }
 
+function decodeHtmlEntities(value: string) {
+  return value
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) => String.fromCodePoint(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, decimal: string) => String.fromCodePoint(parseInt(decimal, 10)))
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, " ");
+}
+
 function cleanText(value: unknown) {
   if (typeof value !== "string") return "";
-  return value
+  return decodeHtmlEntities(value)
     .replace(/<!\[CDATA\[(.*?)\]\]>/g, "$1")
     .replace(/<[^>]+>/g, " ")
     .replace(/\s+/g, " ")
@@ -167,6 +179,41 @@ function knownCryptoTitle(title: string) {
   return null;
 }
 
+function knownStockTitle(title: string) {
+  const normalized = title.toLowerCase();
+
+  if (normalized.includes("ai power") && normalized.includes("new oil")) {
+    return "AI 전력 수요가 새로운 원자재처럼 주목받고 있습니다";
+  }
+  if (normalized.includes("inflation") && normalized.includes("salary")) {
+    return "물가 상승이 임금 상승보다 빨라 소비 부담이 커지고 있습니다";
+  }
+  if (normalized.includes("semiconductor") || normalized.includes("chip")) {
+    return "반도체 대형주의 증시 영향력이 다시 커지고 있습니다";
+  }
+  if (normalized.includes("airfare") || normalized.includes("airlines")) {
+    return "항공권과 여행 수요 흐름이 소비 지표의 변수로 떠올랐습니다";
+  }
+  if (normalized.includes("s&p") || normalized.includes("sp500")) {
+    return "S&P500 주요 종목 흐름이 미국장 방향성을 좌우하고 있습니다";
+  }
+  if (normalized.includes("yield") || normalized.includes("treasury")) {
+    return "미국 국채금리 흐름이 위험자산 심리에 영향을 주고 있습니다";
+  }
+  if (normalized.includes("fed") || normalized.includes("rate")) {
+    return "연준과 금리 기대 변화가 글로벌 시장의 핵심 변수입니다";
+  }
+  if (normalized.includes("earnings") || normalized.includes("profit")) {
+    return "기업 실적과 마진 흐름이 종목별 차별화를 만들고 있습니다";
+  }
+
+  return null;
+}
+
+function knownTitle(title: string, market: RadarNewsMarket) {
+  return market === "stocks" ? knownStockTitle(title) : knownCryptoTitle(title);
+}
+
 function localTranslateTitle(title: string) {
   return title
     .replace(/\bEthereum Foundation\b/gi, "이더리움 재단")
@@ -178,6 +225,17 @@ function localTranslateTitle(title: string) {
     .replace(/\bFed\b/gi, "연준")
     .replace(/\binflows?\b/gi, "자금 유입")
     .replace(/\boutflows?\b/gi, "자금 유출")
+    .replace(/\bcrypto\b/gi, "암호화폐")
+    .replace(/\bdigital assets?\b/gi, "디지털자산")
+    .replace(/\bstablecoins?\b/gi, "스테이블코인")
+    .replace(/\betf\b/gi, "ETF")
+    .replace(/\bstocks?\b/gi, "주식")
+    .replace(/\bmarkets?\b/gi, "시장")
+    .replace(/\binflation\b/gi, "물가")
+    .replace(/\btreasury\b/gi, "미국 국채")
+    .replace(/\byields?\b/gi, "금리")
+    .replace(/\bearnings?\b/gi, "실적")
+    .replace(/\bprofit\b/gi, "이익")
     .replace(/\brally\b/gi, "상승")
     .replace(/\bsurge\b/gi, "급등")
     .replace(/\bplunge\b/gi, "급락")
@@ -200,17 +258,178 @@ function polishKoreanTitle(title: string) {
     .trim();
 }
 
-async function translateTitleToKorean(title: string) {
+function fallbackKoreanTitle(title: string, market: RadarNewsMarket) {
+  const normalized = title.toLowerCase();
+  const local = polishKoreanTitle(localTranslateTitle(title));
+  if (isReadableKoreanTitle(local) && local.toLowerCase() !== title.toLowerCase()) {
+    return local;
+  }
+
+  if (market === "crypto") {
+    if (normalized.includes("kddi") || normalized.includes("coincheck") || normalized.includes("stake") || normalized.includes("acquire")) {
+      return "일본 대기업의 Coincheck 지분 인수 이슈가 코인 시장 관심을 끌고 있습니다";
+    }
+    if (normalized.includes("clarity") || /\bbill\b/.test(normalized) || normalized.includes("regulation")) {
+      return "미국 암호화폐 법안 수정 논의가 규제 방향의 새 변수로 떠올랐습니다";
+    }
+    if (normalized.includes("tokenized") || normalized.includes("tokenization")) {
+      return "토큰화 자산 흐름이 기관 시장의 관심을 받고 있습니다";
+    }
+    if (normalized.includes("mica") || normalized.includes("license") || normalized.includes("latvia") || normalized.includes("eu")) {
+      return "유럽 암호화폐 라이선스 확보 경쟁이 거래소 확장 이슈로 이어지고 있습니다";
+    }
+    if (normalized.includes("wallet") || normalized.includes("ledger")) {
+      return "암호화폐 지갑과 보안 관련 이슈가 부각되고 있습니다";
+    }
+    if (normalized.includes("ipo")) {
+      return "암호화폐 기업의 상장 계획과 시장 여건을 점검해야 합니다";
+    }
+    if (normalized.includes("openai") || normalized.includes("anthropic") || normalized.includes("ai")) {
+      return "AI 관련 토큰과 비상장 지분 이슈가 변동성을 키우고 있습니다";
+    }
+    if (normalized.includes("exchange") || normalized.includes("coinbase") || normalized.includes("binance")) {
+      return "주요 거래소 관련 뉴스가 코인 시장 심리에 영향을 주고 있습니다";
+    }
+    return "코인 시장 주요 이슈가 가격 반응에 어떤 영향을 주는지 확인해야 합니다";
+  }
+
+  if (normalized.includes("anduril") || normalized.includes("defense")) {
+    return "방산 기술 기업 가치 상승이 AI·국방 투자 열기를 보여주고 있습니다";
+  }
+  if (normalized.includes("retirement") || normalized.includes("savings")) {
+    return "은퇴자금과 체감 물가 부담이 개인 투자 심리에 영향을 주고 있습니다";
+  }
+  if (normalized.includes("valuation") || normalized.includes("funding")) {
+    return "비상장 기업 가치와 자금 조달 흐름이 시장의 위험 선호를 보여주고 있습니다";
+  }
+  if (normalized.includes("ai")) {
+    return "AI 관련 수요와 인프라 이슈가 글로벌 시장의 핵심 변수입니다";
+  }
+  if (normalized.includes("inflation") || normalized.includes("price")) {
+    return "물가와 소비 부담 이슈가 미국장 심리에 영향을 줄 수 있습니다";
+  }
+  if (normalized.includes("fed") || normalized.includes("rate")) {
+    return "연준과 금리 기대 변화가 지수 흐름의 핵심 변수입니다";
+  }
+  if (normalized.includes("semiconductor") || normalized.includes("chip")) {
+    return "반도체 섹터 흐름이 글로벌 증시 방향성에 영향을 주고 있습니다";
+  }
+  if (normalized.includes("earnings") || normalized.includes("sales") || normalized.includes("profit")) {
+    return "기업 실적과 매출 흐름이 종목별 차별화를 만들고 있습니다";
+  }
+  return "글로벌 시장 주요 이슈가 지수와 섹터 흐름에 미칠 영향을 확인해야 합니다";
+}
+
+function isReadableKoreanTitle(value: string) {
+  if (!hasKorean(value)) return false;
+  const hangulCount = value.match(/[가-힣]/g)?.length ?? 0;
+  const latinWords = value.match(/\b[A-Za-z]{4,}\b/g)?.filter((word) => !["USDT", "ETF", "NAV", "MiCA"].includes(word)) ?? [];
+  return hangulCount >= 10 && latinWords.length <= 3;
+}
+
+function coerceKoreanTitle(title: string, translated: string, market: RadarNewsMarket) {
+  const polished = polishKoreanTitle(translated);
+  if (isReadableKoreanTitle(polished) && polished.toLowerCase() !== title.toLowerCase()) return polished;
+  return fallbackKoreanTitle(title, market);
+}
+
+function parseStringArray(raw: string) {
+  const match = raw.match(/\[[\s\S]*\]/);
+  if (!match) return [];
+  try {
+    const parsed = JSON.parse(match[0]) as unknown;
+    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+async function translateTitlesWithGroq(titles: string[], market: RadarNewsMarket) {
+  const apiKey = process.env.GROQ_API_KEY;
+  const uniqueTitles = Array.from(new Set(titles.filter(Boolean)));
+  const result = new Map<string, string>();
+  if (!apiKey || uniqueTitles.length === 0) return result;
+
+  const pending = uniqueTitles.filter((title) => {
+    const cacheKey = `${market}:${title}`;
+    const cached = translationCache.get(cacheKey);
+    if (cached) {
+      result.set(title, cached);
+      return false;
+    }
+    const known = knownTitle(title, market);
+    if (known) {
+      const translated = coerceKoreanTitle(title, known, market);
+      translationCache.set(cacheKey, translated);
+      result.set(title, translated);
+      return false;
+    }
+    return !hasKorean(title);
+  });
+  if (pending.length === 0) return result;
+
+  const model = process.env.GROQ_MODEL || GROQ_DEFAULT_MODEL;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6_000);
+  try {
+    const marketLabel = market === "stocks" ? "글로벌 주식/ETF/매크로" : "코인";
+    const response = await fetch(GROQ_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`
+      },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "user",
+            content: `아래 영어 ${marketLabel} 뉴스 제목을 한국 투자자가 바로 이해할 수 있는 한국어 제목으로 의역해 주세요.
+규칙:
+- 반드시 JSON 문자열 배열만 반환합니다.
+- 입력 순서와 개수를 그대로 맞춥니다.
+- 영어 제목을 그대로 남기지 말고, 자연스러운 한국어 이슈 제목으로 바꿉니다.
+- 과장된 매수·매도 표현은 피하고, 시장 영향이 느껴지게 씁니다.
+
+제목:
+${pending.map((title, index) => `${index + 1}. ${title}`).join("\n")}`
+          }
+        ],
+        temperature: 0.1,
+        max_tokens: 1200
+      })
+    });
+
+    if (!response.ok) return result;
+    const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const translated = parseStringArray(payload.choices?.[0]?.message?.content ?? "");
+    pending.forEach((title, index) => {
+      const next = coerceKoreanTitle(title, translated[index] ?? "", market);
+      translationCache.set(`${market}:${title}`, next);
+      result.set(title, next);
+    });
+  } catch {
+    // Groq가 지연되면 규칙 기반 한국어 제목으로 즉시 대체합니다.
+  } finally {
+    clearTimeout(timer);
+  }
+
+  return result;
+}
+
+async function translateTitleToKorean(title: string, market: RadarNewsMarket) {
   if (hasKorean(title)) return title;
-  const known = knownCryptoTitle(title);
+  const known = knownTitle(title, market);
   if (known) return known;
 
-  const cached = translationCache.get(title);
+  const cacheKey = `${market}:${title}`;
+  const cached = translationCache.get(cacheKey);
   if (cached) return cached;
 
   if (!USE_EXTERNAL_NEWS_TRANSLATION) {
-    const fallback = polishKoreanTitle(localTranslateTitle(title));
-    translationCache.set(title, fallback);
+    const fallback = fallbackKoreanTitle(title, market);
+    translationCache.set(cacheKey, fallback);
     return fallback;
   }
 
@@ -227,9 +446,9 @@ async function translateTitleToKorean(title: string) {
 
     if (response.ok) {
       const payload = (await response.json()) as { responseData?: { translatedText?: string } };
-      const translated = polishKoreanTitle(payload.responseData?.translatedText?.replace(/\s+/g, " ").trim() ?? "");
+      const translated = coerceKoreanTitle(title, payload.responseData?.translatedText?.replace(/\s+/g, " ").trim() ?? "", market);
       if (translated && translated.toLowerCase() !== title.toLowerCase()) {
-        translationCache.set(title, translated);
+        translationCache.set(cacheKey, translated);
         return translated;
       }
     }
@@ -237,8 +456,8 @@ async function translateTitleToKorean(title: string) {
     // 무료 번역 API가 실패하면 로컬 단어 치환으로 대체합니다.
   }
 
-  const fallback = polishKoreanTitle(localTranslateTitle(title));
-  translationCache.set(title, fallback);
+  const fallback = fallbackKoreanTitle(title, market);
+  translationCache.set(cacheKey, fallback);
   return fallback;
 }
 
@@ -261,8 +480,8 @@ async function loadFeed(feed: NewsFeed, market: RadarNewsMarket) {
   const entries = rssItems.length ? rssItems : atomItems;
 
   const pickedEntries = entries.slice(0, 6);
-  const items = await Promise.all(
-    pickedEntries.map(async (entry) => {
+  const records = pickedEntries
+    .map((entry) => {
       const record = entry as Record<string, unknown>;
       const title = pickText(record.title);
       const link = normalizeLink(record.link) || pickText(record.guid);
@@ -273,16 +492,26 @@ async function loadFeed(feed: NewsFeed, market: RadarNewsMarket) {
         new Date().toISOString();
 
       if (!title || !link) return null;
+      return { title, link, publishedAt };
+    })
+    .filter((record): record is { title: string; link: string; publishedAt: string } => Boolean(record));
 
-      const translatedTitle = await translateTitleToKorean(title);
+  const groqTranslations = await translateTitlesWithGroq(
+    records.map((record) => record.title),
+    market
+  );
+
+  const items = await Promise.all(
+    records.map(async (record) => {
+      const translatedTitle = groqTranslations.get(record.title) ?? (await translateTitleToKorean(record.title, market));
 
       return createRadarNewsItem(
         {
           source: feed.source,
-          title,
+          title: record.title,
           translatedTitle,
-          link,
-          publishedAt: toIsoDate(publishedAt)
+          link: record.link,
+          publishedAt: toIsoDate(record.publishedAt)
         },
         market
       );
@@ -383,7 +612,6 @@ function buildNewsBriefingPrompt(items: RadarNewsItem[], market: RadarNewsMarket
     .slice(0, 10)
     .map((item, index) => {
       return `${index + 1}. [${item.source}] ${itemTitle(item)}
-원문: ${item.title}
 방향: ${toneLabel(item.direction)}
 점수: ${item.score}
 태그: ${item.tags.join(", ")}
@@ -407,6 +635,7 @@ function buildNewsBriefingPrompt(items: RadarNewsItem[], market: RadarNewsMarket
 
 규칙.
 - 모든 문장은 한국어로 작성해 주세요.
+- 원문 제목이 영어여도 사용자에게 보이는 결과에는 영어 제목을 그대로 복사하지 말고 한국어로 의역해 주세요.
 - 직접적인 매수·매도 신호, 수익 보장, 특정 진입 지시는 금지입니다.
 - 대신 오늘 시장에서 조심해야 할 조건, 확인할 조건, 리스크 관리 관점으로 정리해 주세요.
 - keyIssues는 3개에서 5개 사이로 작성해 주세요.

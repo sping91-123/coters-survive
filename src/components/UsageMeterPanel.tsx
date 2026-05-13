@@ -58,17 +58,17 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Free는 핵심 흐름을 확인하는 기본 모드이고, Pro는 코인·글로벌·AI·알림을 매일 여러 번 돌리는 운영 모드입니다.",
+    free: "Free는 화면과 분석 흐름을 확인하는 체험 모드입니다. Pro는 코인·글로벌·AI·알림을 매일 여러 번 돌리는 운영 모드입니다.",
     paid: "결제 권한이 확인된 계정은 Pro 기준 사용량으로 표시됩니다. 로그인 계정 기준으로 여러 기기에서도 같은 권한을 확인할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
-    free: "Free는 코인 레이더의 핵심 흐름을 확인하는 기본 모드입니다. Coin Pro는 코인 판독, 관심종목, AI 브리핑, 알림을 더 넓게 돌리는 운영 모드입니다.",
+    free: "Free는 코인 레이더를 맛보는 체험 모드입니다. Coin Pro는 코인 판독, 관심종목, AI 브리핑, 알림을 더 넓게 돌리는 운영 모드입니다.",
     paid: "Coin Pro 또는 All Market 권한 기준으로 코인 레이더 사용량을 확인합니다. 코인 화면에서 쓰는 기능만 따로 모아 보여드립니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "Free는 글로벌 레이더의 핵심 흐름을 확인하는 기본 모드입니다. Global Pro는 글로벌 종목, 매크로, 뉴스 브리핑, 알림을 더 넓게 돌리는 운영 모드입니다.",
+    free: "Free는 글로벌 레이더를 맛보는 체험 모드입니다. Global Pro는 글로벌 종목, 매크로, 뉴스 브리핑, 알림을 더 넓게 돌리는 운영 모드입니다.",
     paid: "Global Pro 또는 All Market 권한 기준으로 글로벌 레이더 사용량을 확인합니다. 글로벌 화면에서 쓰는 기능만 따로 모아 보여드립니다.",
     proHref: "/pro?market=stocks"
   }

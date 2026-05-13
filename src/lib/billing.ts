@@ -43,14 +43,14 @@ export const billingPlans: BillingPlan[] = [
     priceLabel: "무료",
     billingAmount: 0,
     monthlyValue: 0,
-    description: "Chart Radar의 핵심 화면과 분석 흐름을 먼저 확인하는 기본 플랜입니다.",
-    highlights: ["BTC / ETH 기본 레이더", "주요 알트코인 일부 감시", "AI 브리핑 미리보기"],
+    description: "Chart Radar의 흐름을 하루에 몇 번 확인해 보는 체험 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
+    highlights: ["BTC / ETH 기본 레이더 맛보기", "알트코인·글로벌 레이더 제한 체험", "AI 브리핑 하루 1회 미리보기"],
     limits: {
-      radarScans: "일 10회",
-      aiBriefings: "일 2회",
-      watchlist: "5개",
-      alerts: "화면 알림만",
-      markets: "코인 중심"
+      radarScans: "일 3회",
+      aiBriefings: "일 1회",
+      watchlist: "2개",
+      alerts: "알림 저장 제한",
+      markets: "코인·글로벌 맛보기"
     }
   },
   {

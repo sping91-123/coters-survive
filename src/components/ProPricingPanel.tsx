@@ -122,14 +122,14 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
   if (scope === "stocks") {
     return {
       ...plan,
-      description: "글로벌 레이더의 핵심 흐름과 시장 점검 방식을 먼저 확인하는 기본 플랜입니다.",
-      highlights: ["QQQ / SPY 기본 레이더", "글로벌 뉴스 일부 확인", "AI 브리핑 미리보기"],
+      description: "글로벌 레이더의 흐름을 하루 몇 번 확인해 보는 체험 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
+      highlights: ["QQQ / SPY 기본 레이더 맛보기", "글로벌 뉴스 제한 확인", "AI 브리핑 하루 1회 미리보기"],
       limits: {
         ...plan.limits,
-        radarScans: "일 10회",
-        watchlist: "글로벌 종목 5개",
-        alerts: "화면 알림만",
-        markets: "글로벌 중심"
+        radarScans: "일 2회",
+        watchlist: "글로벌 종목 2개",
+        alerts: "알림 저장 제한",
+        markets: "글로벌 맛보기"
       }
     };
   }
@@ -137,12 +137,14 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
   if (scope === "crypto") {
     return {
       ...plan,
-      description: "코인 레이더의 핵심 흐름과 분석 방식을 먼저 확인하는 기본 플랜입니다.",
-      highlights: ["BTC / ETH 기본 레이더", "주요 알트코인 일부 감시", "AI 브리핑 미리보기"],
+      description: "코인 레이더의 흐름을 하루 몇 번 확인해 보는 체험 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
+      highlights: ["BTC / ETH 기본 레이더 맛보기", "주요 알트코인 제한 감시", "AI 브리핑 하루 1회 미리보기"],
       limits: {
         ...plan.limits,
-        watchlist: "코인 5개",
-        markets: "코인 중심"
+        radarScans: "일 3회",
+        watchlist: "코인 2개",
+        alerts: "알림 저장 제한",
+        markets: "코인 맛보기"
       }
     };
   }

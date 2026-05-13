@@ -88,7 +88,6 @@ function NewsSourceCard({ item }: { item: RadarNewsItem }) {
             <span className={`rounded border px-1.5 py-0.5 ${style.pill}`}>{style.label}</span>
           </div>
           <h4 className="mt-2 line-clamp-2 text-sm font-black leading-5 text-white [word-break:keep-all]">{itemTitle(item)}</h4>
-          {item.translatedTitle ? <p className="mt-1 line-clamp-1 text-[11px] text-slate-600">{item.title}</p> : null}
         </div>
         <Icon className={`mt-1 shrink-0 ${style.text}`} size={17} aria-hidden />
       </div>
