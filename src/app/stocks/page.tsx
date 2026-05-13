@@ -23,7 +23,7 @@ const globalRoutineCards = [
   {
     icon: Newspaper,
     title: "뉴스 영향 정리",
-    body: "영어권 뉴스와 매크로 이슈를 한국어로 다시 묶어 오늘 시장에 미칠 영향을 확인합니다."
+    body: "해외 뉴스와 매크로 이슈를 한국어로 다시 묶어 오늘 시장에 미칠 영향을 확인합니다."
   },
   {
     icon: BellRing,
@@ -37,11 +37,11 @@ function GlobalProRoutine() {
     <section className="rounded-lg border border-cyan-300/20 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_36%),rgba(15,23,42,0.72)] p-4 shadow-glow sm:p-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">
-            Global Radar Workflow
+          <p className="text-xs font-black tracking-[0.24em] text-cyan-300">
+            글로벌 레이더 루틴
           </p>
           <h2 className="mt-2 text-2xl font-black text-white">
-            글로벌 레이더 사용 루틴.
+            글로벌 레이더 사용 루틴
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400 [word-break:keep-all]">
             장전, 장중, 마감 후에 무엇을 확인해야 하는지 줄여주는 화면입니다.

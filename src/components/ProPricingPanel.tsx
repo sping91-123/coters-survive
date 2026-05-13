@@ -149,14 +149,14 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
   if (scope === "stocks") {
     return {
       ...plan,
-      description: "글로벌 레이더의 핵심 흐름을 확인해 보는 체험 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
-      highlights: ["QQQ / SPY 기본 레이더 맛보기", "글로벌 뉴스 제한 확인", "AI 브리핑 하루 1회 미리보기"],
+      description: "글로벌 레이더의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
+      highlights: ["QQQ / SPY 기본 레이더 확인", "글로벌 뉴스 제한 확인", "AI 브리핑 하루 1회 확인"],
       limits: {
         ...plan.limits,
         radarScans: "일 2회",
         watchlist: "글로벌 종목 2개",
         alerts: "알림 저장 제한",
-        markets: "글로벌 맛보기"
+        markets: "글로벌 기본 확인"
       }
     };
   }
@@ -164,14 +164,14 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
   if (scope === "crypto") {
     return {
       ...plan,
-      description: "코인 레이더의 핵심 흐름을 확인해 보는 체험 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
-      highlights: ["BTC / ETH 기본 레이더 맛보기", "주요 알트코인 제한 감시", "AI 브리핑 하루 1회 미리보기"],
+      description: "코인 레이더의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시와 알림은 Pro에서 열립니다.",
+      highlights: ["BTC / ETH 기본 레이더 확인", "주요 알트코인 제한 감시", "AI 브리핑 하루 1회 확인"],
       limits: {
         ...plan.limits,
         radarScans: "일 3회",
         watchlist: "코인 2개",
         alerts: "알림 저장 제한",
-        markets: "코인 맛보기"
+        markets: "코인 기본 확인"
       }
     };
   }
@@ -369,7 +369,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
               <p className="font-black text-cyan-200">{row.label}</p>
               <div className="mt-3 space-y-2">
                 <p className="rounded-md border border-white/10 bg-black/20 p-2 text-slate-400">
-                  Free · {row.free}
+                  무료 · {row.free}
                 </p>
                 <p className="rounded-md border border-cyan-300/25 bg-cyan-300/10 p-2 font-bold text-cyan-100">
                   Pro · {row.pro}
@@ -471,7 +471,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
                   href={copy.freeHref}
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md border border-white/10 bg-white/5 px-4 text-sm font-black text-white transition hover:bg-white/10"
                 >
-                  무료로 먼저 보기
+                  무료로 확인하기
                 </Link>
               ) : (
                 <button

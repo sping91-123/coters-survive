@@ -98,8 +98,18 @@ function timeLabel(value: string | number) {
   }).format(date);
 }
 
+function hasKoreanText(value: string) {
+  return /[가-힣]/.test(value);
+}
+
 function itemTitle(item: RadarNewsItem) {
-  return item.translatedTitle ?? item.title;
+  if (item.translatedTitle && hasKoreanText(item.translatedTitle)) return item.translatedTitle;
+  if (hasKoreanText(item.title)) return item.title;
+
+  const assetLabel = item.assets.slice(0, 2).join(", ") || "시장";
+  const directionLabel =
+    item.direction === "bullish" ? "상방 재료" : item.direction === "bearish" ? "하방 주의" : "중립 확인";
+  return `${assetLabel} 관련 ${directionLabel} 뉴스`;
 }
 
 function NewsSourceCard({ item }: { item: RadarNewsItem }) {

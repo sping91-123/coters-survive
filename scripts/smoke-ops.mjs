@@ -53,6 +53,7 @@ const radarNewsApi = read("src/app/api/radar-news/route.ts");
 const radarNewsPanel = read("src/components/RadarNewsPanel.tsx");
 const radarAlertCenter = read("src/components/RadarAlertCenter.tsx");
 const usageMeterPanel = read("src/components/UsageMeterPanel.tsx");
+const macroTicker = read("src/components/MacroTicker.tsx");
 const stockRadarApp = read("src/components/StockRadarApp.tsx");
 const newsPage = read("src/app/news/page.tsx");
 const rootLayout = read("src/app/layout.tsx");
@@ -128,6 +129,9 @@ expectIncludes(radarNewsApi, "USE_EXTERNAL_NEWS_TRANSLATION", "레이더뉴스 �
 expectIncludes(radarNewsApi, "USE_GEMINI_NEWS_FALLBACK", "레이더뉴스 Gemini fallback 옵션화", "src/app/api/radar-news/route.ts");
 expectIncludes(radarNewsPanel, "오늘의 코인 이슈 요약", "코인 뉴스 요약 화면", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarNewsPanel, "참고 뉴스", "참고 뉴스 목록 화면", "src/components/RadarNewsPanel.tsx");
+expectIncludes(macroTicker, "생산자물가지수(PPI)", "매크로 발표명 한글 표시", "src/components/MacroTicker.tsx");
+expectIncludes(macroTicker, "미 노동통계국", "매크로 출처명 한글 표시", "src/components/MacroTicker.tsx");
+expectIncludes(radarAlertCenter, "글로벌 레이더 알림", "글로벌 알림 한글 라벨", "src/components/RadarAlertCenter.tsx");
 expectIncludes(radarAlertCenter, "getMarketRuleStorageKey", "알림 규칙 시장별 저장 키", "src/components/RadarAlertCenter.tsx");
 expectIncludes(radarAlertCenter, "`${baseStorageKey}.${market}`", "알림 규칙 시장별 localStorage", "src/components/RadarAlertCenter.tsx");
 expectIncludes(radarAlertCenter, "useState<RadarAlertRuleId[]>(() => getMarketDefaultRuleIds(market))", "알림 hydration 안정화", "첫 렌더에서 localStorage 알림 값을 직접 읽지 않습니다.");

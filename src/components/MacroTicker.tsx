@@ -115,6 +115,35 @@ function sourceClass(source: MacroEventSource) {
   return "border-sky-300/25 bg-sky-300/10 text-sky-200";
 }
 
+function sourceLabel(source: MacroEventSource) {
+  if (source === "BLS") return "미 노동통계국";
+  if (source === "BEA") return "미 경제분석국";
+  if (source === "Fed") return "연준";
+  if (source === "Census") return "미 인구조사국";
+  if (source === "NAR") return "미 부동산협회";
+  if (source === "TradingEconomics") return "자동 캘린더";
+  return "공식 출처";
+}
+
+function macroLabel(label: string) {
+  const lower = label.toLowerCase();
+  if (lower.includes("cpi")) return "소비자물가지수(CPI)";
+  if (lower.includes("ppi")) return "생산자물가지수(PPI)";
+  if (lower.includes("retail sales")) return "소매판매";
+  if (lower.includes("jobless")) return "신규 실업수당 청구";
+  if (lower.includes("industrial production")) return "산업생산";
+  if (lower.includes("existing home sales")) return "기존주택판매";
+  if (lower.includes("new home sales")) return "신규주택판매";
+  if (lower.includes("fomc")) return "FOMC 금리회의";
+  if (lower.includes("gdp")) return "국내총생산(GDP)";
+  if (lower.includes("pce")) return "개인소비지출(PCE)";
+  if (lower.includes("ism")) return "ISM 지표";
+  if (lower.includes("pmi")) return "PMI 지표";
+  if (lower.includes("durable goods")) return "내구재 주문";
+  if (lower.includes("jolts")) return "구인·이직보고서(JOLTS)";
+  return label;
+}
+
 function getTimeLabel(releaseAt: string) {
   const diff = new Date(releaseAt).getTime() - Date.now();
   const minute = Math.round(diff / 60000);
@@ -185,9 +214,9 @@ function MacroItemCard({ item, compact = false }: { item: MacroEventItem; compac
       <div className="flex flex-wrap items-center gap-1.5">
         <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${stateClass(item)}`}>{stateLabel(item)}</span>
         <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-black text-slate-300">{importanceLabel(item.importance)}</span>
-        <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${sourceClass(item.source)}`}>{item.source}</span>
+        <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${sourceClass(item.source)}`}>{sourceLabel(item.source)}</span>
       </div>
-      <p className="mt-2 text-xs font-black text-white">{item.label}</p>
+      <p className="mt-2 text-xs font-black text-white">{macroLabel(item.label)}</p>
       <p className="mt-1 text-[11px] font-bold text-slate-400">한국시간 {item.dateKst}</p>
       <div className="mt-2 grid grid-cols-3 gap-1 text-[10px] font-bold">
         <ValuePill label="실제" value={displayActual(item)} tone={!hasActualValue(item) && hasReleaseTimePassed(item) ? "pending" : "default"} />
@@ -266,7 +295,7 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-[11px] font-black text-white">
-            {isRecentlyReleased(item) ? "최근 발표" : "다음 발표"} · <span className={compactStateClass(item)}>{stateLabel(item)}</span> · {item.label}
+            {isRecentlyReleased(item) ? "최근 발표" : "다음 발표"} · <span className={compactStateClass(item)}>{stateLabel(item)}</span> · {macroLabel(item.label)}
           </p>
           <p className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
             한국시간 {item.dateKst} · 실제 {displayActual(item)} · 예상 {item.forecast ?? "미정"} · 이전 {item.previous ?? "미정"}
@@ -345,9 +374,9 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${stateClass(nearestUpcoming)}`}>{stateLabel(nearestUpcoming)}</span>
                   <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-black text-slate-300">{importanceLabel(nearestUpcoming.importance)}</span>
-                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${sourceClass(nearestUpcoming.source)}`}>{nearestUpcoming.source}</span>
+                  <span className={`rounded border px-1.5 py-0.5 text-[10px] font-black ${sourceClass(nearestUpcoming.source)}`}>{sourceLabel(nearestUpcoming.source)}</span>
                 </div>
-                <p className="mt-1 text-xs font-black text-white">{nearestUpcoming.label}</p>
+                <p className="mt-1 text-xs font-black text-white">{macroLabel(nearestUpcoming.label)}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-bold text-slate-400">
                   <span className="inline-flex items-center gap-1">
                     <Clock3 size={11} aria-hidden />
