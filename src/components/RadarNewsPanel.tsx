@@ -20,18 +20,52 @@ type RadarNewsMarket = "crypto" | "stocks";
 
 const marketCopy = {
   crypto: {
-    eyebrow: "Coin Radar News",
+    eyebrow: "코인 뉴스 레이더",
     title: "코인 레이더뉴스",
     description: "코인 시장 주요 뉴스와 공개 이슈를 모아 시장 영향, 위험 요인, 오늘 확인할 포인트를 한국어로 정리합니다.",
     summaryTitle: "오늘의 코인 이슈 요약"
   },
   stocks: {
-    eyebrow: "Global Radar News",
+    eyebrow: "글로벌 뉴스 레이더",
     title: "글로벌 레이더뉴스",
     description: "미국주식, ETF, 금리, 실적, 지수, 원자재 이슈를 중심으로 시장 영향과 오늘 확인할 포인트를 한국어로 정리합니다.",
     summaryTitle: "오늘의 글로벌 이슈 요약"
   }
 } satisfies Record<RadarNewsMarket, { eyebrow: string; title: string; description: string; summaryTitle: string }>;
+
+function newsCacheKey(market: RadarNewsMarket) {
+  return `chart-radar.news.${market}.v1`;
+}
+
+function canUseStorage() {
+  return typeof window !== "undefined" && typeof window.localStorage !== "undefined";
+}
+
+function readCachedNews(market: RadarNewsMarket): NewsPayload | null {
+  if (!canUseStorage()) return null;
+  try {
+    const raw = window.localStorage.getItem(newsCacheKey(market));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as NewsPayload;
+    if (!parsed?.briefing || !Array.isArray(parsed.items)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedNews(market: RadarNewsMarket, payload: NewsPayload) {
+  if (!canUseStorage()) return;
+  window.localStorage.setItem(newsCacheKey(market), JSON.stringify(payload));
+}
+
+function displaySource(source: string) {
+  if (source === "Official") return "공식 출처";
+  if (source === "Yahoo Finance") return "야후 파이낸스";
+  if (source === "CoinDesk") return "코인데스크";
+  if (source === "CryptoPanic") return "크립토패닉";
+  return source;
+}
 
 function directionStyle(direction: RadarNewsDirection) {
   if (direction === "bullish") {
@@ -85,7 +119,7 @@ function NewsSourceCard({ item }: { item: RadarNewsItem }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-bold text-slate-500">
-            <span>{item.source}</span>
+            <span>{displaySource(item.source)}</span>
             <span>{timeLabel(item.publishedAt)}</span>
             <span className={`rounded border px-1.5 py-0.5 ${style.pill}`}>{style.label}</span>
           </div>
@@ -158,22 +192,34 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
   const [payload, setPayload] = useState<NewsPayload | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [error, setError] = useState("");
+  const [limitNotice, setLimitNotice] = useState("");
 
   const loadNews = useCallback(async () => {
     const usageGate = getUsageGate("aiBriefing", isPaid);
     if (!usageGate.allowed) {
+      const cached = readCachedNews(market);
+      if (cached) {
+        setPayload(cached);
+        setStatus("ready");
+        setError("");
+        setLimitNotice(`${usageGate.message} 아래 내용은 마지막으로 받아온 브리핑입니다.`);
+        return;
+      }
+
       setStatus("error");
-      setError(usageGate.message);
+      setError(`${usageGate.message} 내일 다시 확인하거나 Pro에서 반복 브리핑을 열 수 있습니다.`);
       return;
     }
 
     setStatus("loading");
     setError("");
+    setLimitNotice("");
     try {
       const response = await fetch(`/api/radar-news?market=${market}`, { cache: "no-store" });
       const data = (await response.json()) as NewsPayload;
       if (!response.ok) throw new Error(data.error ?? "레이더뉴스를 불러오지 못했습니다.");
       setPayload(data);
+      writeCachedNews(market, data);
       setStatus("ready");
       recordUsageEvent("aiBriefing");
     } catch (caught) {
@@ -183,8 +229,13 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
   }, [isPaid, market]);
 
   useEffect(() => {
+    const cached = readCachedNews(market);
+    if (cached) {
+      setPayload(cached);
+      setStatus("ready");
+    }
     void loadNews();
-  }, [loadNews]);
+  }, [loadNews, market]);
 
   const digest = useMemo(() => {
     const items = payload?.items ?? [];
@@ -293,6 +344,18 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
           <div className="flex items-center gap-2 font-black">
             <AlertTriangle size={17} aria-hidden />
             {error}
+          </div>
+        </div>
+      ) : null}
+
+      {limitNotice ? (
+        <div className="rounded-lg border border-cyan-300/25 bg-cyan-300/10 p-4 text-sm leading-6 text-cyan-100">
+          <div className="flex items-start gap-2">
+            <Sparkles className="mt-0.5 shrink-0 text-cyan-200" size={17} aria-hidden />
+            <div>
+              <p className="font-black text-cyan-50">오늘 무료 브리핑 한도를 모두 사용했습니다.</p>
+              <p className="mt-1 text-cyan-100/85">{limitNotice}</p>
+            </div>
           </div>
         </div>
       ) : null}

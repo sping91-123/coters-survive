@@ -2,11 +2,10 @@
 // Free와 Pro 사용량 차이를 보여주는 일일 사용량 패널이다.
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Crown, Gauge, RotateCcw, Zap } from "lucide-react";
+import { Crown, Gauge, Zap } from "lucide-react";
 import {
   getUsageBucketStates,
   readUsageSnapshot,
-  resetUsageSnapshot,
   summarizeUsage,
   USAGE_CHANGED_EVENT,
   type UsageBucketId,
@@ -140,14 +139,6 @@ export function UsageMeterPanel({
           </div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <button
-            type="button"
-            onClick={() => setSnapshot(resetUsageSnapshot())}
-            className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md border border-white/10 bg-white/5 px-3 text-xs font-black text-slate-300 transition hover:border-cyan-300/40 hover:text-white"
-          >
-            <RotateCcw size={13} aria-hidden />
-            초기화
-          </button>
           <Link
             href={copy.proHref}
             className="inline-flex min-h-9 items-center justify-center gap-1.5 rounded-md bg-cyan-300 px-3 text-xs font-black text-slate-950 transition hover:bg-cyan-200"
