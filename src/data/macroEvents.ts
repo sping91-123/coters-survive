@@ -62,11 +62,11 @@ export const macroItems: MacroEventItem[] = [
     state: "upcoming",
     importance: 2,
     actual: "발표 전",
-    forecast: "컨센서스 확인 필요",
+    forecast: "+0.5% MoM",
     previous: "+1.7% MoM",
-    summary: "미국 소비가 얼마나 버티는지 확인하는 지표입니다. 물가 부담 속에서도 소비가 강한지 보는 일정입니다.",
+    summary: "미국 소비가 3월 급증 이후에도 이어지는지 확인하는 지표입니다. 이전치가 높았기 때문에 예상보다 강한지, 급격히 식는지가 중요합니다.",
     marketImpact:
-      "소비가 강하면 경기 우려는 줄지만 금리 인하 기대는 약해질 수 있습니다. 소비가 약하면 경기 둔화 우려와 금리 완화 기대가 동시에 움직일 수 있습니다.",
+      "예상보다 강하면 경기 우려는 줄지만 금리 인하 기대가 약해질 수 있습니다. 예상보다 약하면 경기 둔화 우려와 금리 완화 기대가 동시에 움직일 수 있습니다.",
     source: "Census",
     sourceUrl: "https://www.census.gov/retail/index.html"
   },
@@ -77,7 +77,7 @@ export const macroItems: MacroEventItem[] = [
     state: "upcoming",
     importance: 2,
     actual: "발표 전",
-    forecast: "206K",
+    forecast: "205K",
     previous: "200K",
     summary: "고용 둔화 여부를 매주 확인하는 지표입니다. 노동시장이 빠르게 식는지 보는 일정입니다.",
     marketImpact:
