@@ -1290,3 +1290,6 @@ The operations smoke now checks the same paid-access wiring from a different ang
 
 ### 2026-05-14 continuous improvement 41 app billing health split.
 Android app launch can be ready before Toss web payment links are ready. The health endpoint now reports web, Android, and iOS paid-launch readiness separately, and overall paid readiness can pass through the first complete channel. This keeps the app-store launch path honest without blocking it on unfinished web checkout setup.
+
+### 2026-05-14 continuous improvement 42 app subscription sync response.
+The native purchase helper expects the server subscription sync response to include `active: true`. The server previously returned only `status: "active"`, which could make a successful app-store purchase look like a failed account sync. The sync API now returns an explicit active boolean for both success and non-active states, and billing smoke checks the success flag.

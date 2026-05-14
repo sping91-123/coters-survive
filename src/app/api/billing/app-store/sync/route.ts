@@ -139,6 +139,7 @@ export async function POST(request: Request) {
 
   if (!revenueCatResult.configured) {
     return NextResponse.json({
+      active: false,
       status: "setup_required",
       message: "앱 구독 확인이 조금 지연되고 있습니다. 잠시 후 다시 확인해 주세요."
     });
@@ -146,11 +147,12 @@ export async function POST(request: Request) {
 
   const plan = resolveActivePlan(revenueCatResult.payload ?? {}, body.planId);
   if (!plan || plan.id === "free") {
-    return NextResponse.json({ status: "not_active", message: "현재 활성화된 앱 구독을 찾지 못했습니다." }, { status: 404 });
+    return NextResponse.json({ active: false, status: "not_active", message: "현재 활성화된 앱 구독을 찾지 못했습니다." }, { status: 404 });
   }
 
   if (!isSupabaseAdminConfigured()) {
     return NextResponse.json({
+      active: false,
       status: "setup_required",
       planId: plan.id,
       message: "앱 구독은 확인했지만 Pro 기능을 여는 과정이 지연되고 있습니다. 고객센터로 문의해 주세요."
@@ -167,12 +169,13 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { status: "setup_required", planId: plan.id, message: "앱 구독은 확인했지만 Pro 기능을 여는 과정에서 문제가 발생했습니다." },
+      { active: false, status: "setup_required", planId: plan.id, message: "앱 구독은 확인했지만 Pro 기능을 여는 과정에서 문제가 발생했습니다." },
       { status: 500 }
     );
   }
 
   return NextResponse.json({
+    active: true,
     status: "active",
     planId: plan.id,
     message: "앱 구독이 확인되어 Pro 기능이 열렸습니다."

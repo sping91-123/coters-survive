@@ -1451,3 +1451,9 @@
 - [x] Split health readiness into web, Android app, and iOS app launch paths.
 - [x] Add RevenueCat Android, RevenueCat REST, and Supabase admin checks to ops smoke.
 - [x] Verify with operations smoke, app billing check, and production build.
+
+## 2026-05-14 continuous improvement 42 app subscription sync response.
+- [x] Return an explicit active flag from the app subscription sync API.
+- [x] Add a billing smoke guard so the native purchase flow cannot silently miss the active flag.
+- [x] Verify with billing smoke and app billing check.
+- [x] Verify with production build.
