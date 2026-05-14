@@ -1789,7 +1789,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   Live
                 </span>
                 <span className="rounded border border-white/10 bg-black/20 px-2 py-0.5 text-[10px] font-bold text-slate-400">
-                  Binance USDT-M 기준
+                  Binance 기준
                 </span>
               </div>
               <p className="mt-1 text-sm leading-6 text-slate-400 [word-break:keep-all]">
