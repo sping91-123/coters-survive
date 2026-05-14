@@ -8,6 +8,7 @@ const marketEntries = [
     title: "코인 레이더",
     href: "/survival",
     label: "BTC · ETH · 알트코인",
+    action: "코인 레이더 열기",
     icon: Coins,
     accent: "from-cyan-300/22 via-blue-500/12 to-transparent",
     iconClass: "border-cyan-300/35 bg-cyan-300/12 text-cyan-200",
@@ -17,6 +18,7 @@ const marketEntries = [
     title: "글로벌 레이더",
     href: "/global",
     label: "미국주식 · 지수 · 원자재",
+    action: "글로벌 레이더 열기",
     icon: TrendingUp,
     accent: "from-emerald-300/20 via-sky-400/10 to-transparent",
     iconClass: "border-emerald-300/35 bg-emerald-300/12 text-emerald-200",
@@ -49,7 +51,7 @@ export default function Home() {
           </div>
 
           <div className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-2 sm:mt-8 sm:gap-4">
-            {marketEntries.map(({ title, href, label, icon: Icon, accent, iconClass, buttonClass }) => (
+            {marketEntries.map(({ title, href, label, action, icon: Icon, accent, iconClass, buttonClass }) => (
               <Link
                 key={title}
                 href={href}
@@ -65,7 +67,7 @@ export default function Home() {
                     <p className="mt-1.5 text-xs font-bold leading-5 text-slate-400 sm:mt-2 sm:text-sm">{label}</p>
                   </div>
                   <div className={`mt-5 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-black transition sm:mt-7 sm:min-h-11 sm:gap-2 sm:px-4 sm:text-sm ${buttonClass}`}>
-                    들어가기
+                    {action}
                     <ArrowRight size={15} aria-hidden />
                   </div>
                 </div>
