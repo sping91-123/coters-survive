@@ -358,14 +358,14 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
 
       <div className="overflow-hidden rounded-lg border border-surface-line bg-surface-card">
         <div className="border-b border-white/10 p-4">
-          <p className="text-xs font-black tracking-[0.2em] text-cyan-300">FREE VS PRO</p>
+          <p className="text-xs font-black tracking-[0.2em] text-cyan-300">BASIC VS PRO</p>
           <h3 className="mt-1 text-xl font-black text-white">돈을 내면 무엇이 달라지는지 먼저 보여드립니다.</h3>
         </div>
         <div className="grid divide-y divide-white/10 md:grid-cols-4 md:divide-x md:divide-y-0">
           {freeVsProRows.map((row) => (
             <div key={row.label} className="p-4">
               <p className="text-sm font-black text-white">{row.label}</p>
-              <p className="mt-3 text-xs font-bold text-slate-500">Free</p>
+              <p className="mt-3 text-xs font-bold text-slate-500">기본</p>
               <p className="mt-1 text-sm text-slate-300">{row.free}</p>
               <p className="mt-3 text-xs font-bold text-cyan-300">Pro</p>
               <p className="mt-1 text-sm font-black text-cyan-100">{row.pro}</p>

@@ -192,7 +192,7 @@ export function getUsageGate(bucketId: UsageBucketId, isPaid: boolean) {
       ? ""
       : isPaid
         ? `오늘 ${state.label} Pro 한도를 모두 사용했습니다. 잠시 뒤 다시 확인해 주세요.`
-        : `오늘 무료 ${state.label} 한도를 모두 사용했습니다. Pro에서는 더 넉넉하게 반복 확인할 수 있습니다.`
+        : `오늘 기본 ${state.label} 한도를 모두 사용했습니다. Pro에서는 더 넉넉하게 반복 확인할 수 있습니다.`
   };
 }
 

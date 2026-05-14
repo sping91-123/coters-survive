@@ -156,7 +156,7 @@ function RuleCard({
               </span>
             ) : (
               <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-bold text-slate-300">
-                Free
+                기본
               </span>
             )}
           </div>
@@ -361,7 +361,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
               Pro {summary.proCount}
             </span>
             <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-slate-300">
-              Free {summary.freeCount}
+              기본 {summary.freeCount}
             </span>
           </div>
         </div>

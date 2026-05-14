@@ -119,7 +119,7 @@ export function UsageMeterPanel({
     isPaid
       ? `${entitlementLabel} 이용 중입니다.`
       : scopedOverCount > 0
-        ? "오늘 무료 한도에 걸린 항목이 있습니다."
+        ? "오늘 기본 한도에 걸린 항목이 있습니다."
         : scopedUsedTotal > 0
           ? "오늘 레이더 사용량이 쌓이고 있습니다."
           : "오늘 레이더 한도가 열려 있습니다.";

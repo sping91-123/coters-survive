@@ -62,7 +62,7 @@ export default function CheckoutFailPage({ searchParams }: CheckoutFailPageProps
               href="/survival"
               className="inline-flex min-h-11 items-center justify-center rounded-md border border-amber-500/30 bg-white/60 px-5 text-sm font-black text-amber-900 dark:border-amber-300/30 dark:bg-black/20 dark:text-amber-100"
             >
-              무료 레이더 계속 보기
+              기본 레이더 계속 보기
             </Link>
           </div>
         </section>

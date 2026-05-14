@@ -38,8 +38,8 @@ export const billingPlans: BillingPlan[] = [
   {
     id: "free",
     marketScope: "trial",
-    name: "Free Radar",
-    badge: "체험",
+    name: "Basic Radar",
+    badge: "기본",
     priceLabel: "무료",
     billingAmount: 0,
     monthlyValue: 0,
@@ -232,7 +232,7 @@ export function hasScopedEntitlement(planId: BillingEntitlementPlan, scope: Bill
 }
 
 export function getEntitlementLabel(planId: BillingEntitlementPlan) {
-  if (!planId || planId === "free") return "Free";
+  if (!planId || planId === "free") return "기본";
   if (planId === "admin") return "Admin";
   if (planId === "premium" || planId === "member") return "Legacy Pro";
   return findBillingPlan(planId)?.name ?? "Pro";
