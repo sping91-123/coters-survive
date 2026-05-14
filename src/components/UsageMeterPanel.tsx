@@ -63,17 +63,17 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
     free: "Basic은 오늘 시장의 큰 흐름을 빠르게 확인하기에 좋습니다. 장중 반복 확인, 관심종목, 알림까지 열어두려면 Pro에서 더 넓게 사용할 수 있습니다.",
-    paid: "Pro가 적용되어 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 여유 있게 반복 확인할 수 있습니다.",
+    paid: "Pro가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 여유 있게 반복 확인하세요.",
     proHref: "/pro"
   },
   crypto: {
     free: "Basic은 코인 시장의 큰 흐름을 확인하기에 좋습니다. 장중 후보 재확인, 관심코인, 코인 알림까지 챙기려면 Coin Pro에서 더 넓게 사용할 수 있습니다.",
-    paid: "Coin Pro가 적용되어 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 더 여유 있게 반복 확인할 수 있습니다.",
+    paid: "Coin Pro가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 장중에도 넉넉하게 확인하세요.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
     free: "Basic은 글로벌 시장의 큰 흐름을 확인하기에 좋습니다. 장중 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro에서 더 넓게 사용할 수 있습니다.",
-    paid: "Global Pro가 적용되어 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 더 넓게 확인할 수 있습니다.",
+    paid: "Global Pro가 열려 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 장중에도 넉넉하게 확인하세요.",
     proHref: "/pro?market=stocks"
   }
 };
