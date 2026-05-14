@@ -89,6 +89,7 @@ const cryptoBullishRules: Rule[] = [
   { keywords: ["etf inflow", "inflows", "approval", "approved", "승인", "유입", "accumulation"], score: 13, tag: "수요 유입" },
   { keywords: ["record high", "all-time high", "ath", "breakout", "rally", "surge", "soars", "급등", "돌파"], score: 11, tag: "상승 모멘텀" },
   { keywords: ["institutional", "blackrock", "fidelity", "microstrategy", "treasury", "기관"], score: 9, tag: "기관 수요" },
+  { keywords: ["tokenized finance", "digitized finance", "tokenization", "real world assets", "rwa"], score: 8, tag: "토큰화 금융" },
   { keywords: ["rate cut", "cuts rates", "liquidity", "stimulus", "금리 인하", "유동성"], score: 8, tag: "매크로 완화" },
   { keywords: ["partnership", "launches", "mainnet", "upgrade", "출시", "업그레이드"], score: 6, tag: "프로젝트 호재" }
 ];
@@ -96,7 +97,9 @@ const cryptoBullishRules: Rule[] = [
 const cryptoBearishRules: Rule[] = [
   { keywords: ["hack", "exploit", "drain", "stolen", "해킹", "취약점", "도난"], score: -15, tag: "보안 리스크" },
   { keywords: ["lawsuit", "sues", "charges", "sec", "cftc", "소송", "기소", "제재", "규제"], score: -12, tag: "규제 리스크" },
-  { keywords: ["outflows", "sell-off", "liquidation", "dump", "plunge", "급락", "청산", "매도", "유출"], score: -12, tag: "매도 압력" },
+  { keywords: ["outflow", "outflows", "sell-off", "liquidation", "dump", "plunge", "slump", "drops", "down 5", "급락", "청산", "매도", "유출"], score: -12, tag: "매도 압력" },
+  { keywords: ["bear market resistance", "major resistance", "risk of falling", "at risk of falling"], score: -10, tag: "저항 구간" },
+  { keywords: ["net loss", "loss despite", "records loss"], score: -8, tag: "실적 부담" },
   { keywords: ["bankruptcy", "insolvency", "파산", "delist", "상장폐지"], score: -14, tag: "신용 리스크" },
   { keywords: ["rate hike", "higher rates", "inflation", "hawkish", "금리 인상", "물가"], score: -8, tag: "매크로 부담" }
 ];
@@ -299,12 +302,14 @@ export function fallbackKoreanNewsTitle(title: string, market: RadarNewsMarket =
   if (/clarity act.*vote|clarity act/i.test(normalized)) return "미국 코인 규제 법안 이슈가 시장 변동성 변수로 떠오르고 있습니다.";
   if (/spot etfs?.*(outflow|outflows|yanked|withdraw)|outflow.*spot etfs?|investors yanked/i.test(normalized)) return "비트코인 현물 ETF에서 큰 규모의 자금 유출이 확인됐습니다.";
   if (/bear market resistance|major resistance|at risk of falling/i.test(normalized)) return "비트코인이 주요 저항 구간에서 하락 위험을 경고받고 있습니다.";
-  if (/treasury.*net loss|reports?.*net loss|bitcoin treasury/i.test(normalized)) return "비트코인 보유 기업의 실적 손실 이슈가 시장 심리에 영향을 주고 있습니다.";
+  if (/treasury.*net loss|reports?.*net loss|records?.*net loss|net loss.*revenue|bitcoin treasury/i.test(normalized)) return "비트코인 관련 기업의 실적 손실 이슈가 시장 심리에 영향을 주고 있습니다.";
   if (/aave.*unfreeze|hacked crypto|emergency bid|judge delays/i.test(normalized)) return "Aave 해킹 자금 처리 이슈가 디파이 시장의 신뢰 변수로 떠오르고 있습니다.";
   if (/token down|down 5|begins shipping|handset/i.test(normalized)) return "테마성 토큰의 하락과 관련 상품 출시 이슈가 단기 변동성을 만들고 있습니다.";
   if (/xi.*trump|taiwan conflict|geopolitical/i.test(normalized)) return "미중 긴장 이슈가 비트코인과 주요 알트코인 변동성을 키우고 있습니다.";
-  if (/tokenized finance|tokenization|real world assets|rwa/i.test(normalized)) return "토큰화 금융 이슈가 기관 자금과 온체인 시장의 장기 재료로 확인됩니다.";
+  if (/tokenized finance|digitized finance|tokenization|real world assets|rwa/i.test(normalized)) return "토큰화 금융 이슈가 기관 자금과 온체인 시장의 장기 재료로 확인됩니다.";
   if (/clemency|pardon|crypto founders/i.test(normalized)) return "미국 정치권의 코인 업계 사면 논의가 규제 심리 변수로 떠오르고 있습니다.";
+  if (/recover.*bitcoin|recover.*btc|seed phrase|trapped.*bitcoin/i.test(normalized)) return "오래된 비트코인 지갑 복구 사례가 장기 보유 이슈로 주목받고 있습니다.";
+  if (/voters?.*crypto|candidate choice|poll/i.test(normalized)) return "미국 유권자의 코인 관심도 조사 결과가 규제 여론 변수로 확인됩니다.";
   if (/whale.*short|shorts?.*crypto/i.test(normalized)) return "고래의 대규모 숏 포지션이 코인 시장 위험 신호로 주목받고 있습니다.";
   if (/polymarket.*volume.*decline/i.test(normalized)) return "폴리마켓 월간 거래량 감소가 예측시장 수요 둔화 신호로 거론됩니다.";
   if (/consensys.*ipo|potential ipo/i.test(normalized)) return "이더리움 생태계 기업의 IPO 일정 변화가 시장 관심을 받고 있습니다.";

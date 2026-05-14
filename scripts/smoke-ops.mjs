@@ -140,7 +140,7 @@ expectIncludes(radarNewsApi, "GROQ_MODEL", "레이더뉴스 AI 모델 옵션화"
 expectIncludes(radarNewsApi, "USE_GEMINI_NEWS_FALLBACK", "레이더뉴스 Gemini fallback 옵션화", "src/app/api/radar-news/route.ts");
 expectIncludes(radarNewsPanel, "오늘의 코인 뉴스 브리핑", "코인 뉴스 요약 화면", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarNewsPanel, "참고 뉴스", "참고 뉴스 목록 화면", "src/components/RadarNewsPanel.tsx");
-expectIncludes(radarNewsPanel, "chart-radar.news.${market}.v6", "뉴스 캐시 버전 갱신", "src/components/RadarNewsPanel.tsx");
+expectIncludes(radarNewsPanel, "chart-radar.news.${market}.v7", "뉴스 캐시 버전 갱신", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarNewsLib, "미국 증시 뉴스", "뉴스 출처명 한국어 표시", "src/lib/radarNews.ts");
 expectIncludes(radarNewsPanel, 'hasMarketEntitlement(profile?.plan, market)', "뉴스 시장별 Pro 권한", "src/components/RadarNewsPanel.tsx");
 expectIncludes(radarNewsPanel, "briefing=0", "기본 한도 초과 시 뉴스 제목 preview", "src/components/RadarNewsPanel.tsx");

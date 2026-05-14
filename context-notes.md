@@ -1332,3 +1332,7 @@ News should remain useful even when AI translation is unavailable or the free pr
 
 ### 2026-05-14 continuous improvement 55 alert match dedupe.
 Alert history should feel curated, not noisy. The same setup can be detected repeatedly while the page is open, so the recent-match panel now deduplicates by symbol, timeframe, side, and headline before choosing what to show.
+
+### 2026-05-14 continuous improvement 56 news classification precision.
+News cards become less useful when several unrelated headlines collapse into the same neutral sentence. The crypto fallback rules now treat ETF outflows, resistance warnings, net losses, tokenized finance, wallet recovery, and political polling as distinct cases so free-preview cards still feel curated.
+The browser news cache key was bumped as part of this change because otherwise returning users could keep seeing older generic cached cards even after the server classification improved.

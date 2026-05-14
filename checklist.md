@@ -1521,3 +1521,10 @@
 ## 2026-05-14 continuous improvement 55 alert match dedupe.
 - [x] Deduplicate recently matched alert setups by symbol, timeframe, side, and headline before rendering.
 - [x] Verify alert page, lint, smoke checks, and production build.
+
+## 2026-05-14 continuous improvement 56 news classification precision.
+- [x] Tighten crypto news direction rules for ETF outflow, resistance, net loss, tokenized finance, and drawdown headlines.
+- [x] Add clearer Korean fallback titles for wallet recovery, voter polling, and digital finance headlines.
+- [x] Bump the browser news cache key so old generic cards are not reused.
+- [x] Update the operations smoke guard to require the new news cache version.
+- [x] Verify news API, browser news page, smoke checks, and production build.

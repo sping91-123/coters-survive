@@ -46,7 +46,7 @@ const marketCopy = {
 } satisfies Record<RadarNewsMarket, { eyebrow: string; title: string; description: string; summaryTitle: string; proLine: string; proBenefits: string[] }>;
 
 function newsCacheKey(market: RadarNewsMarket) {
-  return `chart-radar.news.${market}.v6`;
+  return `chart-radar.news.${market}.v7`;
 }
 
 function canUseStorage() {
