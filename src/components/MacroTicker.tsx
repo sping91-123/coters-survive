@@ -89,6 +89,16 @@ function macroValueText(value?: string) {
     .replace(/\bActual\b/gi, "실제");
 }
 
+function marketAwareMacroText(text: string, market: "crypto" | "stocks") {
+  if (market === "crypto") return text;
+  return text
+    .replace(/코인과 성장주는/g, "성장주와 고변동 자산은")
+    .replace(/코인과 성장주가/g, "성장주와 고변동 자산이")
+    .replace(/코인에는/g, "글로벌 시장에는")
+    .replace(/코인과/g, "글로벌 시장과")
+    .replace(/코인/g, "위험자산");
+}
+
 function displayActual(item: MacroEventItem) {
   if (hasActualValue(item)) return macroValueText(item.actual);
   if (hasReleaseTimePassed(item)) return "결과 확인 중";
@@ -220,7 +230,7 @@ function ValuePill({ label, value, tone = "default" }: { label: string; value?: 
   );
 }
 
-function MacroItemCard({ item, compact = false }: { item: MacroEventItem; compact?: boolean }) {
+function MacroItemCard({ item, compact = false, market = "crypto" }: { item: MacroEventItem; compact?: boolean; market?: "crypto" | "stocks" }) {
   return (
     <article className={`rounded-md border px-3 py-2.5 ${compact ? "border-white/10 bg-black/25" : "border-signal-success/15 bg-signal-success/5"}`}>
       <div className="flex flex-wrap items-center gap-1.5">
@@ -235,7 +245,7 @@ function MacroItemCard({ item, compact = false }: { item: MacroEventItem; compac
         <ValuePill label="예상" value={macroValueText(item.forecast)} />
         <ValuePill label="이전" value={macroValueText(item.previous)} />
       </div>
-      <p className="mt-2 text-[11px] leading-5 text-slate-500 [word-break:keep-all]">{item.marketImpact}</p>
+      <p className="mt-2 text-[11px] leading-5 text-slate-500 [word-break:keep-all]">{marketAwareMacroText(item.marketImpact, market)}</p>
       {compact ? (
         <a
           href={item.sourceUrl}
@@ -351,7 +361,7 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
             <span className="text-[11px] font-bold text-slate-500">{releasedItems.length}개 확인</span>
           </div>
           {latestRelease ? (
-            <MacroItemCard item={latestRelease} />
+            <MacroItemCard item={latestRelease} market={market} />
           ) : (
             <p className="rounded-md border border-white/10 bg-black/25 p-3 text-[11px] leading-5 text-slate-500">
               최근 24시간 안에 표시할 발표 결과가 없습니다. 다음 발표 일정 위주로 확인해 주세요.
@@ -365,7 +375,7 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
               </summary>
               <div className="mt-3 space-y-2">
                 {releasedItems.slice(1).map((item) => (
-                  <MacroItemCard key={item.label} item={item} compact />
+                  <MacroItemCard key={item.label} item={item} compact market={market} />
                 ))}
               </div>
             </details>
@@ -395,13 +405,13 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
                     한국시간 {nearestUpcoming.dateKst}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{nearestUpcoming.summary}</p>
+                <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{marketAwareMacroText(nearestUpcoming.summary, market)}</p>
                 <div className="mt-2 grid grid-cols-3 gap-1 text-[10px] font-bold">
                   <ValuePill label="실제" value={displayActual(nearestUpcoming)} />
                   <ValuePill label="예상" value={macroValueText(nearestUpcoming.forecast)} />
                   <ValuePill label="이전" value={macroValueText(nearestUpcoming.previous)} />
                 </div>
-                <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{nearestUpcoming.marketImpact}</p>
+                <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{marketAwareMacroText(nearestUpcoming.marketImpact, market)}</p>
                 <a
                   href={nearestUpcoming.sourceUrl}
                   target="_blank"
@@ -426,7 +436,7 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
               </summary>
               <div className="mt-3 space-y-2">
                 {laterUpcomingItems.map((item) => (
-                  <MacroItemCard key={item.label} item={item} compact />
+                  <MacroItemCard key={item.label} item={item} compact market={market} />
                 ))}
               </div>
             </details>
