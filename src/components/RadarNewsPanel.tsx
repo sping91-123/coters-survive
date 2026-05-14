@@ -224,7 +224,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         setPayload(cached);
         setStatus("ready");
         setError("");
-        setLimitNotice(`${usageGate.message} 지금은 마지막 참고 뉴스와 간단 요약을 먼저 보여줍니다.`);
+        setLimitNotice(`${usageGate.message} 지금은 마지막 브리핑과 오늘 확인할 원문 뉴스를 먼저 보여드립니다.`);
         return;
       }
 
@@ -234,7 +234,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         const preview = await fetchNewsPayload("preview");
         setPayload(preview);
         setStatus("ready");
-        setLimitNotice(`${usageGate.message} 지금은 심층 영향 분석 대신 오늘 참고할 뉴스 제목과 간단 요약을 먼저 보여줍니다.`);
+        setLimitNotice(`${usageGate.message} 지금은 심층 영향 분석 대신 오늘 확인할 원문 뉴스와 간단 요약을 먼저 보여드립니다.`);
       } catch {
         setStatus("error");
         setError(`${usageGate.message} 내일 다시 확인하거나 Pro에서 반복 브리핑을 열 수 있습니다.`);
@@ -373,7 +373,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         <div className="rounded-lg border border-surface-line bg-surface-card p-6 text-center">
           <Radar className="mx-auto animate-spin text-accent-blue" size={34} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">뉴스 레이더가 주요 이슈를 정리하고 있습니다.</p>
-          <p className="mt-1 text-xs text-slate-500">브리핑이 늦으면 간단 요약을 먼저 보여드립니다.</p>
+          <p className="mt-1 text-xs text-slate-500">분석이 늦으면 핵심 뉴스와 간단 요약을 먼저 보여드립니다.</p>
         </div>
       ) : null}
 
@@ -391,7 +391,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
           <div className="flex items-start gap-2">
             <Sparkles className="mt-0.5 shrink-0 text-accent-blue" size={17} aria-hidden />
             <div>
-              <p className="font-black text-slate-950">오늘은 주요 뉴스 먼저 보여드립니다.</p>
+              <p className="font-black text-slate-950">오늘은 핵심 뉴스부터 먼저 보여드립니다.</p>
               <p className="mt-1 font-semibold text-slate-800">{limitNotice}</p>
               <p className="mt-2 text-xs font-bold text-slate-700">{copy.proLine}</p>
             </div>
@@ -405,7 +405,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
             <Sparkles size={13} aria-hidden />
             간단 요약
           </div>
-          <h3 className="mt-3 text-xl font-black text-white">오늘은 참고 뉴스 중심으로 정리합니다.</h3>
+          <h3 className="mt-3 text-xl font-black text-white">오늘은 핵심 뉴스 중심으로 정리합니다.</h3>
           <p className="mt-3 text-sm leading-7 text-slate-300 [word-break:keep-all]">{briefing.overview}</p>
           {topAction ? (
             <p className="mt-3 rounded-md border border-white/10 bg-black/20 px-3 py-2 text-xs font-bold leading-5 text-slate-200 [word-break:keep-all]">
@@ -469,8 +469,8 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-black text-white">참고 뉴스</h3>
-              <p className="mt-1 text-xs text-slate-500">원문은 확인 링크로 남기고, 화면에는 한국어 제목과 해석만 우선 표시합니다.</p>
+              <h3 className="text-lg font-black text-white">원문 뉴스 확인</h3>
+              <p className="mt-1 text-xs text-slate-500">원문 링크는 남기고, 화면에는 한국어 제목과 시장 해석을 먼저 표시합니다.</p>
             </div>
             <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-xs font-black text-slate-400">{payload.items.length}개 수집</span>
           </div>
@@ -484,7 +484,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
 
       {payload?.failedSources.length ? (
         <p className="rounded-md border border-signal-warning/20 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-          일부 참고 뉴스가 아직 늦게 들어오고 있습니다. 잠시 뒤 다시 새로고침하면 {payload.failedSources.map(displayNewsSource).join(", ")} 쪽 자료도 함께 확인할 수 있습니다.
+          일부 뉴스 소스가 아직 늦게 들어오고 있습니다. 잠시 뒤 다시 새로고침하면 {payload.failedSources.map(displayNewsSource).join(", ")} 쪽 자료도 함께 확인할 수 있습니다.
         </p>
       ) : null}
     </section>
