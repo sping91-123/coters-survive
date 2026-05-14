@@ -32,9 +32,7 @@ export function getAIProvider(): AIProvider {
     return cached;
   }
 
-  throw new Error(
-    "AI Provider가 설정되지 않았습니다. .env.local에 GROQ_API_KEY 또는 GEMINI_API_KEY를 추가하세요."
-  );
+  throw new Error("AI 브리핑을 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.");
 }
 
 export function getAIProviderCandidates(): AIProvider[] {
@@ -43,9 +41,7 @@ export function getAIProviderCandidates(): AIProvider[] {
   cachedCandidates = buildAIProviderCandidates();
   if (cachedCandidates.length) return cachedCandidates;
 
-  throw new Error(
-    "AI Provider가 설정되지 않았습니다. .env.local에 GROQ_API_KEY 또는 GEMINI_API_KEY를 추가하세요."
-  );
+  throw new Error("AI 브리핑을 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.");
 }
 
 export type {

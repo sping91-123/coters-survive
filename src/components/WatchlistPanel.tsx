@@ -282,7 +282,7 @@ export function WatchlistPanel() {
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(data.error ?? `서버 오류 (${res.status})`);
+        throw new Error(data.error ?? `요청 실패 (${res.status})`);
       }
       const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
       setScanState({ status: "ready", setups: data.setups, cachedAt: data.cachedAt });

@@ -12,7 +12,7 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const session = parseSessionFromHash(window.location.hash);
     if (!session) {
-      setMessage("로그인 토큰을 찾지 못했습니다. Supabase OAuth 설정의 Redirect URL을 확인하세요.");
+      setMessage("로그인 정보를 확인하지 못했습니다. 다시 로그인해 주세요.");
       return;
     }
 

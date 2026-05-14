@@ -46,11 +46,7 @@ async function configurePurchases(platform: NativePurchasePlatform, userId: stri
   if (configuredUserId === userId) return;
   const apiKey = getRevenueCatApiKey(platform);
   if (!apiKey) {
-    throw new Error(
-      platform === "android"
-        ? "RevenueCat Android 공개 SDK 키가 아직 설정되지 않았습니다."
-        : "RevenueCat iOS 공개 SDK 키가 아직 설정되지 않았습니다."
-    );
+    throw new Error("앱 결제를 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.");
   }
 
   await Purchases.configure({ apiKey, appUserID: userId });

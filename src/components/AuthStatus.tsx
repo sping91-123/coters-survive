@@ -42,7 +42,7 @@ export function AuthStatus() {
             ? "border-amber-300/35 bg-amber-300/10 text-amber-200"
             : "border-cyan-300/35 bg-cyan-300/10 text-cyan-200"
         }`}
-        title={isPaid ? `${planLabel} 권한` : "무료 권한입니다."}
+        title={isPaid ? `${planLabel} 이용 중` : "Free 이용 중"}
       >
         <Crown size={13} aria-hidden />
         <span className="max-w-32 truncate">{isPaid ? planLabel : "Free"}</span>

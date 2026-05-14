@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 const deleteScope = [
   "Chart Radar 계정 프로필과 로그인 연결 정보",
   "사용자가 저장한 매매 복기, 관심 종목, 알림 조건, 사용 설정",
-  "앱 사용량과 Pro 권한 확인을 위해 저장된 일반 사용 기록",
+  "앱 사용량과 Pro 이용 상태를 확인하기 위한 일반 사용 기록",
   "개인을 식별할 수 있는 문의 처리 기록"
 ];
 

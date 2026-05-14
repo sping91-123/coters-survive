@@ -184,7 +184,7 @@ export async function refreshSupabaseSession(session: SupabaseSession): Promise<
 }
 
 export async function fetchSupabaseUser(accessToken: string) {
-  if (!isSupabaseConfigured()) throw new Error("Supabase 환경 변수가 설정되지 않았습니다.");
+  if (!isSupabaseConfigured()) throw new Error("로그인을 잠시 사용할 수 없습니다.");
 
   const response = await fetch(`${supabaseUrl}/auth/v1/user`, {
     headers: {
@@ -216,7 +216,7 @@ export async function supabaseRest<T>(
     prefer?: string;
   } = {}
 ) {
-  if (!isSupabaseConfigured()) throw new Error("Supabase 환경 변수가 설정되지 않았습니다.");
+  if (!isSupabaseConfigured()) throw new Error("로그인을 잠시 사용할 수 없습니다.");
 
   const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
     method: options.method ?? "GET",
@@ -231,7 +231,7 @@ export async function supabaseRest<T>(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || "Supabase 요청에 실패했습니다.");
+    throw new Error(text || "요청에 실패했습니다.");
   }
 
   if (response.status === 204) return null as T;

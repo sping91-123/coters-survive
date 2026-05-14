@@ -34,7 +34,7 @@ function getIcon(status: ConfirmationState["status"]) {
 export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId }: CheckoutConfirmationPanelProps) {
   const [state, setState] = useState<ConfirmationState>({
     status: "checking",
-    message: "결제 승인 여부를 확인하고 있습니다."
+    message: "결제 내역을 확인하고 있습니다."
   });
 
   const canRequest = useMemo(() => Boolean(orderId && amount), [amount, orderId]);
@@ -46,7 +46,7 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
       if (!canRequest) {
         setState({
           status: "pending",
-          message: "주문번호나 결제 금액이 부족해 자동 확인을 보류했습니다. 결제사 성공 URL 설정을 확인해 주세요."
+          message: "결제 내역을 바로 확인하기 어렵습니다. 영수증을 보관한 뒤 잠시 후 다시 확인해 주세요."
         });
         return;
       }
@@ -55,7 +55,7 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
       if (!session?.accessToken) {
         setState({
           status: "pending",
-          message: "로그인 상태가 아니라 Pro 권한을 자동 반영하지 못했습니다. 로그인 후 새로고침해 주세요."
+          message: "Pro 기능을 열려면 로그인이 필요합니다. 로그인 후 새로고침해 주세요."
         });
         return;
       }
@@ -92,7 +92,7 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
         if (payload.status === "active") {
           setState({
             status: "active",
-            message: payload.message ?? "Pro 권한이 활성화되었습니다."
+            message: payload.message ?? "Pro 기능이 열렸습니다."
           });
           window.dispatchEvent(new Event(supabaseAuthRefreshEvent));
           return;
@@ -100,13 +100,13 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
 
         setState({
           status: "pending",
-          message: payload.message ?? "운영 결제 키가 아직 연결되지 않아 권한 반영을 보류했습니다."
+          message: payload.message ?? "결제 확인이 조금 지연되고 있습니다. 잠시 후 다시 확인해 주세요."
         });
       } catch {
         if (!cancelled) {
           setState({
             status: "error",
-            message: "결제 확인 서버와 통신하지 못했습니다. 잠시 후 다시 새로고침해 주세요."
+            message: "결제 내역을 확인하지 못했습니다. 잠시 후 다시 새로고침해 주세요."
           });
         }
       }
@@ -123,7 +123,7 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
       <span className="mt-0.5 shrink-0">{getIcon(state.status)}</span>
       <div>
         <p className="font-black">
-          {state.status === "checking" ? "승인 확인 중" : state.status === "active" ? "권한 활성화 완료" : state.status === "pending" ? "확인 대기" : "확인 필요"}
+          {state.status === "checking" ? "결제 확인 중" : state.status === "active" ? "Pro 기능이 열렸습니다" : state.status === "pending" ? "잠시 기다려 주세요" : "확인이 필요합니다"}
         </p>
         <p className="mt-1 opacity-90">{state.message}</p>
       </div>

@@ -693,7 +693,7 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
         const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}&scope=${scoutScope}`, { cache: "no-store" });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(data.error ?? `서버 오류 (${res.status})`);
+          throw new Error(data.error ?? `요청 실패 (${res.status})`);
         }
         const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
         writeScoutCache(data.setups, mode, riskProfile, scoutScope);

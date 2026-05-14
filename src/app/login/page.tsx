@@ -25,14 +25,14 @@ export default function LoginPage() {
           <div className="grid h-12 w-12 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
             <KeyRound size={24} aria-hidden />
           </div>
-        <h1 className="mt-5 text-2xl font-black text-white">차트 레이더 로그인</h1>
+          <h1 className="mt-5 text-2xl font-black text-white">차트 레이더 로그인</h1>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            서버 복기, 구독 권한, 레이더 알림을 한 계정에서 이어 쓰기 위한 로그인입니다.
+            복기, Pro 이용, 레이더 알림을 한 계정에서 이어 쓰기 위한 로그인입니다.
           </p>
 
           {!configured ? (
             <div className="mt-5 rounded-md border border-signal-warning/25 bg-signal-warning/10 p-3 text-sm leading-6 text-signal-warning">
-              Supabase 환경 변수가 아직 설정되지 않았습니다. `.env.local`을 확인하세요.
+              로그인을 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.
             </div>
           ) : null}
 

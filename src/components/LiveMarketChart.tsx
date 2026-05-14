@@ -1752,11 +1752,11 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
     if (session) {
       try {
         await createRemoteJournalEntry(session.accessToken, payload);
-        setSavedMessage("현재 레이더 판독을 서버 복기에 저장했습니다.");
+        setSavedMessage("현재 레이더 판독을 복기에 저장했습니다.");
         window.setTimeout(() => setSavedMessage(""), 1800);
         return;
       } catch {
-        setSavedMessage("서버 저장에 실패해 이 브라우저 복기에 저장했습니다.");
+        setSavedMessage("계정 저장에 실패해 이 기기 복기에 저장했습니다.");
       }
     }
 

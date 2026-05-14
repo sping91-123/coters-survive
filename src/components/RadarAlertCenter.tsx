@@ -103,10 +103,10 @@ function categoryClass(category: RadarAlertRule["category"]) {
 }
 
 function permissionLabel(permission: PermissionState) {
-  if (permission === "granted") return "브라우저 알림 허용됨";
-  if (permission === "denied") return "브라우저 알림 차단됨";
-  if (permission === "unsupported") return "이 브라우저는 알림을 지원하지 않습니다";
-  return "브라우저 알림 권한 대기";
+  if (permission === "granted") return "알림 받을 준비 완료";
+  if (permission === "denied") return "알림이 꺼져 있습니다";
+  if (permission === "unsupported") return "현재 환경에서는 알림을 켤 수 없습니다";
+  return "알림을 켜기 전입니다";
 }
 
 function compactSymbol(symbol: string) {
@@ -298,7 +298,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
 
     if (typeof window === "undefined" || !("Notification" in window)) {
       setPermission("unsupported");
-      setToast("현재 브라우저에서는 알림 권한을 요청할 수 없습니다.");
+      setToast("현재 환경에서는 알림을 켤 수 없습니다.");
       return;
     }
 
@@ -312,9 +312,9 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           body: "A급 감지, 청산 압력, 뉴스 브리핑 알림을 받을 수 있습니다.",
           icon: "/brand/chart-radar-mark.png"
         });
-        setToast("브라우저 알림 권한이 켜졌습니다. 저장한 조건은 이 기기에서 바로 확인할 수 있습니다.");
+        setToast("알림이 켜졌습니다. 저장한 조건은 이 기기에서 바로 확인할 수 있습니다.");
       } else {
-        setToast("알림 권한이 꺼져 있습니다. 설정에서 언제든 다시 허용할 수 있습니다.");
+        setToast("알림이 꺼져 있습니다. 설정에서 언제든 다시 켤 수 있습니다.");
       }
     } finally {
       setIsRequesting(false);
@@ -346,7 +346,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
               {copy.description}
               {" "}
-              저장한 조건과 시장별 레이더를 이 화면에서 관리합니다.
+              저장한 조건과 레이더 변화를 한곳에서 확인합니다.
             </p>
           </div>
         </div>
@@ -384,8 +384,8 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
         </div>
         <div className="rounded-lg border border-emerald-300/20 bg-emerald-300/10 p-4">
           <Smartphone className="text-emerald-200" size={20} aria-hidden />
-          <p className="mt-3 text-sm font-black text-white">앱 알림 연동</p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">앱에서는 같은 조건을 푸시 알림으로 이어서 확인합니다.</p>
+          <p className="mt-3 text-sm font-black text-white">앱 알림 준비</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">앱에서는 같은 조건을 실시간 알림으로 이어서 받을 수 있습니다.</p>
         </div>
       </div>
 
@@ -396,7 +396,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             {permissionLabel(permission)}
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            웹에서는 브라우저 알림으로 확인하고, 앱에서는 같은 조건을 푸시 알림으로 이어서 받습니다.
+            지금은 이 화면에서 알림을 켜고, 앱에서는 같은 조건을 실시간 알림으로 받을 수 있습니다.
           </p>
         </div>
         <button
@@ -406,7 +406,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-md bg-cyan-300 px-4 text-sm font-black text-slate-950 transition hover:bg-cyan-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isRequesting ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <CheckCircle2 size={16} aria-hidden />}
-          알림 권한 확인
+          알림 켜기
         </button>
       </div>
 
@@ -421,7 +421,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           <div>
             <p className="text-sm font-black text-white">내가 저장한 레이더 감시</p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              홈의 TOP 감지에서 저장한 조건입니다. 앱이 켜져 있으면 5분마다 다시 훑고, 일치하면 최근 감지에 남깁니다.
+              TOP 감지 카드에서 저장한 조건입니다. 화면이 열려 있으면 5분마다 다시 확인하고, 일치하면 최근 감지에 남깁니다.
             </p>
           </div>
           <span className="rounded-md border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-black text-cyan-200">

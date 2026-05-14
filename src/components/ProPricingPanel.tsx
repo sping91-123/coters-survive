@@ -202,7 +202,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
       setCheckoutState({
         status: "message",
         tone: "info",
-        text: "결제 후 Pro 권한을 바로 열려면 먼저 구글 로그인이 필요합니다. 로그인 후 다시 결제를 시작해 주세요."
+        text: "결제 후 Pro 기능을 바로 이용하려면 먼저 구글 로그인이 필요합니다. 로그인 후 다시 결제를 시작해 주세요."
       });
       return;
     }

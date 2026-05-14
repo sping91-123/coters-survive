@@ -59,17 +59,17 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
     free: "Free는 전체 시장의 핵심 흐름을 맛보는 체험 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
-    paid: "현재 계정 권한으로 Pro 한도를 사용 중입니다. 로그인 계정 기준으로 여러 기기에서도 같은 권한을 확인할 수 있습니다.",
+    paid: "현재 Pro 레이더가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넓은 한도로 사용할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
     free: "Free는 코인 레이더의 흐름을 가볍게 확인하는 모드입니다. Coin Pro는 코인 스캔, 관심코인, AI 브리핑, 알림을 넉넉하게 반복 감시하는 모드입니다.",
-    paid: "Coin Pro 또는 All Market 권한으로 코인 레이더 한도를 사용 중입니다. 코인 화면에서 필요한 기능만 따로 모아 보여드립니다.",
+    paid: "코인 Pro 레이더가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 더 여유 있게 반복 확인할 수 있습니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
     free: "Free는 글로벌 레이더의 흐름을 가볍게 확인하는 모드입니다. Global Pro는 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 감시하는 모드입니다.",
-    paid: "Global Pro 또는 All Market 권한으로 글로벌 레이더 한도를 사용 중입니다. 글로벌 화면에서 필요한 기능만 따로 모아 보여드립니다.",
+    paid: "글로벌 Pro 레이더가 열려 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 더 넓게 확인할 수 있습니다.",
     proHref: "/pro?market=stocks"
   }
 };
@@ -117,7 +117,7 @@ export function UsageMeterPanel({
   const scopedOverCount = scopedStates.filter((state) => state.isOverFree).length;
   const title =
     isPaid
-      ? `${entitlementLabel} 권한으로 사용 중입니다.`
+      ? `${entitlementLabel} 이용 중입니다.`
       : scopedOverCount > 0
         ? "오늘 무료 한도에 걸린 항목이 있습니다."
         : scopedUsedTotal > 0
@@ -159,7 +159,7 @@ export function UsageMeterPanel({
       <div className="mt-4 flex flex-col gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100 sm:flex-row sm:items-center sm:justify-between">
         <span className="flex items-start gap-2">
           <Zap className="mt-0.5 shrink-0" size={14} aria-hidden />
-          로그인 계정 기준으로 Pro 한도와 사용량을 확인합니다.
+          오늘 남은 레이더 여유와 Pro 한도를 함께 보여드립니다.
         </span>
         {compact ? (
           <Link href={copy.proHref} className="font-black text-cyan-200 hover:text-white">

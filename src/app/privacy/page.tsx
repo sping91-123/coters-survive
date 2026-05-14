@@ -1,7 +1,7 @@
 // Chart Radar의 개인정보 처리 기준을 안내하는 정책 페이지입니다.
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Database, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
 
@@ -16,8 +16,8 @@ const sections = [
     items: [
       "Google 로그인 시 제공되는 이메일, 이름, 프로필 이미지 등 계정 식별 정보",
       "사용자가 직접 저장한 매매 복기, 관심 종목, 알림 조건, 사용 설정",
-      "구독 권한 확인을 위한 결제 식별자, 상품 ID, 구매 상태, 갱신 상태",
-      "서비스 안정화와 오류 분석을 위한 접속 로그, 기기 정보, 브라우저 정보, 오류 기록"
+      "Pro 이용 확인을 위한 결제 식별자, 상품 ID, 구매 상태, 갱신 상태",
+      "서비스 안정화와 오류 분석을 위한 접속 로그, 기기 정보, 사용 환경 정보, 오류 기록"
     ]
   },
   {
@@ -25,7 +25,7 @@ const sections = [
     items: [
       "회원 식별, 로그인 유지, 계정 기반 데이터 동기화",
       "시장 분석, 복기, 알림, 관심 종목 등 사용자가 요청한 기능 제공",
-      "유료 구독 권한 확인, 구매 복원, 결제 관련 문의 처리",
+      "유료 구독 확인, 구매 복원, 결제 관련 문의 처리",
       "서비스 장애 대응, 보안 점검, 부정 사용 방지, 품질 개선"
     ]
   },
@@ -39,12 +39,12 @@ const sections = [
     ]
   },
   {
-    title: "4. 외부 서비스 이용",
+    title: "4. 외부 처리와 보안",
     items: [
-      "인증과 데이터 저장에는 Supabase가 사용됩니다.",
-      "웹 서비스 배포와 운영에는 Vercel 등 호스팅 서비스가 사용될 수 있습니다.",
-      "앱 구독 권한 확인에는 Google Play Billing과 RevenueCat이 사용됩니다.",
-      "AI 요약과 브리핑 기능에는 외부 AI API가 사용될 수 있으며, 민감한 개인정보 입력은 권장하지 않습니다."
+      "로그인, 데이터 보관, 서비스 운영에는 안정적인 외부 인프라가 사용될 수 있습니다.",
+      "앱 구독과 결제 확인은 앱 마켓 또는 결제 대행사의 시스템을 통해 처리됩니다.",
+      "AI 요약과 브리핑 기능에는 외부 AI 처리 기능이 사용될 수 있으며, 민감한 개인정보 입력은 권장하지 않습니다.",
+      "외부 처리에는 서비스 제공에 필요한 범위의 정보만 전달되도록 관리합니다."
     ]
   },
   {
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
           </Link>
           <section className="rounded-lg border border-accent-blue/20 bg-accent-blue/10 p-4 text-sm leading-6 text-slate-300">
             <div className="flex items-start gap-3">
-              <Database className="mt-0.5 shrink-0 text-accent-blue" size={18} aria-hidden />
+              <ShieldCheck className="mt-0.5 shrink-0 text-accent-blue" size={18} aria-hidden />
               <p>
                 Chart Radar는 거래소 주문 권한을 요구하지 않습니다. 향후 거래 내역 연동 기능이 추가될 경우에도 읽기 전용 권한과
                 별도 동의 절차를 우선 적용합니다.

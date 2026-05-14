@@ -29,7 +29,7 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
             <CheckCircle2 className="mx-auto text-emerald-300" size={42} aria-hidden />
             <h2 className="mt-4 text-2xl font-black text-slate-950 dark:text-white">결제 요청을 확인했습니다.</h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-emerald-900 dark:text-emerald-100">
-              지금부터 서버가 결제사 승인 여부를 다시 확인합니다. 성공 페이지 주소만으로는 Pro 권한을 열지 않기 때문에 더 안전합니다.
+              결제 내역을 확인하는 중입니다. 확인이 끝나면 Pro 레이더와 AI 브리핑, 알림 한도가 바로 열립니다.
             </p>
           </div>
 
@@ -43,14 +43,14 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
           <div className="mt-6 grid gap-3 md:grid-cols-3">
             <div className="rounded-md border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
               <Crown className="text-emerald-300" size={19} aria-hidden />
-              <p className="mt-3 font-black text-slate-950 dark:text-white">Pro 기능 확인</p>
+              <p className="mt-3 font-black text-slate-950 dark:text-white">Pro 기능 준비</p>
               <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
-                승인과 권한 반영이 끝나면 레이더, AI 브리핑, 알림 한도가 확장됩니다.
+                결제가 완료되면 레이더, AI 브리핑, 알림 한도가 확장됩니다.
               </p>
             </div>
             <div className="rounded-md border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
               <RotateCw className="text-emerald-300" size={19} aria-hidden />
-              <p className="mt-3 font-black text-slate-950 dark:text-white">반영 지연 시</p>
+              <p className="mt-3 font-black text-slate-950 dark:text-white">잠시 기다려 주세요</p>
               <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
                 잠시 후 새로고침하거나 로그아웃 후 다시 로그인해 주세요.
               </p>

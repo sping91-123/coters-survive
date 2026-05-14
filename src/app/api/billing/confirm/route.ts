@@ -135,7 +135,7 @@ export async function POST(request: Request) {
   if (!body.paymentKey) {
     return NextResponse.json({
       status: "pending",
-      message: "결제 승인 키가 없어 자동 권한 반영을 보류했습니다. 결제사 성공 URL 설정을 확인해 주세요."
+      message: "결제 내역을 바로 확인하기 어렵습니다. 영수증을 보관한 뒤 잠시 후 다시 확인해 주세요."
     });
   }
 
@@ -158,7 +158,7 @@ export async function POST(request: Request) {
       status: "setup_required",
       planId: plan.id,
       orderId: body.orderId,
-      message: "토스페이먼츠 secret key가 아직 설정되지 않아 실제 승인 검증은 보류했습니다."
+      message: "결제 확인이 조금 지연되고 있습니다. 잠시 후 다시 확인해 주세요."
     });
   }
 
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
       status: "setup_required",
       planId: plan.id,
       orderId: body.orderId,
-      message: "Supabase service role key가 없어 결제는 확인했지만 권한 반영은 보류했습니다."
+      message: "결제는 확인했지만 Pro 기능을 여는 과정이 지연되고 있습니다. 고객센터로 문의해 주세요."
     });
   }
 
@@ -193,7 +193,7 @@ export async function POST(request: Request) {
       status: "setup_required",
       planId: plan.id,
       orderId: body.orderId,
-      message: "결제는 확인했지만 Pro 권한 반영 중 오류가 발생했습니다. 관리자 확인이 필요합니다."
+      message: "결제는 확인했지만 Pro 기능을 여는 과정에서 문제가 발생했습니다. 고객센터로 문의해 주세요."
     }, { status: 500 });
   }
 
@@ -201,6 +201,6 @@ export async function POST(request: Request) {
     status: "active",
     planId: plan.id,
     orderId: body.orderId,
-    message: "결제가 확인되어 Pro 권한이 활성화되었습니다."
+    message: "결제가 확인되어 Pro 기능이 열렸습니다."
   });
 }

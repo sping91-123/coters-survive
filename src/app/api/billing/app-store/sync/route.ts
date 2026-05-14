@@ -140,7 +140,7 @@ export async function POST(request: Request) {
   if (!revenueCatResult.configured) {
     return NextResponse.json({
       status: "setup_required",
-      message: "RevenueCat REST API 키가 아직 설정되지 않아 구독 상태 확인을 보류했습니다."
+      message: "앱 구독 확인이 조금 지연되고 있습니다. 잠시 후 다시 확인해 주세요."
     });
   }
 
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       status: "setup_required",
       planId: plan.id,
-      message: "Supabase service role key가 없어 구독은 확인했지만 권한 반영은 보류했습니다."
+      message: "앱 구독은 확인했지만 Pro 기능을 여는 과정이 지연되고 있습니다. 고객센터로 문의해 주세요."
     });
   }
 
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { status: "setup_required", planId: plan.id, message: "앱 구독은 확인했지만 Pro 권한 반영 중 오류가 발생했습니다." },
+      { status: "setup_required", planId: plan.id, message: "앱 구독은 확인했지만 Pro 기능을 여는 과정에서 문제가 발생했습니다." },
       { status: 500 }
     );
   }
@@ -175,6 +175,6 @@ export async function POST(request: Request) {
   return NextResponse.json({
     status: "active",
     planId: plan.id,
-    message: "앱 구독이 확인되어 Pro 권한이 활성화되었습니다."
+    message: "앱 구독이 확인되어 Pro 기능이 열렸습니다."
   });
 }
