@@ -310,10 +310,10 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
             <p className="inline-flex rounded-full border border-cyan-300/30 bg-cyan-300/10 px-3 py-1 text-xs font-black text-cyan-200">
               {copy.eyebrow}
             </p>
-            <h2 className="mt-4 text-3xl font-black tracking-normal text-white sm:text-4xl">{copy.title}</h2>
-            <p className="mt-4 text-sm leading-7 text-slate-300">{copy.body}</p>
+            <h2 className="mt-4 text-3xl font-black tracking-normal text-white [word-break:keep-all] sm:text-4xl">{copy.title}</h2>
+            <p className="mt-4 text-sm leading-7 text-slate-300 [word-break:keep-all]">{copy.body}</p>
           </div>
-          <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 lg:w-72">
+          <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 [word-break:keep-all] lg:w-72">
             <p className="font-black text-white">대표 플랜</p>
             <p className="mt-2 whitespace-nowrap text-2xl font-black text-cyan-200 sm:text-3xl">{copy.representativePrice}</p>
             <p className="mt-2 leading-6 text-slate-400">{copy.representativeBody}</p>

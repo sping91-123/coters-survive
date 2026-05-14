@@ -1344,3 +1344,6 @@ The app billing guide now explains the difference between the Android Public SDK
 
 ### 2026-05-14 continuous improvement 59 Global Pro copy separation.
 The Global Pro page should feel like a separate market product, not a crypto page with extra assets. Its upsell wording now says "other markets" instead of naming crypto directly inside the global-only value proposition.
+
+### 2026-05-14 continuous improvement 60 Pro copy line breaks.
+The Pro page hero and representative plan card now use Korean word-break preservation for the main selling copy. This is a small visual polish, but it prevents narrow cards from splitting words such as technical indicators in a way that makes the payment page feel unfinished.
