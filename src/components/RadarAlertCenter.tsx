@@ -36,7 +36,7 @@ const alertMarketCopy = {
   crypto: {
     eyebrow: "코인 레이더 알림",
     title: "코인 변동만 따로 감시합니다",
-    description: "BTC·ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 한곳에서 관리하는 알림 센터입니다."
+    description: "BTC / ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 한곳에서 관리하는 알림 센터입니다."
   },
   stocks: {
     eyebrow: "글로벌 레이더 알림",

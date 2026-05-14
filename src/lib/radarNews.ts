@@ -247,7 +247,7 @@ export function analyzeNewsText(input: string, market: RadarNewsMarket = "crypto
       ? "가격이 이미 과열되어 있으면 바로 추격하기보다 눌림과 재돌파 여부를 확인하세요."
       : direction === "bearish"
         ? "주요 지지선, 고배율 포지션 청산 위험, 거래량 급증 여부를 먼저 점검하세요."
-        : "뉴스만으로 판단하지 말고 BTC·ETH 또는 주요 지수 반응과 함께 확인하세요.";
+        : "뉴스만으로 판단하지 말고 BTC / ETH 또는 주요 지수 반응과 함께 확인하세요.";
 
   return {
     direction,

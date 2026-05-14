@@ -7,7 +7,7 @@ import { BellRing, Calculator, Coins, Crown, History, Newspaper, Radar, Trending
 type MarketScope = "crypto" | "stocks" | "all";
 
 const cryptoNavItems = [
-  { label: "BTC·ETH", icon: Radar, href: "/survival", match: ["/survival"] },
+  { label: "BTC / ETH", icon: Radar, href: "/survival", match: ["/survival"] },
   { label: "알트코인", icon: Coins, href: "/alts", match: ["/alts"] },
   { label: "코인뉴스", icon: Newspaper, href: "/news?market=crypto", match: ["/news"] },
   { label: "코인알림", icon: BellRing, href: "/alerts?market=crypto", match: ["/alerts"] },

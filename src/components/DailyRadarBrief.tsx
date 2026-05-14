@@ -495,7 +495,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
                   href="/survival"
                   className="flex items-center justify-between rounded-md border border-white/10 bg-black/25 px-3 py-2 text-sm font-bold text-slate-200 hover:border-accent-blue/40 hover:text-white"
                 >
-                  BTC·ETH 큰 흐름 확인
+                  BTC / ETH 큰 흐름 확인
                   <Radar size={15} aria-hidden />
                 </Link>
                 <Link

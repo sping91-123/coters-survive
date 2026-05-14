@@ -79,6 +79,8 @@ function macroValueText(value?: string) {
   if (!value) return undefined;
   return value
     .replace(/\bCore\b/g, "근원")
+    .replace(/\bMoM\b/g, "전월비")
+    .replace(/\bYoY\b/g, "전년비")
     .replace(/\bRetail Sales\b/gi, "소매판매")
     .replace(/\bExisting Home Sales\b/gi, "기존주택판매")
     .replace(/\bInitial Jobless Claims\b/gi, "신규 실업수당 청구")
@@ -308,7 +310,7 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
             {isRecentlyReleased(item) ? "최근 발표" : "다음 발표"} · <span className={compactStateClass(item)}>{stateLabel(item)}</span> · {macroLabel(item.label)}
           </p>
           <p className="mt-0.5 truncate text-[11px] font-bold text-slate-500">
-            한국시간 {item.dateKst} · 실제 {displayActual(item)} · 예상 {item.forecast ?? "미정"} · 이전 {item.previous ?? "미정"}
+            한국시간 {item.dateKst} · 실제 {displayActual(item)} · 예상 {macroValueText(item.forecast) ?? "미정"} · 이전 {macroValueText(item.previous) ?? "미정"}
           </p>
         </div>
         <ChevronRight size={14} className="shrink-0 text-slate-600 transition group-hover:text-accent-blue" aria-hidden />
@@ -396,8 +398,8 @@ export function MacroTicker({ compact = false, market = "crypto" }: { compact?: 
                 <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{nearestUpcoming.summary}</p>
                 <div className="mt-2 grid grid-cols-3 gap-1 text-[10px] font-bold">
                   <ValuePill label="실제" value={displayActual(nearestUpcoming)} />
-                  <ValuePill label="예상" value={nearestUpcoming.forecast} />
-                  <ValuePill label="이전" value={nearestUpcoming.previous} />
+                  <ValuePill label="예상" value={macroValueText(nearestUpcoming.forecast)} />
+                  <ValuePill label="이전" value={macroValueText(nearestUpcoming.previous)} />
                 </div>
                 <p className="mt-1 text-[11px] font-medium leading-5 text-slate-500 [word-break:keep-all]">{nearestUpcoming.marketImpact}</p>
                 <a
