@@ -672,7 +672,7 @@ export function StockRadarApp() {
       {state.status === "ready" ? (
         <>
           <p className="mt-3 text-xs leading-5 text-slate-500">
-            데이터 기준: {state.dataSource}. 차트 판독과 관심종목 선별에 필요한 가격 흐름을 정리합니다.
+            현재 화면은 {state.dataSource} 가격 흐름을 기준으로 차트 판독과 관심종목 선별에 필요한 흐름을 정리합니다.
           </p>
           <div className="mt-5">
             <TechnicalRadarPanel

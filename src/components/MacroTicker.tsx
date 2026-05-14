@@ -23,7 +23,7 @@ const fallbackCalendar: MacroCalendarPayload = {
   updatedAt: macroCalendarUpdatedAtIso,
   updatedAtLabel: macroCalendarUpdatedAt,
   source: "curated",
-  sourceLabel: "백업 일정",
+  sourceLabel: "주요 일정",
   sourceNote: macroCalendarSourceNote,
   isAutomatic: false,
   nextRefreshMs: 10 * 60 * 1000,

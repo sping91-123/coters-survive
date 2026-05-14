@@ -93,7 +93,7 @@ function getFallbackPayload(warning?: string): MacroCalendarPayload {
     updatedAt: macroCalendarUpdatedAtIso,
     updatedAtLabel: macroCalendarUpdatedAt,
     source: "curated",
-    sourceLabel: "보조 일정",
+    sourceLabel: "주요 일정",
     sourceNote: macroCalendarSourceNote,
     isAutomatic: false,
     nextRefreshMs: 10 * 60 * 1000,
@@ -277,7 +277,7 @@ export async function getMacroCalendarPayload(): Promise<MacroCalendarPayload> {
     console.warn("[macroCalendar] 공식 매크로 데이터 갱신 지연. 보조 일정으로 대체합니다.", error);
   }
 
-  const fallback = getFallbackPayload("공식 매크로 데이터 연결이 지연되어 보조 일정을 표시합니다.");
+  const fallback = getFallbackPayload("최근 발표와 다가오는 주요 일정을 먼저 표시합니다.");
   cachedPayload = {
     payload: fallback,
     expiresAt: now + fallback.nextRefreshMs
