@@ -2413,9 +2413,9 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   <p className="mt-2 text-sm leading-6 text-slate-300">{analysis.summaryLine}</p>
                 </div>
                 <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-                  <h4 className="text-base font-black text-white">구조 민감도 {structureSensitivity}</h4>
+                  <h4 className="text-base font-black text-white">구조 감지 기준</h4>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
-                    현재는 {structureSensitivityLabel(structureSensitivity)} 기준입니다. 값이 낮을수록 빠르게 변화를 감지하고, 값이 높을수록 큰 구조만 천천히 확인합니다.
+                    현재는 {structureSensitivityLabel(structureSensitivity)} 기준입니다. 신호 속도와 노이즈를 함께 조절해 지금 화면의 구조 판독에 반영합니다.
                   </p>
                 </div>
               </div>
@@ -2949,7 +2949,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             <div className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
               <h3 className="text-sm font-bold text-white">분석 기준</h3>
               <div className="mt-3 grid grid-cols-2 gap-3">
-                <MiniMetric label="구조 민감도" value={`${structureSensitivityLabel(structureSensitivity)} · ZigZag ${structureSensitivity}`} />
+                <MiniMetric label="구조 감지" value={structureSensitivityLabel(structureSensitivity)} />
                 <MiniMetric label="MSB 판정" value={msbMode === "close" ? "종가 돌파" : "윅 포함 돌파"} />
                 <MiniMetric label="CHoCH 판정" value="윅 돌파" />
                 <MiniMetric label="OTE 기준" value="4시간 20봉 범위" />
