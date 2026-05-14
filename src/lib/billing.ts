@@ -43,7 +43,7 @@ export const billingPlans: BillingPlan[] = [
     priceLabel: "무료",
     billingAmount: 0,
     monthlyValue: 0,
-    description: "Chart Radar의 핵심 흐름을 확인하는 체험 플랜입니다. 반복 감시, 관심종목 확장, 알림 규칙은 Pro에서 열립니다.",
+    description: "Chart Radar의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시, 관심종목 확장, 알림 규칙은 Pro에서 열립니다.",
     highlights: ["주요 화면 기본 확인", "AI 브리핑 하루 1회", "관심종목 소량 저장"],
     limits: {
       radarScans: "코인 3회 · 글로벌 2회",

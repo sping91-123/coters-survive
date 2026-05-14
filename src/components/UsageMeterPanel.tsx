@@ -58,7 +58,7 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Free는 전체 시장의 핵심 흐름을 맛보는 체험 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
+    free: "Free는 전체 시장의 핵심 흐름을 확인하는 기본 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
     paid: "현재 Pro 레이더가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넓은 한도로 사용할 수 있습니다.",
     proHref: "/pro"
   },

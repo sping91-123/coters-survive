@@ -59,7 +59,7 @@ const valueRows = [
 ];
 
 const proDifferenceRows = [
-  "무료는 하루 흐름을 확인하는 체험판입니다. Pro는 장중에 반복해서 레이더를 돌리고 변화가 생긴 자산을 계속 확인하는 작업 공간입니다.",
+  "무료는 하루 핵심 흐름을 확인하는 기본 모드입니다. Pro는 장중에 반복해서 레이더를 돌리고 변화가 생긴 자산을 계속 확인하는 감시 모드입니다.",
   "Pro는 AI 브리핑, 관심종목, 알림 규칙의 한도를 넓혀 직접 찾아보는 시간을 줄이는 구독입니다.",
   "Chart Radar는 매수와 매도를 대신 결정하지 않습니다. 대신 시장 구조, 뉴스, 매크로, 위험 요소를 빠르게 모아 판단 시간을 줄여줍니다."
 ];
@@ -351,7 +351,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           <p className="font-black text-white">무료와 Pro의 차이</p>
           <p className="mt-2 text-slate-400">
-            무료는 맛보기, Pro는 장중 반복 감시와 알림을 위한 작업 공간입니다.
+            무료는 기본 확인, Pro는 장중 반복 감시와 알림을 위한 작업 공간입니다.
           </p>
         </div>
       </div>
