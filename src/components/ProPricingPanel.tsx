@@ -239,7 +239,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         error?: string;
       };
 
-      if (!response.ok) throw new Error(data.error ?? "결제 연결 중 오류가 발생했습니다.");
+      if (!response.ok) throw new Error(data.error ?? "결제창을 바로 열지 못했습니다. 잠시 뒤 다시 시도해 주세요.");
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
         return;
