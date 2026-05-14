@@ -289,15 +289,15 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
             <div>
               <h2 className="text-lg font-bold text-white">{marketLabel} 매매 복기</h2>
               <p className="mt-1 text-sm leading-6 text-slate-400">
-                결과보다 원칙을 지켰는지 기록하는 공간입니다. 로그인하면 기록을 다른 기기에서도 이어볼 수 있습니다.
+                결과보다 원칙을 지켰는지 남기는 공간입니다. 계정을 연결하면 기기가 바뀌어도 이어볼 수 있습니다.
               </p>
             </div>
           </div>
 
           <div className="mt-4 rounded-lg border border-cyan-300/25 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100">
             {session
-              ? "복기 기록이 계정에 보관되고 있습니다. 다른 기기에서도 같은 계정으로 이어볼 수 있습니다."
-              : "로그인을 연결하면 복기 기록을 계정에 보관할 수 있습니다. 로그인 전 기록은 이 기기에만 남습니다."}
+              ? "복기 기록이 계정에 연결되어 있습니다. 다른 기기에서도 같은 계정으로 이어볼 수 있습니다."
+              : "계정을 연결하면 복기 기록을 안전하게 이어갈 수 있습니다. 로그인 전 기록은 이 기기에만 남습니다."}
           </div>
 
           {stats.scoutEntries.length > 0 ? (
@@ -343,19 +343,19 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
                 </div>
                 <div>
                   <p className="text-sm font-bold text-white">
-                    {isLoading ? "계정 확인 중" : session ? "계정 복기장 연결됨" : "현재는 이 기기에만 저장됩니다"}
+                    {isLoading ? "계정 확인 중" : session ? "복기장이 계정에 연결됐습니다" : "계정 연결 전 기록입니다"}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-slate-400">
                     {session
-                      ? "복기 기록을 계정에 보관하고 다른 기기에서도 이어볼 수 있습니다."
-                      : "구글 로그인을 연결하면 기기 변경 후에도 기록을 이어갈 수 있습니다."}
+                      ? "복기 기록을 계정 기준으로 보관해 다른 기기에서도 이어볼 수 있습니다."
+                      : "구글 계정을 연결하면 기기가 바뀌어도 기록을 이어갈 수 있습니다."}
                   </p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
                 {!session ? (
                   <Link href="/login" className="inline-flex min-h-10 items-center justify-center rounded-md bg-accent-blue px-3 text-sm font-black text-slate-950 hover:bg-sky-300">
-                    로그인 연결
+                    계정 연결
                   </Link>
                 ) : localEntries.length ? (
                   <button
@@ -365,7 +365,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
                     className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-accent-blue px-3 text-sm font-black text-slate-950 hover:bg-sky-300 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoadingRemote ? <Loader2 className="animate-spin" size={16} aria-hidden /> : <UploadCloud size={16} aria-hidden />}
-                    이 기기 기록 옮기기
+                    이 기기 기록 가져오기
                   </button>
                 ) : null}
               </div>

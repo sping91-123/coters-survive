@@ -2033,7 +2033,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
           <div className="rounded-md border border-white/10 bg-black/20 p-3">
             <p className="text-xs font-semibold text-slate-400">차트 표시 설정</p>
             <p className="mt-1 text-[11px] leading-5 text-slate-500">
-              이 항목은 차트에 무엇을 그릴지만 정합니다. 판독 결론은 위의 구조 감지 기준에서 계산됩니다.
+              차트 위에 표시할 보조 표시만 고릅니다. 최종 판독은 위의 구조 감지 기준을 따릅니다.
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -2301,7 +2301,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
               <div className="mt-4 rounded-lg border border-white/10 bg-black/20 p-4">
                 {marketBriefing.status === "idle" ? (
                   <p className="text-sm leading-6 text-slate-400">
-                    버튼을 누르면 현재 화면의 모든 레이더 감지값을 기반으로 긴 문장형 브리핑을 생성합니다. 이 내용은 매수·매도 신호가 아니라 구조 해석과 리스크 점검용입니다.
+                    버튼을 누르면 현재 차트와 레이더 값을 한 번에 읽어 핵심 방향, 위험 요인, 다음 확인 구간을 정리합니다.
                   </p>
                 ) : null}
                 {marketBriefing.status === "ready" ? (
@@ -2414,7 +2414,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 <div className="rounded-lg border border-white/10 bg-black/20 p-4">
                   <h4 className="text-base font-black text-white">구조 감지 기준</h4>
                   <p className="mt-2 text-sm leading-6 text-slate-300">
-                    현재는 {structureSensitivityLabel(structureSensitivity)} 기준입니다. 신호 속도와 노이즈를 함께 조절해 지금 화면의 구조 판독에 반영합니다.
+                    현재는 {structureSensitivityLabel(structureSensitivity)} 기준입니다. 빠른 변화와 큰 구조 중 무엇을 더 중요하게 볼지 정합니다.
                   </p>
                 </div>
               </div>
@@ -2571,7 +2571,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   <h3 className="mt-1 text-lg font-black text-white">{analysis.proPlan.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">{analysis.proPlan.reason}</p>
                   <p className="mt-2 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-                    아래 가격대는 자동 진입 신호가 아니라 구조 분석용 참고값입니다. 고배율은 별도 손절 수량 계산 후 판단하세요.
+                    아래 가격대는 자동 진입 신호가 아니라 구조 확인용 참고값입니다. 실제 진입 전에는 손절폭과 포지션 크기를 다시 계산하세요.
                   </p>
                 </div>
                 <span className={`inline-flex shrink-0 rounded-md border px-3 py-1.5 text-sm font-black ${planQualityClasses(analysis.proPlan.quality)}`}>
@@ -2993,7 +2993,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
               {showDebug ? (
                 <>
                   <p className="mt-2 text-xs leading-5 text-slate-400">
-                    현재 웹앱이 보고 있는 구조 값입니다. 같은 코인, 같은 타임프레임으로 TradingView 지표와 나란히 비교하면 어디서 갈라지는지 빨리 확인할 수 있습니다.
+                    현재 Chart Radar가 읽은 구조 값입니다. 같은 코인과 타임프레임으로 TradingView 지표와 비교하면 판독 차이를 빠르게 확인할 수 있습니다.
                   </p>
                   <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                     <MiniMetric label="h0" value={activeAnalysis.debug.h0 ? formatPrice(activeAnalysis.debug.h0) : "-"} />
@@ -3010,7 +3010,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       <div>
                         <h4 className="text-sm font-bold text-white">Pine 스냅샷 일치율</h4>
                         <p className="mt-1 text-xs leading-5 text-slate-400">
-                          Pine 지표의 App State JSON Alert 또는 직접 적은 key=value 값을 붙여넣으면 웹앱 값과 즉시 비교합니다.
+                          Pine 지표에서 복사한 값이나 직접 적은 key=value 값을 넣으면 Chart Radar 판독값과 바로 비교합니다.
                         </p>
                       </div>
                       {parityScore !== null ? (
@@ -3045,7 +3045,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       지원 필드: market, chochDir, h0/h1/l0/l1, msb.{activeTimeframe}, choch.{activeTimeframe}, latestOb.*, latestFvg.*, fvgDir/fvgTop/fvgBottom, latestSweep.*, latestCisd.*, cisd
                     </p>
                     {pineSnapshotInput.trim() && !pineSnapshot ? (
-                      <p className="mt-2 text-xs text-signal-danger">스냅샷 형식을 읽지 못했습니다. JSON 또는 market=1, h0=... 형태로 넣어주세요.</p>
+                      <p className="mt-2 text-xs text-signal-danger">입력값을 읽지 못했습니다. JSON 또는 market=1, h0=... 형태로 넣어주세요.</p>
                     ) : null}
                     {parityRows.length > 0 ? (
                       <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -3086,7 +3086,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                       <div className="mt-3 overflow-hidden rounded-md border border-surface-line">
                         <div className="grid grid-cols-4 bg-black/30 px-3 py-2 text-[11px] font-bold text-slate-400">
                           <span>항목</span>
-                          <span>웹앱</span>
+                          <span>Radar</span>
                           <span>Pine</span>
                           <span>결과</span>
                         </div>
