@@ -459,7 +459,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
 
       {payload?.failedSources.length ? (
         <p className="rounded-md border border-signal-warning/20 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-          일부 뉴스 소스 연결이 지연되었습니다. 실패 소스는 {payload.failedSources.map(displayNewsSource).join(", ")}입니다.
+          일부 참고 뉴스가 아직 늦게 들어오고 있습니다. 잠시 뒤 다시 새로고침하면 {payload.failedSources.map(displayNewsSource).join(", ")} 쪽 자료도 함께 확인할 수 있습니다.
         </p>
       ) : null}
     </section>
