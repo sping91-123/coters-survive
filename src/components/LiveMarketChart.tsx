@@ -2494,7 +2494,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 </div>
 
                 <div className="rounded-lg border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs font-bold text-slate-400">진입 신호가 아닌 보조 도구</p>
+                  <p className="text-xs font-bold text-slate-400">추세 환경 보조 도구</p>
                   <h4 className="mt-1 text-base font-black text-white">보조지표 참고값</h4>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div className={`rounded-md border p-3 ${conditionTone(activeAnalysis.condition.rsiState)}`}>
@@ -2571,7 +2571,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                   <h3 className="mt-1 text-lg font-black text-white">{analysis.proPlan.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-300">{analysis.proPlan.reason}</p>
                   <p className="mt-2 rounded-md border border-signal-warning/25 bg-signal-warning/10 px-3 py-2 text-xs leading-5 text-signal-warning">
-                    아래 가격대는 자동 진입 신호가 아니라 구조 확인용 참고값입니다. 실제 진입 전에는 손절폭과 포지션 크기를 다시 계산하세요.
+                    아래 가격대는 구조 확인용 기준입니다. 실제 진입 전에는 손절폭과 포지션 크기를 함께 계산하세요.
                   </p>
                 </div>
                 <span className={`inline-flex shrink-0 rounded-md border px-3 py-1.5 text-sm font-black ${planQualityClasses(analysis.proPlan.quality)}`}>

@@ -109,7 +109,7 @@ const scopeCopy: Record<
     eyebrow: "Chart Radar Pro",
     title: "매일 시장을 확인하는 시간을 줄이고, 놓치기 쉬운 변화는 먼저 띄워드립니다.",
     body:
-      "Basic으로 핵심 흐름을 먼저 확인하고, Pro에서는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넉넉하게 사용합니다. 신호를 대신 매매하는 서비스가 아니라 매일 시장을 빠르게 정리하는 레이더입니다.",
+      "Basic으로 핵심 흐름을 먼저 확인하고, Pro에서는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넉넉하게 사용합니다. 매일 여러 시장을 빠르게 정리하고 중요한 변화를 덜 놓치기 위한 레이더입니다.",
     representativePrice: "월 24,900원",
     representativeBody: "두 시장을 모두 보는 사용자에게 코인, 글로벌 시장, AI 브리핑, 관심종목, 알림을 하나로 묶었습니다.",
     highlightedPlanId: "bundle_monthly",

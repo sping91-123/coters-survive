@@ -162,7 +162,7 @@ export function ChartStateReader() {
           onClick={() => setRaw(sampleJson)}
           className="min-h-9 shrink-0 rounded-md border border-surface-line bg-surface-cardSoft px-3 text-xs font-bold text-slate-300 hover:border-accent-blue/60 hover:text-white"
         >
-          샘플
+          예시 불러오기
         </button>
       </div>
 
@@ -225,7 +225,7 @@ export function ChartStateReader() {
               </div>
 
               <p className="mt-4 text-xs leading-5 text-slate-500">
-                이 판독은 지표 상태값 요약이며 매수·매도 신호가 아닙니다. 실제 진입 전에는 손절 기준과 포지션 크기를 별도로 점검하세요.
+                이 판독은 지표 상태값 요약입니다. 실제 진입 전에는 손절 기준과 포지션 크기를 별도로 점검하세요.
               </p>
             </>
           ) : (

@@ -133,7 +133,7 @@ export function ResultCard({ result }: ResultCardProps) {
       ) : null}
 
       <p className="mt-5 border-t border-white/10 pt-4 text-xs leading-5 text-slate-500">
-        이 도구는 투자 조언이나 매수·매도 신호를 제공하지 않습니다. 사용자의 매매 계획에서 리스크 요소를 점검하기 위한 교육용 도구입니다.
+        계산 결과는 진입 전 리스크를 빠르게 점검하기 위한 기준입니다. 실제 주문 전에는 거래소 화면에서 수량, 손절가, 청산가를 다시 확인하세요.
       </p>
     </section>
   );

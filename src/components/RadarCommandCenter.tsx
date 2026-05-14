@@ -239,7 +239,7 @@ export function RadarCommandCenter() {
               <ShieldAlert size={13} aria-hidden />
               주의
             </p>
-            <p className="mt-1 text-sm font-black">신호가 아니라 관찰 리포트</p>
+            <p className="mt-1 text-sm font-black">관찰 리포트로 먼저 확인</p>
           </div>
         </div>
       </div>

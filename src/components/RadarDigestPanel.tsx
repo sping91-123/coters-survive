@@ -165,7 +165,7 @@ export function RadarDigestPanel() {
       {
         title: "지금 먼저 볼 코인은?",
         body: digest.leader
-          ? `${leaderName} ${digest.leader.timeframe}에서 ${sideText(digest.leader.plan.side)} 감지가 가장 위에 있습니다. 다만 이 값은 진입 신호가 아니라 관찰 우선순위입니다.`
+          ? `${leaderName} ${digest.leader.timeframe}에서 ${sideText(digest.leader.plan.side)} 감지가 가장 위에 있습니다. 지금 먼저 확인할 관찰 우선순위입니다.`
           : "현재는 강한 감지가 적습니다. 이럴 때는 급등률보다 거래대금과 상위 타임프레임 정렬을 먼저 보는 편이 좋습니다."
       },
       {

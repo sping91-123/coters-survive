@@ -144,7 +144,7 @@ function ProximityBadge({ setup }: { setup: ScoutSetup }) {
   if (setup.proximity === "ready") {
     return (
       <span className="inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-signal-warning/40 bg-signal-warning/15 px-2 py-1 text-[11px] font-black text-signal-warning">
-        구간 내부 · 신호 아님
+        관찰 구간 내부
       </span>
     );
   }
