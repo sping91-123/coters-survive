@@ -318,7 +318,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
           </div>
           <div className="rounded-lg border border-white/10 bg-black/25 p-4 text-sm text-slate-300 lg:w-72">
             <p className="font-black text-white">대표 플랜</p>
-            <p className="mt-2 text-3xl font-black text-cyan-200">{copy.representativePrice}</p>
+            <p className="mt-2 whitespace-nowrap text-2xl font-black text-cyan-200 sm:text-3xl">{copy.representativePrice}</p>
             <p className="mt-2 leading-6 text-slate-400">
               {copy.representativeBody}
             </p>
