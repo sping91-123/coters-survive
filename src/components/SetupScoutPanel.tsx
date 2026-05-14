@@ -693,7 +693,7 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
         const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}&scope=${scoutScope}`, { cache: "no-store" });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(data.error ?? `요청을 처리하지 못했습니다. 잠시 뒤 다시 확인해 주세요. (${res.status})`);
+          throw new Error(data.error ?? "레이더 후보를 잠시 확인하지 못했습니다. 잠시 뒤 다시 확인해 주세요.");
         }
         const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
         writeScoutCache(data.setups, mode, riskProfile, scoutScope);

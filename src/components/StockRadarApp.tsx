@@ -349,8 +349,10 @@ export function StockRadarApp() {
       };
 
       if (Array.isArray(data.universe) && data.universe.length) setUniverse(data.universe);
-      if (!response.ok) throw new Error(data.error ?? `요청을 처리하지 못했습니다. 잠시 뒤 다시 확인해 주세요. (${response.status})`);
-      if (!Array.isArray(data.candles) || data.candles.length === 0) throw new Error("캔들 데이터가 비어 있습니다.");
+      if (!response.ok) throw new Error("글로벌 시장 흐름을 잠시 확인하지 못했습니다. 잠시 뒤 다시 확인해 주세요.");
+      if (!Array.isArray(data.candles) || data.candles.length === 0) {
+        throw new Error("이 자산의 최근 가격 흐름을 잠시 확인하지 못했습니다. 다른 자산을 먼저 확인해 주세요.");
+      }
 
       setState({
         status: "ready",

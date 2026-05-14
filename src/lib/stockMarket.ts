@@ -133,13 +133,13 @@ export async function fetchStockCandles(symbol: string, timeframe: ChartTimefram
     cache: "no-store"
   });
 
-  if (!response.ok) throw new Error(`글로벌 시장 데이터 응답 오류 (${response.status})`);
+  if (!response.ok) throw new Error("글로벌 시장 흐름을 잠시 확인하지 못했습니다.");
 
   const payload = (await response.json()) as YahooChartResponse;
   const result = payload.chart?.result?.[0];
   const timestamps = result?.timestamp ?? [];
   const quote = result?.indicators?.quote?.[0];
-  if (!quote || !timestamps.length) throw new Error(payload.chart?.error?.description ?? "글로벌 시장 캔들을 찾지 못했습니다.");
+  if (!quote || !timestamps.length) throw new Error("이 자산의 최근 가격 흐름을 잠시 확인하지 못했습니다.");
 
   const candles = timestamps
     .map((timestamp, index) => {
