@@ -309,7 +309,9 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
       setPermission(result as PermissionState);
       if (result === "granted") {
         new Notification("Chart Radar 알림이 켜졌습니다", {
-          body: "A급 감지, 청산 압력, 뉴스 브리핑 알림을 받을 수 있습니다.",
+          body: isGlobal
+            ? "글로벌 자산 급변, 매크로 압력, 뉴스 브리핑 알림을 받을 수 있습니다."
+            : "A급 감지, 청산 압력, 뉴스 브리핑 알림을 받을 수 있습니다.",
           icon: "/brand/chart-radar-mark.png"
         });
         setToast("알림이 켜졌습니다. 저장한 조건은 이 기기에서 바로 확인할 수 있습니다.");
