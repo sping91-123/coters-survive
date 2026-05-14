@@ -22,6 +22,7 @@ function barColor(percent: number, isOverFree: boolean) {
 
 function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketStates>[number]; isPaid: boolean }) {
   const activeLimit = Math.max(1, isPaid ? state.proDailyLimit : state.freeDailyLimit);
+  const displayedUsed = Math.min(state.used, activeLimit);
   const activeRemaining = Math.max(0, activeLimit - state.used);
   const activePercent = Math.min(100, Math.round((state.used / activeLimit) * 100));
   const isOverActiveLimit = state.used >= activeLimit;
@@ -40,7 +41,7 @@ function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketSt
               : "border-cyan-300/30 bg-cyan-300/10 text-cyan-200"
           }`}
         >
-          {state.used}/{activeLimit}
+          {displayedUsed}/{activeLimit}
         </span>
       </div>
       <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
