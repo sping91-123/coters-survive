@@ -750,7 +750,7 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
   const [analysisMode, setAnalysisMode] = useState<"confirmed" | "aggressive">("confirmed");
   const [radarProfile, setRadarProfile] = useState<RadarProfile>("combined");
   const [msbMode, setMsbMode] = useState<"close" | "wick">("close");
-  const [structureSensitivity, setStructureSensitivity] = useState<StructureSensitivity>(5);
+  const [structureSensitivity, setStructureSensitivity] = useState<StructureSensitivity>(7);
   const [isUsingCachedData, setIsUsingCachedData] = useState(false);
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
   const [showDetailedReadout, setShowDetailedReadout] = useState(true);
