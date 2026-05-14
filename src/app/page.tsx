@@ -7,7 +7,7 @@ const marketEntries = [
   {
     title: "코인 레이더",
     href: "/survival",
-    label: "BTC·ETH·알트코인",
+    label: "BTC · ETH · 알트코인",
     icon: Coins,
     accent: "from-cyan-300/22 via-blue-500/12 to-transparent",
     iconClass: "border-cyan-300/35 bg-cyan-300/12 text-cyan-200",
@@ -16,7 +16,7 @@ const marketEntries = [
   {
     title: "글로벌 레이더",
     href: "/global",
-    label: "미국주식·지수·원자재",
+    label: "미국주식 · 지수 · 원자재",
     icon: TrendingUp,
     accent: "from-emerald-300/20 via-sky-400/10 to-transparent",
     iconClass: "border-emerald-300/35 bg-emerald-300/12 text-emerald-200",

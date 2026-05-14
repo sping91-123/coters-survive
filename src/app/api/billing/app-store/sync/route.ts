@@ -1,4 +1,4 @@
-// 앱스토어 구독 상태를 RevenueCat에서 확인하고 Pro 권한을 동기화합니다.
+// 앱스토어 구독 상태를 RevenueCat에서 확인하고 Pro 권한을 갱신합니다.
 import { NextResponse } from "next/server";
 import {
   findBillingPlan,
