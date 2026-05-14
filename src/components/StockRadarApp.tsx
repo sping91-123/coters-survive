@@ -474,7 +474,7 @@ export function StockRadarApp() {
               오늘 볼 글로벌 시장
             </p>
             <h3 className="mt-2 text-2xl font-black text-white">
-              {symbol}
+              {symbol}{" "}
               <span className="ml-2 text-base font-bold text-slate-400">{selectedInfo?.name ?? symbol}</span>
             </h3>
             <p className="mt-1 text-xs font-bold text-slate-500">
