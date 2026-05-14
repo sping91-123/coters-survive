@@ -1,5 +1,5 @@
 "use client";
-// 사용자가 받을 레이더 알림 조건을 설정하고 Pro 가치를 확인하는 패널이다.
+// 사용자가 받을 레이더 알림 조건을 설정하고 Pro 가치를 확인하는 패널입니다.
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BellRing, CheckCircle2, Clock3, Crown, Loader2, Radar, ShieldCheck, Smartphone, Zap } from "lucide-react";
@@ -16,8 +16,8 @@ import {
   readSetupAlertPresets,
   REQUEST_SETUP_ALERT_CHECK_EVENT,
   SETUP_ALERT_CHECK_FINISHED_EVENT,
-  SETUP_ALERT_MONITOR_STATUS_EVENT,
   SETUP_ALERT_MATCHES_CHANGED_EVENT,
+  SETUP_ALERT_MONITOR_STATUS_EVENT,
   SETUP_ALERT_PRESETS_CHANGED_EVENT,
   type SetupAlertMatch,
   type SetupAlertMonitorStatus,
@@ -35,13 +35,13 @@ type AlertMarket = "crypto" | "stocks";
 const alertMarketCopy = {
   crypto: {
     eyebrow: "코인 레이더 알림",
-    title: "코인 변동만 따로 감시합니다",
-    description: "BTC / ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 한곳에서 관리하는 알림 센터입니다."
+    title: "코인 변화를 놓치지 않게 정리합니다",
+    description: "BTC / ETH와 알트코인 급변, A급 후보, 청산 압력, 코인 뉴스 흐름을 한곳에서 확인합니다."
   },
   stocks: {
     eyebrow: "글로벌 레이더 알림",
-    title: "글로벌 시장 변동만 따로 감시합니다",
-    description: "미국주식, ETF, 실적, 매크로 발표, 지수·원자재 급변을 한곳에서 관리하는 알림 센터입니다."
+    title: "글로벌 변화를 놓치지 않게 정리합니다",
+    description: "미국주식, 해외선물, ETF, 실적, 매크로 발표, 지수·원자재 급변을 한곳에서 확인합니다."
   }
 } satisfies Record<AlertMarket, { eyebrow: string; title: string; description: string }>;
 
@@ -106,7 +106,7 @@ function permissionLabel(permission: PermissionState) {
   if (permission === "granted") return "알림을 받을 수 있습니다";
   if (permission === "denied") return "알림이 꺼져 있습니다";
   if (permission === "unsupported") return "현재 환경에서는 알림을 켤 수 없습니다";
-  return "알림을 켜기 전입니다";
+  return "알림을 켜야 받을 수 있습니다";
 }
 
 function compactSymbol(symbol: string) {
@@ -125,10 +125,15 @@ function formatSavedAt(ms: number) {
   return `${Math.floor(min / 60)}시간 전 저장`;
 }
 
+function formatCheckedAt(ms: number) {
+  const text = formatSavedAt(ms);
+  return text.replace(" 저장", "");
+}
+
 function monitorReasonLabel(reason: SetupAlertMonitorStatus["reason"]) {
-  if (reason === "manual") return "수동 확인";
+  if (reason === "manual") return "직접 확인";
   if (reason === "preset-change") return "조건 변경";
-  if (reason === "visible") return "화면 복귀";
+  if (reason === "visible") return "화면 확인";
   return "자동 확인";
 }
 
@@ -172,11 +177,7 @@ function RuleCard({
           aria-pressed={enabled}
           aria-label={`${rule.title} 알림 ${enabled ? "끄기" : "켜기"}`}
         >
-          <span
-            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${
-              enabled ? "left-6" : "left-1"
-            }`}
-          />
+          <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition ${enabled ? "left-6" : "left-1"}`} />
         </button>
       </div>
       <div className="mt-4 grid gap-2 text-xs leading-5 text-slate-400 sm:grid-cols-2">
@@ -235,8 +236,8 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
       setMonitorStatus(readSetupAlertMonitorStatus(market));
       setToast(
         matchCount > 0
-          ? `저장된 감시 조건 중 ${matchCount}개가 현재 레이더와 다시 맞아떨어졌습니다.`
-          : "지금은 저장된 감시 조건과 다시 맞아떨어진 레이더가 없습니다."
+          ? `저장한 감시 조건 중 ${matchCount}개가 현재 시장 흐름과 다시 맞아떨어졌습니다.`
+          : "지금은 저장한 감시 조건과 다시 맞아떨어지는 레이더가 없습니다."
       );
     }
 
@@ -316,7 +317,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
         });
         setToast("알림이 켜졌습니다. 저장한 조건은 이 기기에서 바로 확인할 수 있습니다.");
       } else {
-        setToast("알림이 꺼져 있습니다. 설정에서 언제든 다시 켤 수 있습니다.");
+        setToast("알림이 꺼져 있습니다. 브라우저 설정에서 언제든 다시 켤 수 있습니다.");
       }
     } finally {
       setIsRequesting(false);
@@ -326,12 +327,12 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   function requestManualAlertCheck() {
     if (typeof window === "undefined") return;
     if (setupPresets.length === 0) {
-      setToast("먼저 홈의 TOP 감지 카드에서 감시 조건을 저장해 주세요.");
+      setToast("먼저 레이더 감지 카드에서 감시할 조건을 저장해 주세요.");
       return;
     }
 
     setIsManualChecking(true);
-    setToast("저장된 감시 조건을 현재 레이더 결과와 다시 비교하는 중입니다.");
+    setToast("저장한 조건과 현재 시장 흐름을 다시 비교하는 중입니다.");
     window.dispatchEvent(new CustomEvent(REQUEST_SETUP_ALERT_CHECK_EVENT, { detail: { market } }));
   }
 
@@ -346,9 +347,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             <p className="text-xs font-black uppercase tracking-[0.24em] text-cyan-300">{copy.eyebrow}</p>
             <h2 className="mt-1 text-xl font-black text-white">{copy.title}</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400 [word-break:keep-all]">
-              {copy.description}
-              {" "}
-              저장한 조건과 레이더 변화를 한곳에서 확인합니다.
+              {copy.description} 저장한 조건과 레이더 변화를 한곳에서 확인합니다.
             </p>
           </div>
         </div>
@@ -374,20 +373,20 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           <Radar className="text-cyan-300" size={20} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">{isGlobal ? "관심 자산 감지" : "레이더 감지"}</p>
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            {isGlobal ? "ETF, 빅테크, 원자재 ETF의 급변과 저장한 조건을 빠르게 확인합니다." : "A급 후보와 관심코인 변화를 빠르게 확인합니다."}
+            {isGlobal ? "ETF, 빅테크, 해외선물의 급변과 저장한 조건을 빠르게 확인합니다." : "A급 후보와 관심코인 변화를 빠르게 확인합니다."}
           </p>
         </div>
         <div className="rounded-lg border border-orange-300/20 bg-orange-300/10 p-4">
           <Zap className="text-orange-200" size={20} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">{isGlobal ? "매크로 압력" : "위험 압력"}</p>
           <p className="mt-2 text-xs leading-5 text-slate-400">
-            {isGlobal ? "금리, 지수, 섹터, 원자재 변동이 선택 자산에 주는 압력을 분리합니다." : "청산 압력과 과열 구간을 추격 전에 먼저 봅니다."}
+            {isGlobal ? "금리, 지표, 원자재 변화가 선택 자산에 주는 압력을 분리합니다." : "청산 압력과 과열 구간을 추격 전에 먼저 봅니다."}
           </p>
         </div>
         <div className="rounded-lg border border-emerald-300/20 bg-emerald-300/10 p-4">
           <Smartphone className="text-emerald-200" size={20} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">앱 알림 연결</p>
-          <p className="mt-2 text-xs leading-5 text-slate-400">앱에서는 같은 조건을 푸시 알림으로 이어서 받을 수 있습니다.</p>
+          <p className="mt-2 text-xs leading-5 text-slate-400">앱에서는 같은 조건을 푸시 알림으로 이어 받을 수 있습니다.</p>
         </div>
       </div>
 
@@ -398,7 +397,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             {permissionLabel(permission)}
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            웹에서는 이 화면에서 조건을 확인하고, 앱에서는 같은 조건을 푸시 알림으로 받을 수 있습니다.
+            웹에서는 조건 일치 여부를 확인하고, 앱에서는 같은 조건을 푸시 알림으로 이어 받을 수 있습니다.
           </p>
         </div>
         <button
@@ -423,7 +422,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           <div>
             <p className="text-sm font-black text-white">내가 저장한 레이더 감시</p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              TOP 감지 카드에서 저장한 조건입니다. 화면이 열려 있으면 5분마다 다시 확인하고, 일치하면 최근 감지에 남깁니다.
+              저장한 조건을 기준으로 현재 시장을 다시 확인합니다. 조건이 다시 맞아떨어지면 최근 감지에 남깁니다.
             </p>
           </div>
           <span className="rounded-md border border-cyan-300/25 bg-cyan-300/10 px-2 py-1 text-xs font-black text-cyan-200">
@@ -437,18 +436,18 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           className="mt-3 inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md border border-emerald-300/30 bg-emerald-300/10 px-3 text-sm font-black text-emerald-200 transition hover:bg-emerald-300 hover:text-slate-950 disabled:cursor-wait disabled:opacity-70"
         >
           {isManualChecking ? <Loader2 size={16} className="animate-spin" aria-hidden /> : <Radar size={16} aria-hidden />}
-          지금 저장 조건 확인
+          저장 조건 다시 확인
         </button>
         {monitorStatus ? (
           <div className="mt-3 grid gap-2 text-xs sm:grid-cols-3">
             <div className="rounded-md border border-white/10 bg-black/25 p-3">
               <p className="font-bold text-slate-500">마지막 확인</p>
-              <p className="mt-1 font-black text-white">{formatSavedAt(monitorStatus.checkedAt).replace(" 저장", "")}</p>
+              <p className="mt-1 font-black text-white">{formatCheckedAt(monitorStatus.checkedAt)}</p>
             </div>
             <div className="rounded-md border border-white/10 bg-black/25 p-3">
               <p className="font-bold text-slate-500">확인 범위</p>
               <p className="mt-1 font-black text-white">
-                조건 {monitorStatus.presetCount}개, 후보 {monitorStatus.setupCount}개
+                조건 {monitorStatus.presetCount}개 · 후보 {monitorStatus.setupCount}개
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-black/25 p-3">
@@ -460,7 +459,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           </div>
         ) : (
           <p className="mt-3 rounded-md border border-white/10 bg-black/25 p-3 text-xs leading-5 text-slate-500">
-            앱이 열리면 저장된 조건을 자동으로 확인하고, 마지막 확인 상태가 이곳에 표시됩니다.
+            앱이 열리면 저장한 조건을 자동으로 확인하고, 마지막 확인 상태가 여기에 표시됩니다.
           </p>
         )}
         {setupMatches.length > 0 ? (
@@ -491,7 +490,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           </div>
         ) : (
           <p className="mt-3 rounded-md border border-white/10 bg-black/25 p-3 text-xs leading-5 text-slate-500">
-            저장 조건이 현재 레이더 결과와 다시 맞아떨어지면 이곳에 최근 일치 감지로 표시됩니다.
+            저장 조건이 현재 레이더 결과와 다시 맞아떨어지면 최근 일치 감지로 표시됩니다.
           </p>
         )}
         {setupPresets.length > 0 ? (
@@ -524,7 +523,7 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
           </div>
         ) : (
           <p className="mt-3 rounded-md border border-white/10 bg-black/25 p-3 text-xs leading-5 text-slate-500">
-            아직 저장된 감시 조건이 없습니다. 홈의 레이더 TOP 감지 카드에서 감시 저장을 누르면 여기에 쌓입니다.
+            아직 저장한 감시 조건이 없습니다. 레이더 감지 카드에서 감시 저장을 누르면 여기에 모입니다.
           </p>
         )}
       </div>

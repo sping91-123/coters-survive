@@ -1,4 +1,4 @@
-// Chart Radar 알림 규칙과 결제 가치를 한곳에서 관리한다.
+// Chart Radar 알림 규칙과 사용자-facing 설명을 관리합니다.
 export type RadarAlertRuleId =
   | "radar-grade"
   | "liquidation-pressure"
@@ -28,10 +28,10 @@ export const radarAlertRules: RadarAlertRule[] = [
     tier: "pro",
     title: "A급 레이더 감지",
     shortTitle: "A급 감지",
-    description: "전체 코인 중 구조 점수가 높은 후보가 새로 올라오면 알려줍니다.",
-    trigger: "A급 또는 80점 이상 감지, 같은 코인 중복 제거 후 새 후보 발생",
+    description: "여러 코인 중 구조 점수가 높은 후보가 새로 올라오면 알려줍니다.",
+    trigger: "A급 또는 80점 이상 후보가 새로 감지되고, 같은 코인의 중복 후보는 정리합니다.",
     cadence: "5분 단위 확인",
-    value: "앱을 켜지 않아도 먼저 봐야 할 종목을 놓치지 않게 만듭니다.",
+    value: "앱을 계속 켜지 않아도 먼저 봐야 할 코인을 놓치지 않게 도와줍니다.",
     defaultEnabled: true
   },
   {
@@ -40,20 +40,20 @@ export const radarAlertRules: RadarAlertRule[] = [
     tier: "pro",
     title: "청산 압력 급등",
     shortTitle: "청산 압력",
-    description: "펀딩비, OI 변화, 롱숏 쏠림이 동시에 과열될 때 알려줍니다.",
-    trigger: "청산 압력 레이더 과열 또는 극단 단계 진입",
+    description: "롱/숏 비율, OI 변화, 체결 쏠림이 함께 과열될 때 알려줍니다.",
+    trigger: "청산 압력 레이더가 과열 또는 극단 구간에 진입합니다.",
     cadence: "15분 단위 확인",
-    value: "추격 진입과 고배율 구간을 피하는 데 가장 직접적으로 도움이 됩니다.",
+    value: "추격 진입과 고배율 구간을 피해야 할 때를 더 빨리 알아차릴 수 있습니다.",
     defaultEnabled: true
   },
   {
     id: "watchlist-surge",
     category: "crypto",
     tier: "pro",
-    title: "관심코인 급변동",
+    title: "관심코인 급변",
     shortTitle: "관심 급변",
-    description: "내가 저장한 코인이 큰 변동이나 구조 변화를 만들 때 알려줍니다.",
-    trigger: "관심코인 변동률, 거래대금, MSB/CHoCH 변화 감지",
+    description: "저장한 코인에서 변동성, 거래대금, 구조 변화가 커지면 알려줍니다.",
+    trigger: "관심코인의 변동률, 거래대금, MSB/CHoCH 변화가 감지됩니다.",
     cadence: "실시간 감시에 가깝게 확장 예정",
     value: "수십 개 코인을 직접 새로고침하지 않아도 내 관심 목록만 따라갈 수 있습니다.",
     defaultEnabled: true
@@ -62,12 +62,12 @@ export const radarAlertRules: RadarAlertRule[] = [
     id: "macro-news",
     category: "news",
     tier: "free",
-    title: "뉴스·매크로 브리핑",
+    title: "뉴스와 매크로 브리핑",
     shortTitle: "뉴스 브리핑",
-    description: "시장에 영향을 줄 수 있는 뉴스와 미국 주요 발표 일정을 요약해 알려줍니다.",
-    trigger: "주요 뉴스 묶음 갱신 또는 매크로 이벤트 전광판 갱신",
-    cadence: "하루 여러 번",
-    value: "차트만 보다가 놓치기 쉬운 변동성 이벤트를 먼저 확인하게 합니다.",
+    description: "시장에 영향을 줄 수 있는 뉴스와 미국 주요 발표 일정을 요약합니다.",
+    trigger: "주요 뉴스 묶음이 갱신되거나 매크로 이벤트 상태가 바뀝니다.",
+    cadence: "하루 여러 번 확인",
+    value: "차트만 보다가 놓치기 쉬운 변동성 이벤트를 먼저 확인하게 해줍니다.",
     defaultEnabled: true
   },
   {
@@ -76,10 +76,10 @@ export const radarAlertRules: RadarAlertRule[] = [
     tier: "pro",
     title: "글로벌 모멘텀 전환",
     shortTitle: "글로벌 모멘텀",
-    description: "미국 주요 종목, ETF, 지수·원자재 흐름의 추세·모멘텀 전환을 알려줍니다.",
-    trigger: "주요 종목 기술지표 점수 급변, 섹터 강도 변화",
-    cadence: "미장 정규장 중심",
-    value: "여러 글로벌 자산군을 따로 새로고침하지 않고 한 화면에서 감시하게 돕습니다.",
+    description: "미국주식, ETF, 해외선물의 추세와 모멘텀 전환을 알려줍니다.",
+    trigger: "주요 종목의 기술 점수 급등, 섹터 강도 변화, 지수·원자재 흐름 변화가 감지됩니다.",
+    cadence: "미장 정규장 중심 확인",
+    value: "여러 글로벌 자산군을 따로 새로고침하지 않아도 한 화면에서 감시할 수 있습니다.",
     defaultEnabled: true
   }
 ];
@@ -100,9 +100,9 @@ export function summarizeRadarAlerts(enabledIds: RadarAlertRuleId[]) {
     freeCount,
     headline:
       enabledRules.length >= 4
-        ? "시장을 켜두지 않아도 핵심 변화는 대부분 잡히는 설정입니다."
+        ? "주요 변화 대부분을 놓치지 않도록 넓게 감시하는 설정입니다."
         : enabledRules.length >= 2
-          ? "Basic 감시는 켜졌습니다. Pro 알림을 더 켜면 중요한 변화만 더 촘촘하게 받아볼 수 있습니다."
+          ? "기본 감시가 켜져 있습니다. Pro 알림을 더 켜면 중요한 변화만 더 촘촘하게 받을 수 있습니다."
           : "아직 알림이 적습니다. 최소 뉴스 브리핑과 레이더 감지는 켜두는 편이 좋습니다."
   };
 }
