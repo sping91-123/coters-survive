@@ -1,4 +1,4 @@
-// Chart Radar 알림 조건을 설정하는 독립 페이지다.
+// Chart Radar 알림 조건을 설정하는 독립 페이지입니다.
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
 import { RadarAlertCenter } from "@/components/RadarAlertCenter";
@@ -8,8 +8,8 @@ export default function AlertsPage({ searchParams }: { searchParams?: { market?:
   const market = searchParams?.market === "stocks" || searchParams?.market === "global" ? "stocks" : "crypto";
 
   return (
-    <main className="min-h-screen px-4 pb-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+    <main className="min-h-screen px-3 pb-10 sm:px-5">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-5">
         <Header market={market} />
         <RadarTopNav market={market} />
         <RadarAlertCenter market={market} />

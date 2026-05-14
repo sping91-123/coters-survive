@@ -1,66 +1,86 @@
 "use client";
-// Chart Radar의 시장별 주요 페이지로 이동하는 상단 메뉴.
+// 시장별 주요 페이지로 이동하는 상단 앱 내비게이션입니다.
+import { Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { BellRing, Calculator, Coins, Crown, History, Newspaper, Radar, TrendingUp } from "lucide-react";
 
 type MarketScope = "crypto" | "stocks" | "all";
 
-const cryptoNavItems = [
+type NavItem = {
+  label: string;
+  icon: typeof Radar;
+  href: string;
+  match: string[];
+  market?: "crypto" | "global";
+};
+
+const cryptoNavItems: NavItem[] = [
   { label: "BTC / ETH", icon: Radar, href: "/survival", match: ["/survival"] },
   { label: "알트코인", icon: Coins, href: "/alts", match: ["/alts"] },
-  { label: "코인뉴스", icon: Newspaper, href: "/news?market=crypto", match: ["/news"] },
-  { label: "코인알림", icon: BellRing, href: "/alerts?market=crypto", match: ["/alerts"] },
-  { label: "코인복기", icon: History, href: "/journal?market=crypto", match: ["/journal"] },
-  { label: "계산기", icon: Calculator, href: "/calculator?market=crypto", match: ["/calculator"] }
-] as const;
+  { label: "뉴스", icon: Newspaper, href: "/news?market=crypto", match: ["/news"], market: "crypto" },
+  { label: "알림", icon: BellRing, href: "/alerts?market=crypto", match: ["/alerts"], market: "crypto" },
+  { label: "복기", icon: History, href: "/journal?market=crypto", match: ["/journal"], market: "crypto" },
+  { label: "계산기", icon: Calculator, href: "/calculator?market=crypto", match: ["/calculator"], market: "crypto" }
+];
 
-const stockNavItems = [
+const stockNavItems: NavItem[] = [
   { label: "글로벌", icon: TrendingUp, href: "/global", match: ["/stocks", "/global"] },
-  { label: "글로벌뉴스", icon: Newspaper, href: "/news?market=global", match: ["/news"] },
-  { label: "글로벌알림", icon: BellRing, href: "/alerts?market=global", match: ["/alerts"] },
-  { label: "글로벌복기", icon: History, href: "/journal?market=global", match: ["/journal"] },
-  { label: "계산기", icon: Calculator, href: "/calculator?market=global", match: ["/calculator"] }
-] as const;
+  { label: "뉴스", icon: Newspaper, href: "/news?market=global", match: ["/news"], market: "global" },
+  { label: "알림", icon: BellRing, href: "/alerts?market=global", match: ["/alerts"], market: "global" },
+  { label: "복기", icon: History, href: "/journal?market=global", match: ["/journal"], market: "global" },
+  { label: "계산기", icon: Calculator, href: "/calculator?market=global", match: ["/calculator"], market: "global" }
+];
 
-const allNavItems = [
+const allNavItems: NavItem[] = [
   { label: "코인 레이더", icon: Radar, href: "/survival", match: ["/survival", "/alts"] },
   { label: "글로벌 레이더", icon: TrendingUp, href: "/global", match: ["/stocks", "/global"] },
   { label: "요금제", icon: Crown, href: "/pro", match: ["/pro", "/checkout/success", "/checkout/fail", "/refund"] }
-] as const;
+];
 
 function inferMarket(pathname: string): MarketScope {
   if (pathname === "/stocks" || pathname === "/global") return "stocks";
   return "crypto";
 }
 
-export function RadarTopNav({ market: forcedMarket }: { market?: MarketScope } = {}) {
+function RadarTopNavContent({ market: forcedMarket }: { market?: MarketScope }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const marketParam = searchParams.get("market");
   const market = forcedMarket ?? inferMarket(pathname);
   const navItems = market === "all" ? allNavItems : market === "stocks" ? stockNavItems : cryptoNavItems;
 
   return (
-    <nav className="sticky top-0 z-30 rounded-lg border border-surface-line bg-slate-950/88 p-1.5 shadow-[0_16px_44px_rgba(0,0,0,0.34)] backdrop-blur">
+    <nav className="sticky top-2 z-30 rounded-xl border border-surface-line bg-slate-950/78 p-1 shadow-[0_14px_42px_rgba(0,0,0,0.28)] backdrop-blur-xl">
       <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${navItems.length}, minmax(0, 1fr))` }}>
-        {navItems.map(({ label, icon: Icon, href, match }) => {
-          const active = match.some((path) => path === pathname);
+        {navItems.map(({ label, icon: Icon, href, match, market: itemMarket }) => {
+          const isMarketRoute = pathname === "/news" || pathname === "/alerts" || pathname === "/journal" || pathname === "/calculator";
+          const active = match.some((path) => path === pathname) && (!itemMarket || marketParam === itemMarket || !isMarketRoute);
 
           return (
             <Link
               key={label}
               href={href}
-              className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-md px-1 text-[10px] font-black transition sm:min-h-11 sm:flex-row sm:text-xs ${
+              className={`group flex min-h-11 items-center justify-center gap-1.5 rounded-lg px-2 text-[11px] font-black tracking-tight transition sm:text-xs ${
                 active
-                  ? "bg-accent-blue/15 text-accent-blue"
-                  : "text-slate-400 hover:bg-white/5 hover:text-white"
+                  ? "bg-cyan-300/12 text-cyan-200 shadow-[inset_0_0_0_1px_rgba(103,232,249,0.16)]"
+                  : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-100"
               }`}
             >
-              <Icon size={16} aria-hidden />
-              <span className="whitespace-nowrap">{label}</span>
+              <Icon size={15} aria-hidden className={active ? "text-cyan-300" : "text-slate-500 transition group-hover:text-slate-300"} />
+              <span className="truncate">{label}</span>
             </Link>
           );
         })}
       </div>
     </nav>
+  );
+}
+
+export function RadarTopNav({ market }: { market?: MarketScope } = {}) {
+  return (
+    <Suspense fallback={<div className="h-[52px] rounded-xl border border-surface-line bg-slate-950/70" />}>
+      <RadarTopNavContent market={market} />
+    </Suspense>
   );
 }

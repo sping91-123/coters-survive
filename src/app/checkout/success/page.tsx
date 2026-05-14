@@ -20,16 +20,16 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
   const amount = searchParams?.amount;
 
   return (
-    <main className="min-h-screen px-4 pb-10">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-5">
+    <main className="min-h-screen px-3 pb-10 sm:px-5">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-5">
         <Header />
         <RadarTopNav market="all" />
-        <section className="rounded-lg border border-emerald-400/30 bg-emerald-500/10 p-6">
+        <section className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.24)]">
           <div className="text-center">
             <CheckCircle2 className="mx-auto text-emerald-300" size={42} aria-hidden />
-            <h2 className="mt-4 text-2xl font-black text-slate-950 dark:text-white">결제 요청을 확인했습니다.</h2>
+            <h2 className="mt-4 text-2xl font-black text-slate-950 dark:text-white">결제 요청을 확인하고 있습니다.</h2>
             <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-emerald-900 dark:text-emerald-100">
-              결제 내역을 확인하고 있습니다. 확인이 끝나면 Pro 레이더, AI 브리핑, 알림 한도가 바로 확장됩니다.
+              결제 내역을 확인하는 중입니다. 승인 확인이 끝나면 Pro 레이더, AI 브리핑, 알림 한도가 바로 확장됩니다.
             </p>
           </div>
 
@@ -41,21 +41,21 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
           />
 
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <div className="rounded-md border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
+            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
               <Crown className="text-emerald-300" size={19} aria-hidden />
               <p className="mt-3 font-black text-slate-950 dark:text-white">Pro 권한 활성화</p>
               <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
                 승인 확인 후 레이더, AI 브리핑, 알림 한도가 계정에 적용됩니다.
               </p>
             </div>
-            <div className="rounded-md border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
+            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
               <RotateCw className="text-emerald-300" size={19} aria-hidden />
               <p className="mt-3 font-black text-slate-950 dark:text-white">권한 반영 확인</p>
               <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
                 화면이 그대로라면 새로고침하거나 다시 로그인하면 최신 권한을 불러옵니다.
               </p>
             </div>
-            <div className="rounded-md border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
+            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
               <ReceiptText className="text-emerald-300" size={19} aria-hidden />
               <p className="mt-3 font-black text-slate-950 dark:text-white">결제 정보</p>
               <p className="mt-2 break-all text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
