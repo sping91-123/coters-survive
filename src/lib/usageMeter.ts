@@ -37,7 +37,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "radarScan",
     label: "코인 레이더",
     shortLabel: "코인",
-    description: "BTC, ETH, 알트코인의 구조와 시장 감지를 불러오는 횟수입니다.",
+    description: "BTC, ETH, 알트코인의 구조와 시장 변화를 다시 확인합니다.",
     freeDailyLimit: 2,
     proDailyLimit: 200
   },
@@ -45,7 +45,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "cryptoAiBriefing",
     label: "코인 AI 브리핑",
     shortLabel: "코인 AI",
-    description: "코인 뉴스와 시장 흐름을 AI로 정리하는 횟수입니다.",
+    description: "코인 뉴스와 시장 흐름을 한 번에 정리합니다.",
     freeDailyLimit: 1,
     proDailyLimit: 30
   },
@@ -53,7 +53,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "watchlistScan",
     label: "관심코인 감시",
     shortLabel: "관심",
-    description: "관심코인 레이더를 갱신하는 횟수입니다.",
+    description: "저장한 관심코인의 구조 변화를 다시 훑습니다.",
     freeDailyLimit: 1,
     proDailyLimit: 100
   },
@@ -61,7 +61,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "stockRadar",
     label: "글로벌 레이더",
     shortLabel: "글로벌",
-    description: "미국주식, ETF, 해외선물 레이더를 불러오는 횟수입니다.",
+    description: "미국주식, ETF, 해외선물 흐름을 다시 확인합니다.",
     freeDailyLimit: 1,
     proDailyLimit: 100
   },
@@ -69,7 +69,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "stocksAiBriefing",
     label: "글로벌 AI 브리핑",
     shortLabel: "글로벌 AI",
-    description: "글로벌 뉴스와 매크로 흐름을 AI로 정리하는 횟수입니다.",
+    description: "글로벌 뉴스와 매크로 흐름을 한 번에 정리합니다.",
     freeDailyLimit: 1,
     proDailyLimit: 30
   },
@@ -77,7 +77,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "cryptoAlertRule",
     label: "코인 알림 설정",
     shortLabel: "코인 알림",
-    description: "코인 레이더 알림 조건을 설정하거나 확인하는 횟수입니다.",
+    description: "코인 레이더 알림 조건을 만들고 다시 확인합니다.",
     freeDailyLimit: 1,
     proDailyLimit: 20
   },
@@ -85,7 +85,7 @@ export const usageBuckets: UsageBucket[] = [
     id: "stocksAlertRule",
     label: "글로벌 알림 설정",
     shortLabel: "글로벌 알림",
-    description: "글로벌 레이더 알림 조건을 설정하거나 확인하는 횟수입니다.",
+    description: "글로벌 레이더 알림 조건을 만들고 다시 확인합니다.",
     freeDailyLimit: 1,
     proDailyLimit: 20
   }
@@ -191,8 +191,8 @@ export function getUsageGate(bucketId: UsageBucketId, isPaid: boolean) {
     message: allowed
       ? ""
       : isPaid
-        ? `오늘 ${state.label} Pro 확인 횟수를 모두 사용했습니다. 잠시 후 다시 확인해 주세요.`
-        : `오늘 Basic ${state.label} 확인 횟수를 모두 사용했습니다. Pro에서는 장중 반복 확인이 가능합니다.`
+        ? `오늘 ${state.label} Pro 확인 한도를 모두 사용했습니다. 내일 다시 열립니다.`
+        : `오늘 Basic ${state.label} 확인 한도를 모두 사용했습니다. Pro에서는 장중 재확인이 가능합니다.`
   };
 }
 

@@ -1263,3 +1263,7 @@
 
 ### 2026-05-14 continuous improvement 33 Pro conversion copy.
 The product value is clearer when Basic is framed as a first-check mode and Pro as the mode for repeated intraday monitoring, alerts, watchlists, and fewer missed changes. This keeps paid value focused on workflow and attention, not on promising more predictions.
+
+
+### 2026-05-14 continuous improvement 34 usage wording cleanup.
+Usage buckets should not feel like an internal quota table. They now describe what the user can recheck or monitor, while limit messages explain daily reset and Pro intraday recheck value more clearly.

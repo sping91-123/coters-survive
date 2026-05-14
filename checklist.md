@@ -1410,3 +1410,8 @@
 - [x] Clarify Basic as first-check mode and Pro as intraday work mode in the usage panel.
 - [x] Strengthen Pro pricing copy around repeated monitoring, fewer missed changes, watchlist, and alerts.
 - [x] Verify with lint, copy smoke, and billing smoke.
+
+## 2026-05-14 continuous improvement 34 usage wording cleanup.
+- [x] Reword usage bucket descriptions as user outcomes instead of raw counts.
+- [x] Reword Basic and Pro limit messages around daily limits and intraday rechecks.
+- [x] Verify with lint and copy smoke.
