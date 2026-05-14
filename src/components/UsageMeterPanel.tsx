@@ -28,7 +28,7 @@ function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketSt
   const isOverActiveLimit = state.used >= activeLimit;
   const limitCopy = isPaid
     ? `Pro는 오늘 ${state.proDailyLimit}회까지 장중 반복 확인이 가능합니다.`
-    : `Basic ${state.freeDailyLimit}회 이후에는 Pro에서 ${state.proDailyLimit}회까지 열립니다.`;
+    : `Basic ${state.freeDailyLimit}회 이후에는 Pro에서 ${state.proDailyLimit}회까지 확장됩니다.`;
 
   return (
     <div className="rounded-md border border-white/10 bg-black/20 p-3">
@@ -62,18 +62,18 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Basic은 오늘 큰 흐름을 맛보는 용도입니다. 장중에 여러 번 레이더를 돌리고 관심종목과 알림까지 이어가려면 Pro가 필요합니다.",
-    paid: "Pro가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 끊기지 않게 반복 확인하세요.",
+    free: "Basic은 오늘 큰 흐름을 확인하는 용도입니다. 장중에 여러 번 레이더를 돌리고 관심종목과 알림까지 이어가려면 Pro가 필요합니다.",
+    paid: "Pro가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 끊기지 않게 반복 확인할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
-    free: "Basic은 코인 시장의 큰 흐름을 맛보는 용도입니다. 장중 후보 재확인, 관심코인, 코인 알림까지 챙기려면 Coin Pro가 필요합니다.",
-    paid: "Coin Pro가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 장중에도 끊기지 않게 확인하세요.",
+    free: "Basic은 코인 시장의 큰 흐름을 확인하는 용도입니다. 장중 후보 재확인, 관심코인, 코인 알림까지 챙기려면 Coin Pro가 필요합니다.",
+    paid: "Coin Pro가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 장중에도 끊기지 않게 확인할 수 있습니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "Basic은 글로벌 시장의 큰 흐름을 맛보는 용도입니다. 장중 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro가 필요합니다.",
-    paid: "Global Pro가 열려 있습니다. 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 장중에도 끊기지 않게 확인하세요.",
+    free: "Basic은 글로벌 시장의 큰 흐름을 확인하는 용도입니다. 장중 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro가 필요합니다.",
+    paid: "Global Pro가 열려 있습니다. 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 장중에도 끊기지 않게 확인할 수 있습니다.",
     proHref: "/pro?market=stocks"
   }
 };
@@ -165,9 +165,9 @@ export function UsageMeterPanel({
           <Zap className="mt-0.5 shrink-0" size={14} aria-hidden />
           Basic은 하루 흐름 확인용이고, Pro는 장중 반복 감시용입니다.
         </span>
-        {compact ? (
+          {compact ? (
           <Link href={copy.proHref} className="font-black text-cyan-200 hover:text-white">
-            전체 플랜 보기
+            Pro 플랜 보기
           </Link>
         ) : null}
       </div>
