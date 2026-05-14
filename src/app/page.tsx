@@ -17,7 +17,7 @@ const marketEntries = [
   {
     title: "글로벌 레이더",
     href: "/global",
-    label: "미국주식 · 지수 · 원자재",
+    label: "미국주식 · 해외선물 · ETF",
     action: "글로벌 레이더 열기",
     icon: TrendingUp,
     accent: "from-emerald-300/20 via-sky-400/10 to-transparent",

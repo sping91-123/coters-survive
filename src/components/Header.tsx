@@ -12,7 +12,7 @@ export function Header({ market }: { market?: HeaderMarket } = {}) {
     market === "crypto"
       ? "코인 시장의 차트 구조와 변화를 빠르게 감지하세요."
       : market === "stocks"
-        ? "글로벌 시장의 차트 흐름과 매크로 변화를 빠르게 감지하세요."
+        ? "미국주식, 해외선물, ETF와 매크로 변화를 빠르게 감지하세요."
         : "차트 흐름과 시장 변화를 빠르게 감지하세요.";
 
   return (

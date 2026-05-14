@@ -72,8 +72,8 @@ const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; pr
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "Basic은 글로벌 시장의 큰 흐름을 맛보는 용도입니다. 장중 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro가 필요합니다.",
-    paid: "Global Pro가 열려 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 장중에도 끊기지 않게 확인하세요.",
+    free: "Basic은 글로벌 시장의 큰 흐름을 맛보는 용도입니다. 장중 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro가 필요합니다.",
+    paid: "Global Pro가 열려 있습니다. 미국주식, 해외선물, ETF, 매크로 브리핑과 알림을 장중에도 끊기지 않게 확인하세요.",
     proHref: "/pro?market=stocks"
   }
 };

@@ -4,15 +4,26 @@ import type { Candle, ChartTimeframe } from "@/lib/marketAnalysis";
 export interface StockSymbolInfo {
   symbol: string;
   name: string;
-  group: "index_etf" | "mega_cap" | "ai_chip" | "growth" | "finance" | "commodity";
+  group: "futures" | "index_etf" | "mega_cap" | "ai_chip" | "growth" | "finance" | "commodity";
 }
 
 export const stockSymbols: StockSymbolInfo[] = [
+  { symbol: "NQ=F", name: "Nasdaq 100 Futures", group: "futures" },
+  { symbol: "ES=F", name: "S&P 500 Futures", group: "futures" },
+  { symbol: "YM=F", name: "Dow Futures", group: "futures" },
+  { symbol: "RTY=F", name: "Russell 2000 Futures", group: "futures" },
+  { symbol: "GC=F", name: "Gold Futures", group: "futures" },
+  { symbol: "CL=F", name: "Crude Oil Futures", group: "futures" },
   { symbol: "SPY", name: "S&P 500 ETF", group: "index_etf" },
   { symbol: "QQQ", name: "Nasdaq 100 ETF", group: "index_etf" },
   { symbol: "DIA", name: "Dow Jones ETF", group: "index_etf" },
   { symbol: "IWM", name: "Russell 2000 ETF", group: "index_etf" },
   { symbol: "VOO", name: "Vanguard S&P 500", group: "index_etf" },
+  { symbol: "TLT", name: "20Y Treasury ETF", group: "index_etf" },
+  { symbol: "UUP", name: "US Dollar ETF", group: "index_etf" },
+  { symbol: "VIXY", name: "VIX Futures ETF", group: "index_etf" },
+  { symbol: "SMH", name: "Semiconductor ETF", group: "ai_chip" },
+  { symbol: "XLK", name: "Technology ETF", group: "index_etf" },
   { symbol: "TQQQ", name: "Nasdaq 3x Long", group: "index_etf" },
   { symbol: "SQQQ", name: "Nasdaq 3x Short", group: "index_etf" },
   { symbol: "AAPL", name: "Apple", group: "mega_cap" },
@@ -102,7 +113,7 @@ function aggregateCandles(candles: Candle[], groupSize: number): Candle[] {
 }
 
 export function normalizeStockSymbol(symbol: string) {
-  return symbol.trim().toUpperCase().replace(/[^A-Z0-9.-]/g, "").slice(0, 12);
+  return symbol.trim().toUpperCase().replace(/[^A-Z0-9.=^-]/g, "").slice(0, 16);
 }
 
 export function findStockSymbol(symbol: string) {

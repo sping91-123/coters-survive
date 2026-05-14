@@ -100,8 +100,8 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 14900,
     monthlyValue: 14900,
     appStoreProductId: "chart_radar_global_monthly",
-    description: "미국주식, ETF, 주요 지수와 매크로 이벤트를 장전, 장중, 마감 기준으로 감시하는 글로벌 전용 플랜입니다.",
-    highlights: ["글로벌 레이더 하루 100회", "AI 글로벌 브리핑 하루 30회", "관심자산 50개와 알림 20개"],
+    description: "미국주식, 해외선물, ETF, 주요 지수와 매크로 이벤트를 장전, 장중, 마감 기준으로 감시하는 글로벌 전용 플랜입니다.",
+    highlights: ["글로벌 레이더 하루 100회", "AI 글로벌 브리핑 하루 30회", "해외선물·관심자산 50개와 알림 20개"],
     limits: {
       radarScans: "글로벌 100회",
       aiBriefings: "글로벌 30회",

@@ -13,7 +13,7 @@ const globalRoutineCards = [
   {
     icon: Clock3,
     title: "장전 5분 루틴",
-    body: "매크로 일정, 프리마켓 흐름, 오늘 먼저 볼 ETF와 종목을 한 번에 정리합니다."
+    body: "매크로 일정, 프리마켓 흐름, 오늘 먼저 볼 해외선물·ETF·종목을 한 번에 정리합니다."
   },
   {
     icon: ShieldCheck,

@@ -13,6 +13,10 @@ import { hasMarketEntitlement } from "@/lib/billing";
 import { getWatchlistLimit } from "@/lib/watchlist";
 
 const fallbackUniverse: StockSymbolInfo[] = [
+  { symbol: "NQ=F", name: "Nasdaq 100 Futures", group: "futures" },
+  { symbol: "ES=F", name: "S&P 500 Futures", group: "futures" },
+  { symbol: "GC=F", name: "Gold Futures", group: "futures" },
+  { symbol: "CL=F", name: "Crude Oil Futures", group: "futures" },
   { symbol: "SPY", name: "S&P 500 ETF", group: "index_etf" },
   { symbol: "QQQ", name: "Nasdaq 100 ETF", group: "index_etf" },
   { symbol: "NVDA", name: "Nvidia", group: "mega_cap" },
@@ -24,6 +28,7 @@ const fallbackUniverse: StockSymbolInfo[] = [
 ];
 
 const groupLabels: Record<StockSymbolInfo["group"], string> = {
+  futures: "해외선물",
   index_etf: "지수 ETF",
   mega_cap: "빅테크",
   ai_chip: "AI·반도체",
@@ -32,8 +37,8 @@ const groupLabels: Record<StockSymbolInfo["group"], string> = {
   commodity: "원자재 ETF"
 };
 
-const groupOrder: StockSymbolInfo["group"][] = ["index_etf", "mega_cap", "ai_chip", "growth", "finance", "commodity"];
-const featuredSymbols = ["SPY", "QQQ", "NVDA", "AAPL", "TSLA", "GLD"];
+const groupOrder: StockSymbolInfo["group"][] = ["futures", "index_etf", "mega_cap", "ai_chip", "growth", "finance", "commodity"];
+const featuredSymbols = ["NQ=F", "ES=F", "SPY", "QQQ", "NVDA", "GLD"];
 const globalWatchlistStorageKey = "chart-radar.globalWatchlist.v1";
 const globalWatchlistMaxItems = 150;
 
@@ -134,6 +139,7 @@ function getGlobalSessionState(now = new Date()) {
 }
 
 function groupPlaybook(group: StockSymbolInfo["group"] | undefined) {
+  if (group === "futures") return "해외선물은 본장 전후에도 민감하게 움직입니다. 지수와 달러, 금리, 원자재 뉴스를 함께 보며 과한 레버리지 추격을 조심하세요.";
   if (group === "index_etf") return "지수 ETF는 전체 시장 방향의 기준선입니다. SPY와 QQQ가 같은 방향이면 개별 종목 신뢰도가 올라갑니다.";
   if (group === "mega_cap") return "빅테크는 실적, 금리, 나스닥 흐름에 민감합니다. 지수보다 강한지 약한지를 먼저 비교하세요.";
   if (group === "ai_chip") return "AI·반도체는 변동성이 큽니다. 강한 추세에서는 좋지만 과열 구간 추격은 위험도가 빠르게 올라갑니다.";
