@@ -267,20 +267,29 @@ export function fallbackKoreanNewsTitle(title: string, market: RadarNewsMarket =
   const signal = analyzeNewsText(title, market);
   const asset = signal.assets.slice(0, 2).join(", ");
   const tone = signal.direction === "bullish" ? "상방 재료" : signal.direction === "bearish" ? "하방 리스크" : "중립 이슈";
+  const normalized = title.replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim();
 
   if (market === "stocks") {
-    if (/inflation|cpi|ppi|price/i.test(title)) return "미국 물가 이슈가 글로벌 시장 변동성에 영향을 주고 있습니다.";
-    if (/fed|rate|treasury|yield/i.test(title)) return "연준과 금리 기대 변화가 글로벌 자산 흐름을 흔들고 있습니다.";
-    if (/earnings|revenue|guidance|profit/i.test(title)) return "주요 기업 실적과 가이던스가 종목별 흐름을 가르고 있습니다.";
-    if (/ai|chip|semiconductor|data center/i.test(title)) return "AI와 반도체 수요가 성장주 흐름의 핵심 변수로 떠오르고 있습니다.";
+    if (/inflation|cpi|ppi|price/i.test(normalized)) return "미국 물가 이슈가 글로벌 시장 변동성에 영향을 주고 있습니다.";
+    if (/fed|federal reserve|rate|treasury|yield/i.test(normalized)) return "연준과 금리 기대 변화가 글로벌 자산 흐름을 흔들고 있습니다.";
+    if (/earnings|revenue|guidance|profit/i.test(normalized)) return "주요 기업 실적과 가이던스가 종목별 흐름을 가르고 있습니다.";
+    if (/ai|chip|semiconductor|data center/i.test(normalized)) return "AI와 반도체 수요가 성장주 흐름의 핵심 변수로 떠오르고 있습니다.";
     return `${asset} 관련 ${tone}가 글로벌 시장에서 확인되고 있습니다.`;
   }
 
-  if (/bitcoin|btc/i.test(title)) return `비트코인 관련 ${tone}가 시장 심리에 영향을 주고 있습니다.`;
-  if (/ethereum|eth/i.test(title)) return `이더리움 관련 ${tone}가 알트코인 흐름에 영향을 주고 있습니다.`;
-  if (/etf|inflow|outflow/i.test(title)) return `ETF와 자금 흐름 이슈가 코인 시장 수급에 영향을 주고 있습니다.`;
-  if (/sec|cftc|lawsuit|regulation/i.test(title)) return `규제 이슈가 코인 시장 변동성 확대 요인으로 떠오르고 있습니다.`;
-  if (/hack|exploit|security/i.test(title)) return `보안 이슈가 코인 시장 위험 심리를 자극하고 있습니다.`;
+  if (/what happened in crypto today|crypto today/i.test(normalized)) return "오늘 코인 시장에서 확인할 주요 이슈를 정리한 뉴스입니다.";
+  if (/coinbase.*clarity act|brian armstrong.*clarity/i.test(normalized)) return "코인베이스 CEO가 CLARITY 법안 처리 전 지지 입장을 냈습니다.";
+  if (/clarity act.*vote|clarity act/i.test(normalized)) return "미국 코인 규제 법안 이슈가 시장 변동성 변수로 떠오르고 있습니다.";
+  if (/whale.*short|shorts?.*crypto/i.test(normalized)) return "고래의 대규모 숏 포지션이 코인 시장 위험 신호로 주목받고 있습니다.";
+  if (/polymarket.*volume.*decline/i.test(normalized)) return "폴리마켓 월간 거래량 감소가 예측시장 수요 둔화 신호로 거론됩니다.";
+  if (/consensys.*ipo|potential ipo/i.test(normalized)) return "이더리움 생태계 기업의 IPO 일정 변화가 시장 관심을 받고 있습니다.";
+  if (/price predictions?|price analysis/i.test(normalized)) return "주요 코인 가격 전망과 핵심 구간을 정리한 뉴스입니다.";
+  if (/federal reserve|fed|rate|treasury|yield/i.test(normalized)) return "연준과 금리 관련 뉴스가 코인 시장 위험 선호에 영향을 줄 수 있습니다.";
+  if (/bitcoin|btc/i.test(normalized)) return `비트코인 관련 ${tone}가 시장 심리에 영향을 주고 있습니다.`;
+  if (/ethereum|eth/i.test(normalized)) return `이더리움 관련 ${tone}가 알트코인 흐름에 영향을 주고 있습니다.`;
+  if (/etf|inflow|outflow/i.test(normalized)) return `ETF와 자금 흐름 이슈가 코인 시장 수급에 영향을 주고 있습니다.`;
+  if (/sec|cftc|lawsuit|regulation/i.test(normalized)) return `규제 이슈가 코인 시장 변동성 확대 요인으로 떠오르고 있습니다.`;
+  if (/hack|exploit|security/i.test(normalized)) return `보안 이슈가 코인 시장 위험 심리를 자극하고 있습니다.`;
   return `${asset} 관련 ${tone}가 코인 시장에서 확인되고 있습니다.`;
 }
 
