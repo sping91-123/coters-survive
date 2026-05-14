@@ -388,13 +388,13 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
       ) : null}
 
       {limitNotice ? (
-        <div className="rounded-lg border border-accent-blue/35 bg-white p-4 text-sm leading-6 text-slate-950 shadow-[0_14px_40px_rgba(14,165,233,0.12)]">
+        <div className="rounded-lg border border-accent-blue/25 bg-accent-blue/10 p-4 text-sm leading-6 text-slate-200 shadow-[0_14px_40px_rgba(14,165,233,0.12)]">
           <div className="flex items-start gap-2">
             <Sparkles className="mt-0.5 shrink-0 text-accent-blue" size={17} aria-hidden />
             <div>
-              <p className="font-black text-slate-950">오늘은 핵심 뉴스부터 먼저 보여드립니다.</p>
-              <p className="mt-1 font-semibold text-slate-800">{limitNotice}</p>
-              <p className="mt-2 text-xs font-bold text-slate-700">{copy.proLine}</p>
+              <p className="font-black text-white">오늘은 핵심 뉴스부터 먼저 보여드립니다.</p>
+              <p className="mt-1 font-semibold text-slate-300">{limitNotice}</p>
+              <p className="mt-2 text-xs font-bold text-slate-400">{copy.proLine}</p>
             </div>
           </div>
         </div>

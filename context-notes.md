@@ -1347,3 +1347,6 @@ The Global Pro page should feel like a separate market product, not a crypto pag
 
 ### 2026-05-14 continuous improvement 60 Pro copy line breaks.
 The Pro page hero and representative plan card now use Korean word-break preservation for the main selling copy. This is a small visual polish, but it prevents narrow cards from splitting words such as technical indicators in a way that makes the payment page feel unfinished.
+
+### 2026-05-14 continuous improvement 61 News notice tone.
+The news usage-limit notice no longer switches to a bright white card inside the dark news screen. Keeping this notice in the same dark cyan visual language makes the page feel less like a pasted system alert and more like one coherent paid product surface.
