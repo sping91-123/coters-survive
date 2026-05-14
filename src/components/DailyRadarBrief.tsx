@@ -389,7 +389,7 @@ export function DailyRadarBrief({ scope = "all" }: { scope?: BriefScope }) {
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-widest text-accent-blue">Daily Radar</p>
               <h2 className="mt-1 text-2xl font-black text-white">오늘 먼저 볼 시장</h2>
-              <p className="mt-1 text-xs font-bold text-slate-500">데이터 기준은 Binance USDT-M입니다.</p>
+              <p className="mt-1 text-xs font-bold text-slate-500">데이터 기준은 Binance 거래 흐름입니다.</p>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300 [word-break:keep-all]">
                 {summary?.sentence ?? (scope === "major" ? "BTC와 ETH 흐름을 먼저 훑어서 오늘 시장의 기준선을 정리하고 있습니다." : "주요 코인과 뉴스 흐름을 한 번에 훑어서 오늘 먼저 확인할 순서를 정리하고 있습니다.")}
               </p>

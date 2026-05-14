@@ -251,7 +251,7 @@ async function fetchOfficialBlsCalendar(): Promise<MacroCalendarPayload | null> 
     source: "official-bls",
     sourceLabel: "공식 자동 갱신",
     sourceNote:
-      "CPI와 PPI는 공식 발표값을 자동 반영합니다. 소매판매, 주택, FOMC 등 나머지 일정도 발표 전후로 순차 갱신되며, 모든 시간은 한국시간입니다.",
+      "CPI와 PPI는 공식 발표값을 확인해 반영합니다. 그 외 주요 일정은 공식 일정과 이전·예상 수치 중심으로 제공하며, 모든 시간은 한국시간입니다.",
     isAutomatic: true,
     nextRefreshMs: getRefreshMs(items),
     items

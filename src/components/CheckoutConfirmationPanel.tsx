@@ -123,7 +123,7 @@ export function CheckoutConfirmationPanel({ orderId, paymentKey, amount, planId 
       <span className="mt-0.5 shrink-0">{getIcon(state.status)}</span>
       <div>
         <p className="font-black">
-          {state.status === "checking" ? "결제 확인 중" : state.status === "active" ? "Pro 기능이 열렸습니다" : state.status === "pending" ? "잠시 기다려 주세요" : "확인이 필요합니다"}
+          {state.status === "checking" ? "결제 확인 중" : state.status === "active" ? "Pro 기능이 열렸습니다" : state.status === "pending" ? "결제 확인 대기" : "확인이 필요합니다"}
         </p>
         <p className="mt-1 opacity-90">{state.message}</p>
       </div>
