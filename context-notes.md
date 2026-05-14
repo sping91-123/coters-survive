@@ -1281,3 +1281,6 @@ The product needs a repeatable scorecard instead of subjective "does it feel rea
 Client-only usage limits are not enough for a paid product. The browser now sends the Supabase access token to the key high-cost APIs, and the server resolves the user plan before choosing rate-limit keys, request ceilings, and result windows. Basic still works without login, but Pro users now get a measurable backend difference instead of only a local UI difference.
 
 The scanner UI should not hide that backend difference. Paid users skip the smaller Basic browser cache and can see a wider candidate window, while Basic keeps the tighter first-check list.
+
+### 2026-05-14 continuous improvement 39 launch review entitlement guard.
+The launch score should check that paid API protections exist, not just that generic rate limiting exists. The static review now looks for both the browser auth fetch helper and the server entitlement resolver.

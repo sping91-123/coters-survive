@@ -71,7 +71,12 @@ const checks = [
   {
     area: "API Guard",
     weight: 8,
-    pass: exists("scripts/smoke-api.mjs") && includes("src/lib/server/rateLimit.ts", "Upstash"),
+    pass:
+      exists("scripts/smoke-api.mjs") &&
+      includes("src/lib/server/rateLimit.ts", "Upstash") &&
+      exists("src/lib/server/requestEntitlement.ts") &&
+      exists("src/lib/authFetch.ts") &&
+      includes("src/app/api/scout/route.ts", "getRequestEntitlement"),
     detail: "공개 API 입력 검증과 rate limit 안전장치가 있습니다."
   },
   {

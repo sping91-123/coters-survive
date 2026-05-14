@@ -1438,3 +1438,7 @@
 - [x] Give authenticated Pro users higher server-side request ceilings and larger scanner/watchlist result windows.
 - [x] Make paid scanner screens show the wider Pro candidate window instead of reusing the smaller Basic cache.
 - [x] Verify with lint, build, and smoke checks.
+
+## 2026-05-14 continuous improvement 39 launch review entitlement guard.
+- [x] Add server entitlement wiring to the static launch review so paid API protections cannot disappear silently.
+- [x] Verify with launch smoke.
