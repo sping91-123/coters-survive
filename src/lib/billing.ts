@@ -44,11 +44,11 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 0,
     monthlyValue: 0,
     description: "Chart Radar의 핵심 흐름을 먼저 확인하는 플랜입니다. 장중 반복 감시, 관심종목 확장, 알림 규칙은 Pro에서 넓어집니다.",
-    highlights: ["주요 화면 핵심 확인", "AI 브리핑 하루 1회", "관심종목 2개 저장"],
+    highlights: ["주요 화면 핵심 확인", "AI 브리핑 하루 1회", "관심종목 1개 저장"],
     limits: {
-      radarScans: "코인 3회 · 글로벌 2회",
+      radarScans: "코인 2회 · 글로벌 1회",
       aiBriefings: "시장별 1회",
-      watchlist: "시장별 2개",
+      watchlist: "시장별 1개",
       alerts: "시장별 1개",
       markets: "코인과 글로벌 핵심 확인"
     }

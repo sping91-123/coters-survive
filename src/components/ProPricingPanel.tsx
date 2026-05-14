@@ -67,26 +67,26 @@ const proDifferenceRows = [
 function getFreeVsProRows(scope: BillingPageScope) {
   if (scope === "crypto") {
     return [
-      { label: "레이더 스캔", free: "코인 하루 3회", pro: "코인 하루 200회" },
+      { label: "레이더 스캔", free: "코인 하루 2회", pro: "코인 하루 200회" },
       { label: "AI 브리핑", free: "코인 하루 1회", pro: "코인 하루 30회" },
-      { label: "관심코인", free: "코인 2개 저장", pro: "코인 50개 감시" },
+      { label: "관심코인", free: "코인 1개 저장", pro: "코인 50개 감시" },
       { label: "알림", free: "코인 조건 1개", pro: "코인 조건 20개" }
     ];
   }
 
   if (scope === "stocks") {
     return [
-      { label: "레이더 스캔", free: "글로벌 하루 2회", pro: "글로벌 하루 100회" },
+      { label: "레이더 스캔", free: "글로벌 하루 1회", pro: "글로벌 하루 100회" },
       { label: "AI 브리핑", free: "글로벌 하루 1회", pro: "글로벌 하루 30회" },
-      { label: "관심자산", free: "자산 2개 저장", pro: "자산 50개 감시" },
+      { label: "관심자산", free: "자산 1개 저장", pro: "자산 50개 감시" },
       { label: "알림", free: "글로벌 조건 1개", pro: "글로벌 조건 20개" }
     ];
   }
 
   return [
-    { label: "레이더 스캔", free: "코인 3회 · 글로벌 2회", pro: "코인 200회 · 글로벌 100회" },
+    { label: "레이더 스캔", free: "코인 2회 · 글로벌 1회", pro: "코인 200회 · 글로벌 100회" },
     { label: "AI 브리핑", free: "시장별 하루 1회", pro: "시장별 하루 30회 이상" },
-    { label: "관심종목", free: "시장별 2개 저장", pro: "시장별 50개 이상 감시" },
+    { label: "관심종목", free: "시장별 1개 저장", pro: "시장별 50개 이상 감시" },
     { label: "알림", free: "시장별 조건 1개", pro: "시장별 조건 20개 이상" }
   ];
 }
@@ -153,8 +153,8 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
       highlights: ["QQQ / SPY 핵심 레이더 확인", "주요 글로벌 뉴스 확인", "AI 브리핑 하루 1회"],
       limits: {
         ...plan.limits,
-        radarScans: "하루 2회",
-        watchlist: "글로벌 자산 2개",
+        radarScans: "하루 1회",
+        watchlist: "글로벌 자산 1개",
         alerts: "알림 조건 1개",
         markets: "글로벌 핵심 확인"
       }
@@ -168,8 +168,8 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
       highlights: ["BTC / ETH 핵심 레이더 확인", "주요 알트코인 흐름 확인", "AI 브리핑 하루 1회"],
       limits: {
         ...plan.limits,
-        radarScans: "하루 3회",
-        watchlist: "코인 2개",
+        radarScans: "하루 2회",
+        watchlist: "코인 1개",
         alerts: "알림 조건 1개",
         markets: "코인 핵심 확인"
       }

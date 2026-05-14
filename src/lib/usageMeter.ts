@@ -38,7 +38,7 @@ export const usageBuckets: UsageBucket[] = [
     label: "코인 레이더",
     shortLabel: "코인",
     description: "BTC, ETH, 알트코인 구조와 시장 감지를 불러온 횟수입니다.",
-    freeDailyLimit: 3,
+    freeDailyLimit: 2,
     proDailyLimit: 200
   },
   {
@@ -54,7 +54,7 @@ export const usageBuckets: UsageBucket[] = [
     label: "관심코인 감시",
     shortLabel: "관심",
     description: "관심코인 레이더를 갱신한 횟수입니다.",
-    freeDailyLimit: 2,
+    freeDailyLimit: 1,
     proDailyLimit: 100
   },
   {
@@ -62,7 +62,7 @@ export const usageBuckets: UsageBucket[] = [
     label: "글로벌 레이더",
     shortLabel: "글로벌",
     description: "미국주식, ETF, 글로벌 자산 레이더를 불러온 횟수입니다.",
-    freeDailyLimit: 2,
+    freeDailyLimit: 1,
     proDailyLimit: 100
   },
   {

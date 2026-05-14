@@ -203,7 +203,7 @@ if (Number(bundleYearlyMonthlyValue) > 0 && Number(bundleYearlyMonthlyValue) < N
 }
 
 for (const [planId, expectedLimit] of [
-  ["free", 2],
+  ["free", 1],
   ["crypto_monthly", 50],
   ["crypto_yearly", 100],
   ["bundle_monthly", 100],
