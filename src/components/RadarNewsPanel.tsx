@@ -22,7 +22,7 @@ const marketCopy = {
   crypto: {
     eyebrow: "코인 뉴스 레이더",
     title: "코인 레이더 뉴스",
-    description: "코인 시장 주요 이슈를 한국어로 정리하고, 시장 영향과 오늘 확인할 포인트를 빠르게 보여드립니다.",
+    description: "코인 시장 주요 이슈를 한국어로 정리하고, 시장 영향과 오늘 확인할 포인트를 빠르게 짚어줍니다.",
     summaryTitle: "오늘의 코인 뉴스 브리핑",
     proLine: "Pro에서는 뉴스 영향, 전략 포인트, 반복 브리핑을 더 넓게 확인할 수 있습니다.",
     proBenefits: ["장중 반복 브리핑", "시장 영향 3줄 요약", "전략 판단 포인트"]
@@ -30,7 +30,7 @@ const marketCopy = {
   stocks: {
     eyebrow: "글로벌 뉴스 레이더",
     title: "글로벌 레이더 뉴스",
-    description: "미국주식, ETF, 금리, 실적, 매크로 이슈를 한국어로 정리하고 시장 영향까지 함께 보여드립니다.",
+    description: "미국주식, ETF, 금리, 실적, 매크로 이슈를 한국어로 정리하고 시장 영향까지 함께 짚어줍니다.",
     summaryTitle: "오늘의 글로벌 뉴스 브리핑",
     proLine: "Global Pro에서는 매크로와 미국장 이슈를 장중 반복해서 정리할 수 있습니다.",
     proBenefits: ["매크로 영향 정리", "미국장 이슈 반복 갱신", "관심 종목 연결"]
@@ -211,7 +211,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         setPayload(cached);
         setStatus("ready");
         setError("");
-        setLimitNotice(`${usageGate.message} 기본 화면에서는 마지막 참고 뉴스와 간단 요약만 보여드립니다.`);
+        setLimitNotice(`${usageGate.message} 기본 화면에서는 마지막 참고 뉴스와 간단 요약만 열립니다.`);
         return;
       }
 
@@ -221,7 +221,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         const preview = await fetchNewsPayload("preview");
         setPayload(preview);
         setStatus("ready");
-        setLimitNotice(`${usageGate.message} 기본 화면에서는 AI 영향 분석을 닫고, 오늘 참고할 뉴스 제목과 간단 요약만 먼저 보여드립니다.`);
+        setLimitNotice(`${usageGate.message} 기본 화면에서는 AI 영향 분석을 닫고, 오늘 참고할 뉴스 제목과 간단 요약만 먼저 엽니다.`);
       } catch {
         setStatus("error");
         setError(`${usageGate.message} 내일 다시 확인하거나 Pro에서 반복 브리핑을 열 수 있습니다.`);
@@ -353,7 +353,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         <div className="rounded-lg border border-surface-line bg-surface-card p-6 text-center">
           <Radar className="mx-auto animate-spin text-accent-blue" size={34} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">뉴스 레이더가 주요 이슈를 정리하고 있습니다.</p>
-          <p className="mt-1 text-xs text-slate-500">AI 응답이 늦으면 규칙 기반 요약으로 먼저 보여드립니다.</p>
+          <p className="mt-1 text-xs text-slate-500">AI 응답이 늦으면 기본 요약을 먼저 띄웁니다.</p>
         </div>
       ) : null}
 
@@ -385,7 +385,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
             <Sparkles size={13} aria-hidden />
             간단 요약
           </div>
-          <h3 className="mt-3 text-xl font-black text-white">오늘은 참고 뉴스 중심으로 보여드립니다.</h3>
+          <h3 className="mt-3 text-xl font-black text-white">오늘은 참고 뉴스 중심으로 정리합니다.</h3>
           <p className="mt-3 text-sm leading-7 text-slate-300 [word-break:keep-all]">{briefing.overview}</p>
           <p className="mt-4 rounded-md border border-accent-blue/20 bg-accent-blue/10 px-3 py-2 text-xs font-bold leading-5 text-accent-blue">
             Pro에서는 핵심 이슈, 시장 영향, 전략 노트, 반복 갱신 브리핑까지 열립니다.
