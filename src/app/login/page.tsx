@@ -21,8 +21,8 @@ export default function LoginPage() {
           Chart Radar로 돌아가기
         </Link>
 
-        <section className="rounded-lg border border-surface-line bg-surface-card p-5 shadow-glow">
-          <div className="grid h-12 w-12 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
+        <section className="enterprise-panel p-5">
+          <div className="grid h-12 w-12 place-items-center rounded-xl border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
             <KeyRound size={24} aria-hidden />
           </div>
           <h1 className="mt-5 text-2xl font-black text-white">Chart Radar 로그인</h1>
@@ -31,7 +31,7 @@ export default function LoginPage() {
           </p>
 
           {!configured ? (
-            <div className="mt-5 rounded-md border border-signal-warning/25 bg-signal-warning/10 p-3 text-sm leading-6 text-signal-warning">
+            <div className="mt-5 rounded-xl border border-signal-warning/25 bg-signal-warning/10 p-3 text-sm leading-6 text-signal-warning">
               로그인을 잠시 사용할 수 없습니다. 잠시 후 다시 시도해 주세요.
             </div>
           ) : null}
@@ -41,7 +41,7 @@ export default function LoginPage() {
               type="button"
               disabled={!configured}
               onClick={() => startLogin("google")}
-              className="inline-flex min-h-12 items-center justify-center gap-3 rounded-md border border-white/10 bg-white px-4 text-sm font-black text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl border border-white/10 bg-white px-4 text-sm font-black text-slate-950 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span className="grid h-5 w-5 place-items-center" aria-hidden>
                 <svg viewBox="0 0 24 24" className="h-5 w-5">

@@ -281,9 +281,9 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
         <Header market={market} />
         <RadarTopNav market={market} />
 
-        <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
+        <section className="enterprise-panel p-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
               <History size={21} aria-hidden />
             </div>
             <div>
@@ -294,29 +294,29 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
             </div>
           </div>
 
-          <div className="mt-4 rounded-lg border border-cyan-300/25 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100">
+          <div className="mt-4 rounded-xl border border-accent-blue/20 bg-accent-blue/10 p-3 text-xs leading-5 text-accent-blue">
             {session
               ? "복기 기록이 계정에 연결되어 있습니다. 다른 기기에서도 같은 계정으로 이어볼 수 있습니다."
               : "계정을 연결하면 복기 기록을 안전하게 이어갈 수 있습니다. 로그인 전 기록은 이 기기에만 남습니다."}
           </div>
 
           {stats.scoutEntries.length > 0 ? (
-            <div className="mt-5 rounded-lg border border-accent-blue/20 bg-accent-blue/5 p-4">
+            <div className="mt-5 rounded-xl border border-accent-blue/20 bg-accent-blue/10 p-4">
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-accent-blue">레이더 후보 30일 결과</p>
               <div className="grid grid-cols-4 gap-2 text-center">
-                <div className="rounded-md border border-signal-success/20 bg-signal-success/10 px-2 py-2">
+                <div className="rounded-xl border border-signal-success/20 bg-black/20 px-2 py-2">
                   <p className="text-lg font-black text-signal-success">{stats.win}</p>
                   <p className="text-[10px] font-bold text-slate-500">익절</p>
                 </div>
-                <div className="rounded-md border border-signal-danger/20 bg-signal-danger/10 px-2 py-2">
+                <div className="rounded-xl border border-signal-danger/20 bg-black/20 px-2 py-2">
                   <p className="text-lg font-black text-signal-danger">{stats.loss}</p>
                   <p className="text-[10px] font-bold text-slate-500">손절</p>
                 </div>
-                <div className="rounded-md border border-white/10 bg-black/20 px-2 py-2">
+                <div className="rounded-xl border border-white/10 bg-black/20 px-2 py-2">
                   <p className="text-lg font-black text-slate-300">{stats.be}</p>
                   <p className="text-[10px] font-bold text-slate-500">본전</p>
                 </div>
-                <div className="rounded-md border border-white/10 bg-black/10 px-2 py-2">
+                <div className="rounded-xl border border-white/10 bg-black/10 px-2 py-2">
                   <p className="text-lg font-black text-slate-400">{stats.pending}</p>
                   <p className="text-[10px] font-bold text-slate-500">미기록</p>
                 </div>

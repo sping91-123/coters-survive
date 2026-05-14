@@ -123,9 +123,9 @@ export default function CalculatorPage({ searchParams }: { searchParams?: { mark
           시장별 포지션 크기와 손익비를 계산해보세요. 방향과 손절가가 맞지 않으면 계산 전에 경고합니다.
         </div>
 
-        <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
+        <section className="enterprise-panel p-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
               <Calculator size={21} aria-hidden />
             </div>
             <div>
@@ -146,10 +146,10 @@ export default function CalculatorPage({ searchParams }: { searchParams?: { mark
                     key={item.value}
                     type="button"
                     onClick={() => setDirection(item.value)}
-                    className={`min-h-11 rounded-md border px-3 text-sm font-bold ${
+                    className={`min-h-11 rounded-lg border px-3 text-sm font-bold ${
                       direction === item.value
                         ? "border-accent-blue bg-accent-blue text-slate-950"
-                        : "border-surface-line bg-surface-cardSoft text-slate-300"
+                        : "border-surface-line bg-surface-cardSoft text-slate-300 hover:border-accent-blue/40"
                     }`}
                   >
                     {item.label}
