@@ -47,8 +47,8 @@ function UsageRow({ state, isPaid }: { state: ReturnType<typeof getUsageBucketSt
         <div className={`h-full rounded-full ${barColor(activePercent, isOverActiveLimit)}`} style={{ width: `${activePercent}%` }} />
       </div>
       <div className="mt-2 flex items-center justify-between text-[11px] font-bold text-slate-500">
-        <span>{isPaid ? "Pro" : "Free"} 잔여 {activeRemaining}회</span>
-        <span>Free {state.freeDailyLimit}회 · Pro {state.proDailyLimit}회</span>
+        <span>{isPaid ? "Pro" : "기본"} 잔여 {activeRemaining}회</span>
+        <span>기본 {state.freeDailyLimit}회 · Pro {state.proDailyLimit}회</span>
       </div>
     </div>
   );
@@ -58,17 +58,17 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Free는 전체 시장의 핵심 흐름을 확인하는 기본 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
+    free: "기본 모드는 전체 시장의 핵심 흐름을 확인하는 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
     paid: "현재 Pro 레이더가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넓은 한도로 사용할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
-    free: "Free는 코인 레이더의 흐름을 가볍게 확인하는 모드입니다. Coin Pro는 코인 스캔, 관심코인, AI 브리핑, 알림을 넉넉하게 반복 감시하는 모드입니다.",
+    free: "기본 모드는 코인 레이더의 핵심 흐름을 확인하는 모드입니다. Coin Pro는 코인 스캔, 관심코인, AI 브리핑, 알림을 넉넉하게 반복 감시하는 모드입니다.",
     paid: "코인 Pro 레이더가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 더 여유 있게 반복 확인할 수 있습니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "Free는 글로벌 레이더의 흐름을 가볍게 확인하는 모드입니다. Global Pro는 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 감시하는 모드입니다.",
+    free: "기본 모드는 글로벌 레이더의 핵심 흐름을 확인하는 모드입니다. Global Pro는 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 감시하는 모드입니다.",
     paid: "글로벌 Pro 레이더가 열려 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 더 넓게 확인할 수 있습니다.",
     proHref: "/pro?market=stocks"
   }
