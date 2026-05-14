@@ -1,5 +1,5 @@
 "use client";
-// 무료와 Pro의 일일 사용량 차이를 보여주는 패널입니다.
+// 기본 모드와 Pro의 일일 사용량 차이를 보여주는 패널입니다.
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Crown, Gauge, Zap } from "lucide-react";

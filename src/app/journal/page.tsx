@@ -160,7 +160,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
 
   const marketLabel = market === "stocks" ? "글로벌" : "코인";
   const profilePlan = profile?.plan ?? "free";
-  const profilePlanLabel = hasAnyPaidEntitlement(profilePlan) ? getEntitlementLabel(profilePlan) : "무료";
+  const profilePlanLabel = hasAnyPaidEntitlement(profilePlan) ? getEntitlementLabel(profilePlan) : "기본";
 
   const refreshRemote = useCallback(async () => {
     if (!session?.accessToken) return;
@@ -214,7 +214,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
       setEntries(remote);
       setSyncMessage("이 기기에 있던 복기 기록을 계정에 옮겼습니다.");
     } catch {
-      setSyncMessage("마이그레이션에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      setSyncMessage("기기 복기를 계정에 옮기지 못했습니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setIsLoadingRemote(false);
     }

@@ -11,7 +11,7 @@ import {
   type TradePlanCandidate
 } from "./marketAnalysis";
 
-/** Tier 1 — 메인 스캐너. 무료 포함 전체 이용자. */
+/** Tier 1 — 메인 스캐너. 기본 모드 포함 전체 이용자. */
 export const scoutSymbols = ["BTCUSDT.P", "ETHUSDT.P", "SOLUSDT.P", "XRPUSDT.P", "DOGEUSDT.P"] as const;
 export type ScoutSymbol = (typeof scoutSymbols)[number];
 
@@ -854,7 +854,7 @@ export function topSetups(setups: ScoutSetup[], n = 3): ScoutSetup[] {
   return picked;
 }
 
-/** 무료 티어 일일 제한용. localStorage 저장 키. */
+  /** 기본 모드 일일 제한용. localStorage 저장 키. */
 export const scoutCacheKey = "chartRadar.setupScout.v8";
 const legacyScoutBaseCacheKeys = ["untitledRisk.setupScout.v8", `${"position"}${"guard"}.setupScout.v2`];
 export const scoutCacheTtlMs = 5 * 60 * 1000; // 5분

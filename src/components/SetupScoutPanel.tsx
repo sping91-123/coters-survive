@@ -537,8 +537,8 @@ function EmptyState({
     <div className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-5">
       <p className="text-sm font-black text-signal-warning">현재 강하게 감지된 {marketLabel}이 없습니다.</p>
       <p className="mt-2 text-xs leading-5 text-slate-300">
-        이 상태는 오류가 아니라 “매매하지 않을 근거”입니다. 구조가 애매하거나 관찰 구간에서 너무 멀어진 상태라
-        무리해서 찾기보다 다음 레이더 판독을 기다리는 편이 낫습니다.
+        지금은 구조가 애매하거나 관찰 구간에서 너무 멀어진 상태입니다.
+        무리해서 자리를 찾기보다 다음 레이더 판독을 기다리는 편이 낫습니다.
       </p>
       {riskProfile === "guard" ? (
         <button
@@ -693,7 +693,7 @@ export function SetupScoutPanel({ excludeMajor = false }: { excludeMajor?: boole
         const res = await fetch(`/api/scout?mode=${mode}&risk=${riskProfile}&scope=${scoutScope}`, { cache: "no-store" });
         if (!res.ok) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          throw new Error(data.error ?? `요청 실패 (${res.status})`);
+          throw new Error(data.error ?? `요청을 처리하지 못했습니다. 잠시 뒤 다시 확인해 주세요. (${res.status})`);
         }
         const data = (await res.json()) as { setups: ScoutSetup[]; cachedAt: number };
         writeScoutCache(data.setups, mode, riskProfile, scoutScope);

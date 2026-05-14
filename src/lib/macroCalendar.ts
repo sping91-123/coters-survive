@@ -1,4 +1,4 @@
-// 무료 공식 매크로 데이터와 운영 백업 일정을 합쳐 레이더 캘린더를 제공합니다.
+// 공식 매크로 데이터와 보조 일정을 합쳐 레이더 캘린더를 제공합니다.
 import {
   macroCalendarSourceNote,
   macroCalendarUpdatedAt,
@@ -93,7 +93,7 @@ function getFallbackPayload(warning?: string): MacroCalendarPayload {
     updatedAt: macroCalendarUpdatedAtIso,
     updatedAtLabel: macroCalendarUpdatedAt,
     source: "curated",
-    sourceLabel: "운영 백업 일정",
+    sourceLabel: "보조 일정",
     sourceNote: macroCalendarSourceNote,
     isAutomatic: false,
     nextRefreshMs: 10 * 60 * 1000,
@@ -176,7 +176,7 @@ function buildOfficialInflationActuals(series: BlsSeries[]): OfficialInflationAc
     results.push({
       label: "CPI / Core CPI",
       actual: `CPI ${formatPercent(cpi.mom)} MoM / ${formatPercent(cpi.yoy)} YoY, Core ${formatPercent(coreCpi.mom)} MoM / ${formatPercent(coreCpi.yoy)} YoY`,
-      summary: `${cpi.latest.periodName ?? "최근"} CPI 실제값이 BLS 공개 API 기준으로 확인됐습니다. 헤드라인과 근원 물가의 전월비, 전년비를 함께 보며 금리 기대 변화를 확인해야 합니다.`,
+      summary: `${cpi.latest.periodName ?? "최근"} CPI 실제값이 미국 노동통계국 공식 데이터 기준으로 확인됐습니다. 헤드라인과 근원 물가의 전월비, 전년비를 함께 보며 금리 기대 변화를 확인해야 합니다.`,
       marketImpact:
         "물가가 예상보다 강하게 나오면 달러와 국채금리 상승 압력이 커질 수 있고, 코인과 성장주에는 단기 부담이 될 수 있습니다. 반대로 둔화가 확인되면 위험자산 반등 재료가 될 수 있습니다.",
       sourceUrl: "https://www.bls.gov/cpi/"
@@ -187,7 +187,7 @@ function buildOfficialInflationActuals(series: BlsSeries[]): OfficialInflationAc
     results.push({
       label: "PPI / Core PPI",
       actual: `PPI ${formatPercent(ppi.mom)} MoM / ${formatPercent(ppi.yoy)} YoY, Core ${formatPercent(corePpi.mom)} MoM / ${formatPercent(corePpi.yoy)} YoY`,
-      summary: `${ppi.latest.periodName ?? "최근"} PPI 실제값이 BLS 공개 API 기준으로 확인됐습니다. 생산자 비용 압력이 소비자 물가와 금리 기대로 이어지는지 봐야 합니다.`,
+      summary: `${ppi.latest.periodName ?? "최근"} PPI 실제값이 미국 노동통계국 공식 데이터 기준으로 확인됐습니다. 생산자 비용 압력이 소비자 물가와 금리 기대로 이어지는지 봐야 합니다.`,
       marketImpact:
         "PPI가 강하면 인플레이션 재가속 우려가 커질 수 있어 발표 직후 변동성이 확대될 수 있습니다. 수치 자체보다 달러, 국채금리, 나스닥의 동시 반응을 우선 확인하세요.",
       sourceUrl: "https://www.bls.gov/ppi/"
@@ -249,9 +249,9 @@ async function fetchOfficialBlsCalendar(): Promise<MacroCalendarPayload | null> 
     updatedAt,
     updatedAtLabel: `${formatKstDateTime(updatedAt)} 자동 갱신`,
     source: "official-bls",
-    sourceLabel: "공식 무료 자동",
+    sourceLabel: "공식 자동 갱신",
     sourceNote:
-      "CPI와 PPI 실제값은 BLS 무료 공개 API로 자동 확인합니다. 소매판매, 주택, FOMC 등 나머지 일정은 운영 백업 캘린더로 관리하며, 모든 발표 시간은 한국시간입니다.",
+      "CPI와 PPI 실제값은 미국 노동통계국 공식 데이터로 자동 확인합니다. 소매판매, 주택, FOMC 등 나머지 일정은 보조 캘린더로 관리하며, 모든 발표 시간은 한국시간입니다.",
     isAutomatic: true,
     nextRefreshMs: getRefreshMs(items),
     items
@@ -274,10 +274,10 @@ export async function getMacroCalendarPayload(): Promise<MacroCalendarPayload> {
       return officialPayload;
     }
   } catch (error) {
-    console.warn("[macroCalendar] BLS 공개 API 갱신 실패. 운영 백업 일정으로 대체합니다.", error);
+    console.warn("[macroCalendar] 공식 매크로 데이터 갱신 지연. 보조 일정으로 대체합니다.", error);
   }
 
-  const fallback = getFallbackPayload("BLS 공개 API 연결이 실패해 운영 백업 일정을 표시합니다.");
+  const fallback = getFallbackPayload("공식 매크로 데이터 연결이 지연되어 보조 일정을 표시합니다.");
   cachedPayload = {
     payload: fallback,
     expiresAt: now + fallback.nextRefreshMs

@@ -40,7 +40,7 @@ export const billingPlans: BillingPlan[] = [
     marketScope: "trial",
     name: "Basic Radar",
     badge: "기본",
-    priceLabel: "무료",
+    priceLabel: "기본 제공",
     billingAmount: 0,
     monthlyValue: 0,
     description: "Chart Radar의 핵심 흐름을 확인하는 기본 플랜입니다. 반복 감시, 관심종목 확장, 알림 규칙은 Pro에서 열립니다.",
