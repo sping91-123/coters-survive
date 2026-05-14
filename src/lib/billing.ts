@@ -40,10 +40,10 @@ export const billingPlans: BillingPlan[] = [
     marketScope: "trial",
     name: "Basic Radar",
     badge: "Basic",
-    priceLabel: "Basic 제공",
+    priceLabel: "무료",
     billingAmount: 0,
     monthlyValue: 0,
-    description: "Chart Radar의 핵심 흐름을 먼저 확인하는 플랜입니다. 장중 반복 감시, 관심종목 확장, 알림 규칙은 Pro에서 넓어집니다.",
+    description: "Chart Radar의 핵심 흐름을 먼저 확인하는 플랜입니다. 장중 반복 감시, 관심종목 확장, 알림 조건은 Pro에서 넓어집니다.",
     highlights: ["주요 화면 핵심 확인", "AI 브리핑 하루 1회", "관심종목 1개 저장"],
     limits: {
       radarScans: "코인 2회 · 글로벌 1회",
@@ -62,8 +62,8 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 14900,
     monthlyValue: 14900,
     appStoreProductId: "chart_radar_crypto_monthly",
-    description: "코인 전용 레이더입니다. BTC, ETH, 알트코인, ICT 구조, 기술지표, 코인 뉴스와 알림을 반복 감시합니다.",
-    highlights: ["코인 레이더 하루 200회", "AI 코인 브리핑 하루 30회", "관심코인 50개와 알림 20개"],
+    description: "코인 전용 레이더입니다. BTC, ETH, 알트코인, ICT 구조, 기술지표, 코인 뉴스와 알림을 장중 반복 감시합니다.",
+    highlights: ["코인 레이더 하루 200회", "AI 코인 브리핑 하루 30회", "관심코인 50개와 알림 조건 20개"],
     limits: {
       radarScans: "코인 200회",
       aiBriefings: "코인 30회",
@@ -101,7 +101,7 @@ export const billingPlans: BillingPlan[] = [
     monthlyValue: 14900,
     appStoreProductId: "chart_radar_global_monthly",
     description: "미국주식, 해외선물, ETF, 주요 지수와 매크로 이벤트를 장전, 장중, 마감 기준으로 감시하는 글로벌 전용 플랜입니다.",
-    highlights: ["글로벌 레이더 하루 100회", "AI 글로벌 브리핑 하루 30회", "해외선물·관심자산 50개와 알림 20개"],
+    highlights: ["글로벌 레이더 하루 100회", "AI 글로벌 브리핑 하루 30회", "해외선물·관심자산 50개와 알림 조건 20개"],
     limits: {
       radarScans: "글로벌 100회",
       aiBriefings: "글로벌 30회",
@@ -138,7 +138,7 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 24900,
     monthlyValue: 24900,
     appStoreProductId: "chart_radar_bundle_monthly",
-    description: "코인과 글로벌 시장을 모두 보는 사용자를 위한 번들 플랜입니다. 따로 결제하는 것보다 저렴합니다.",
+    description: "코인과 글로벌 시장을 모두 보는 사용자를 위한 번들 플랜입니다. 두 시장을 따로 결제하는 것보다 유리합니다.",
     highlights: ["코인과 글로벌 전체 레이더", "시장별 뉴스와 알림 분리", "두 시장을 함께 보는 사용자에게 최적"],
     limits: {
       radarScans: "코인 200회 · 글로벌 100회",
@@ -256,5 +256,5 @@ export function parsePlanIdFromOrderId(orderId: string | null | undefined): Bill
 export const subscriptionTrustNotes = [
   "코인과 글로벌 시장은 따로 선택할 수 있고, 두 시장을 모두 보면 All Market Pro로 더 낮은 합산가에 이용할 수 있습니다.",
   "웹과 앱에서 결제해도 같은 계정으로 Pro 기능을 이어서 사용할 수 있습니다.",
-  "Chart Radar는 매수와 매도 신호를 대신 결정하는 서비스가 아니라, 시장 구조와 위험 요소를 빠르게 정리하는 레이더입니다."
+  "Chart Radar는 매수·매도 신호를 대신 결정하는 서비스가 아니라, 시장 구조와 위험 요소를 빠르게 정리하는 레이더입니다."
 ];
