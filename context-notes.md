@@ -1320,3 +1320,15 @@ The launch score should not stay green if the API smoke only checks status codes
 
 ### 2026-05-14 continuous improvement 51 macro health honesty.
 Macro freshness is a daily-trust feature, so the health check should not treat curated static schedules as automatically safe forever. The health endpoint now reports whether macro data refreshed automatically and marks stale curated schedules as an operational warning.
+
+### 2026-05-14 continuous improvement 52 global watchlist copy.
+Global watchlist copy should explain what the user gains, not how many items the UI chooses to show. The helper text now says saved ETFs and symbols stay pinned there so pre-market checks can start from the assets the user actually follows.
+
+### 2026-05-14 continuous improvement 53 Pro value wording.
+Paid copy should feel like an active market monitoring product, not a neutral settings panel. Pro wording now uses "실전 감시 모드" to make the paid tier’s job clearer: repeated intraday checks, watchlists, AI briefings, and alerts.
+
+### 2026-05-14 continuous improvement 54 crypto news fallback titles.
+News should remain useful even when AI translation is unavailable or the free preview is active. Common crypto headline patterns now get more specific Korean fallback titles, so repeated BTC-neutral cards are less likely to look identical.
+
+### 2026-05-14 continuous improvement 55 alert match dedupe.
+Alert history should feel curated, not noisy. The same setup can be detected repeatedly while the page is open, so the recent-match panel now deduplicates by symbol, timeframe, side, and headline before choosing what to show.

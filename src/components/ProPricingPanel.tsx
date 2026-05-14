@@ -69,7 +69,7 @@ const valueRows = [
 ];
 
 const proDifferenceRows = [
-  "Basic은 처음 확인용입니다. Pro는 장중에 여러 번 다시 확인하고, 관심종목과 알림까지 이어가는 작업 모드입니다.",
+  "Basic은 처음 확인용입니다. Pro는 장중에 여러 번 다시 확인하고, 관심종목과 알림까지 이어가는 실전 감시 모드입니다.",
   "Pro는 AI 브리핑, 관심종목, 알림 조건의 한도를 넓혀 직접 찾아보는 시간을 줄이고 중요한 변화를 놓치지 않게 돕습니다.",
   "Chart Radar의 유료 가치는 더 많은 예측 문장이 아니라 시장 구조, 뉴스, 매크로, 위험 요소를 빠르게 종합해 보는 데 있습니다."
 ];
@@ -346,7 +346,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           <p className="font-black text-white">Basic과 Pro의 차이</p>
           <p className="mt-2 text-slate-400">
-            Basic은 처음 확인용입니다. Pro는 장중 반복 확인, 관심종목 감시, 알림 조건까지 이어지는 작업 공간입니다.
+            Basic은 처음 확인용입니다. Pro는 장중 반복 확인, 관심종목 감시, 알림 조건까지 이어지는 실전 감시 모드입니다.
           </p>
         </div>
       </div>

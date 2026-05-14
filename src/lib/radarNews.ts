@@ -297,6 +297,14 @@ export function fallbackKoreanNewsTitle(title: string, market: RadarNewsMarket =
   if (/what happened in crypto today|crypto today/i.test(normalized)) return "오늘 코인 시장에서 확인할 주요 이슈를 정리한 뉴스입니다.";
   if (/coinbase.*clarity act|brian armstrong.*clarity/i.test(normalized)) return "코인베이스 CEO가 CLARITY 법안 처리 전 지지 입장을 냈습니다.";
   if (/clarity act.*vote|clarity act/i.test(normalized)) return "미국 코인 규제 법안 이슈가 시장 변동성 변수로 떠오르고 있습니다.";
+  if (/spot etfs?.*(outflow|outflows|yanked|withdraw)|outflow.*spot etfs?|investors yanked/i.test(normalized)) return "비트코인 현물 ETF에서 큰 규모의 자금 유출이 확인됐습니다.";
+  if (/bear market resistance|major resistance|at risk of falling/i.test(normalized)) return "비트코인이 주요 저항 구간에서 하락 위험을 경고받고 있습니다.";
+  if (/treasury.*net loss|reports?.*net loss|bitcoin treasury/i.test(normalized)) return "비트코인 보유 기업의 실적 손실 이슈가 시장 심리에 영향을 주고 있습니다.";
+  if (/aave.*unfreeze|hacked crypto|emergency bid|judge delays/i.test(normalized)) return "Aave 해킹 자금 처리 이슈가 디파이 시장의 신뢰 변수로 떠오르고 있습니다.";
+  if (/token down|down 5|begins shipping|handset/i.test(normalized)) return "테마성 토큰의 하락과 관련 상품 출시 이슈가 단기 변동성을 만들고 있습니다.";
+  if (/xi.*trump|taiwan conflict|geopolitical/i.test(normalized)) return "미중 긴장 이슈가 비트코인과 주요 알트코인 변동성을 키우고 있습니다.";
+  if (/tokenized finance|tokenization|real world assets|rwa/i.test(normalized)) return "토큰화 금융 이슈가 기관 자금과 온체인 시장의 장기 재료로 확인됩니다.";
+  if (/clemency|pardon|crypto founders/i.test(normalized)) return "미국 정치권의 코인 업계 사면 논의가 규제 심리 변수로 떠오르고 있습니다.";
   if (/whale.*short|shorts?.*crypto/i.test(normalized)) return "고래의 대규모 숏 포지션이 코인 시장 위험 신호로 주목받고 있습니다.";
   if (/polymarket.*volume.*decline/i.test(normalized)) return "폴리마켓 월간 거래량 감소가 예측시장 수요 둔화 신호로 거론됩니다.";
   if (/consensys.*ipo|potential ipo/i.test(normalized)) return "이더리움 생태계 기업의 IPO 일정 변화가 시장 관심을 받고 있습니다.";

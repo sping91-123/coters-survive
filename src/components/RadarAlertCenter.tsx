@@ -273,6 +273,15 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
   const scopedEnabledRuleIds = enabledRuleIds.filter((id) => scopedRules.some((rule) => rule.id === id));
   const summary = useMemo(() => summarizeRadarAlerts(scopedEnabledRuleIds), [scopedEnabledRuleIds]);
   const visibleRules = compact ? scopedRules.slice(0, 3) : scopedRules;
+  const visibleSetupMatches = useMemo(() => {
+    const seen = new Set<string>();
+    return setupMatches.filter((match) => {
+      const key = `${match.setup.symbol}:${match.setup.timeframe}:${match.setup.side}:${match.setup.headline}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [setupMatches]);
   const alertUsageBucketId = market === "stocks" ? "stocksAlertRule" : "cryptoAlertRule";
 
   function toggleRule(ruleId: RadarAlertRuleId) {
@@ -462,14 +471,14 @@ export function RadarAlertCenter({ compact = false, market = "crypto" }: { compa
             알림 화면을 열면 저장한 조건을 다시 훑고, 마지막 확인 상태가 여기에 표시됩니다.
           </p>
         )}
-        {setupMatches.length > 0 ? (
+        {visibleSetupMatches.length > 0 ? (
           <div className="mt-3 rounded-md border border-emerald-300/25 bg-emerald-300/10 p-3">
             <div className="flex items-center justify-between gap-2">
               <p className="text-xs font-black text-emerald-200">최근 일치 감지</p>
-              <span className="text-[11px] font-bold text-emerald-200/80">{formatSavedAt(setupMatches[0].matchedAt)}</span>
+              <span className="text-[11px] font-bold text-emerald-200/80">{formatSavedAt(visibleSetupMatches[0].matchedAt)}</span>
             </div>
             <div className="mt-2 grid gap-2 md:grid-cols-2">
-              {setupMatches.slice(0, compact ? 1 : 2).map((match) => (
+              {visibleSetupMatches.slice(0, compact ? 1 : 2).map((match) => (
                 <article key={match.id} className="rounded border border-emerald-300/20 bg-black/20 p-3">
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-sm font-black text-white">{compactSymbol(match.setup.symbol)}</span>

@@ -1505,3 +1505,19 @@
 - [x] Replace optimistic macro readiness with automatic-refresh and freshness based readiness.
 - [x] Add health output for macro automatic refresh state.
 - [x] Update operations smoke to guard the stricter macro health rule.
+
+## 2026-05-14 continuous improvement 52 global watchlist copy.
+- [x] Replace the global watchlist helper copy with a user-action focused explanation.
+- [x] Verify the page renders after a clean dev-server restart.
+
+## 2026-05-14 continuous improvement 53 Pro value wording.
+- [x] Replace generic work-mode wording with 실전 감시 모드.
+- [x] Make paid copy sound like active market monitoring instead of a settings description.
+
+## 2026-05-14 continuous improvement 54 crypto news fallback titles.
+- [x] Add rule-based Korean titles for common ETF outflow, resistance, treasury-loss, DeFi hack, geopolitical, tokenization, and political crypto news patterns.
+- [x] Improve free or rate-limited news cards so repeated generic titles are less likely.
+
+## 2026-05-14 continuous improvement 55 alert match dedupe.
+- [x] Deduplicate recently matched alert setups by symbol, timeframe, side, and headline before rendering.
+- [x] Verify alert page, lint, smoke checks, and production build.

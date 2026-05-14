@@ -530,7 +530,7 @@ export function StockRadarApp() {
             <div>
               <p className="text-xs font-black text-white">관심 글로벌 종목</p>
               <p className="mt-1 text-[11px] font-bold text-slate-500">
-                매일 보는 ETF와 종목을 저장해 장전 점검을 빠르게 시작하세요. 현재 {Math.min(savedSymbols.length, watchlistLimit)}개를 먼저 보여줍니다.
+                매일 보는 ETF와 종목을 저장하면 이곳에 고정됩니다. 장전 점검 때 저장한 종목부터 빠르게 확인하세요.
               </p>
             </div>
             <button
