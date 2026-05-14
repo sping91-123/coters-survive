@@ -353,7 +353,7 @@ export function RadarNewsPanel({ market = "crypto" }: { market?: RadarNewsMarket
         <div className="rounded-lg border border-surface-line bg-surface-card p-6 text-center">
           <Radar className="mx-auto animate-spin text-accent-blue" size={34} aria-hidden />
           <p className="mt-3 text-sm font-black text-white">뉴스 레이더가 주요 이슈를 정리하고 있습니다.</p>
-          <p className="mt-1 text-xs text-slate-500">AI 응답이 늦으면 기본 요약을 먼저 띄웁니다.</p>
+          <p className="mt-1 text-xs text-slate-500">AI 응답이 늦으면 간단 요약을 먼저 띄웁니다.</p>
         </div>
       ) : null}
 

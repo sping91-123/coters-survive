@@ -232,7 +232,7 @@ export function hasScopedEntitlement(planId: BillingEntitlementPlan, scope: Bill
 }
 
 export function getEntitlementLabel(planId: BillingEntitlementPlan) {
-  if (!planId || planId === "free") return "기본";
+  if (!planId || planId === "free") return "Basic";
   if (planId === "admin") return "Admin";
   if (planId === "premium" || planId === "member") return "Legacy Pro";
   return findBillingPlan(planId)?.name ?? "Pro";

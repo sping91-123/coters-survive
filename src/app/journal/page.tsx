@@ -160,7 +160,7 @@ export default function JournalPage({ searchParams }: { searchParams?: { market?
 
   const marketLabel = market === "stocks" ? "글로벌" : "코인";
   const profilePlan = profile?.plan ?? "free";
-  const profilePlanLabel = hasAnyPaidEntitlement(profilePlan) ? getEntitlementLabel(profilePlan) : "기본";
+  const profilePlanLabel = hasAnyPaidEntitlement(profilePlan) ? getEntitlementLabel(profilePlan) : "Basic";
 
   const refreshRemote = useCallback(async () => {
     if (!session?.accessToken) return;

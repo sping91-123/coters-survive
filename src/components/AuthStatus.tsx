@@ -45,7 +45,7 @@ export function AuthStatus() {
         title={isPaid ? `${planLabel} 이용 중` : "Basic 이용 중"}
       >
         <Crown size={13} aria-hidden />
-        <span className="max-w-32 truncate">{isPaid ? planLabel : "기본"}</span>
+        <span className="max-w-32 truncate">{isPaid ? planLabel : "Basic"}</span>
       </span>
       <button
         type="button"
