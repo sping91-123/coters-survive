@@ -218,7 +218,7 @@ const structureSensitivityOptions: Array<{
     description: "짧은 흐름을 더 빨리 잡습니다.",
     analysisMode: "aggressive",
     msbMode: "wick",
-    detail: "진행 중 봉, 윅 감지, ZigZag 5"
+    detail: "빠른 반응, 신호 많음, 변동성 민감"
   },
   {
     value: 7,
@@ -226,7 +226,7 @@ const structureSensitivityOptions: Array<{
     description: "기본값으로 쓰기 좋습니다.",
     analysisMode: "confirmed",
     msbMode: "wick",
-    detail: "닫힌 봉, 윅 감지, ZigZag 7"
+    detail: "균형 반응, 기본 추천, 노이즈 완화"
   },
   {
     value: 9,
@@ -234,7 +234,7 @@ const structureSensitivityOptions: Array<{
     description: "큰 추세 전환을 봅니다.",
     analysisMode: "confirmed",
     msbMode: "close",
-    detail: "닫힌 봉, 종가 확정, ZigZag 9"
+    detail: "큰 흐름 중심, 신호 적음, 확인 우선"
   }
 ];
 
