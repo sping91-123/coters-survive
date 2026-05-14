@@ -2954,8 +2954,8 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
                 <MiniMetric label="CHoCH 판정" value="윅 돌파" />
                 <MiniMetric label="OTE 기준" value="4시간 20봉 범위" />
                 <MiniMetric label="PD 기준" value="4시간 프리미엄/디스카운트" />
-                <MiniMetric label="POC 기준" value="현재 TF 최근 180봉 VP" />
-                <MiniMetric label="스윕 기준" value="확정 pivot 이후" />
+                <MiniMetric label="POC 기준" value="현재 시간대 최근 거래량 분포" />
+                <MiniMetric label="스윕 기준" value="스윙 고점·저점 확정 이후" />
                 <MiniMetric label="레이더 기준" value={`${activeTimeframe} 타임프레임`} />
                 <MiniMetric label="판독 모드" value={analysisMode === "confirmed" ? "닫힌 봉 기준" : "진행 중 봉 포함"} />
                 <MiniMetric label="4H EMA200" value={fourHourAnalysis ? stateLabel(fourHourAnalysis.ema200Side) : "-"} />
