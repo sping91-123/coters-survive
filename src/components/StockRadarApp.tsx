@@ -448,7 +448,7 @@ export function StockRadarApp() {
             <BarChart3 size={21} aria-hidden />
           </div>
           <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-accent-blue">글로벌 레이더</p>
+            <p className="text-xs font-bold tracking-[0.18em] text-accent-blue">GLOBAL RADAR</p>
             <h2 className="mt-1 text-xl font-black text-white">글로벌 레이더</h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
               미국 주요 주식, 지수 ETF, 반도체, 성장주, 원자재 ETF를 기술지표 중심으로 빠르게 훑습니다.
