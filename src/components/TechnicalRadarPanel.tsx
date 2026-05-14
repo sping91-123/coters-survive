@@ -125,7 +125,7 @@ export function TechnicalRadarPanel({
               <p className="pb-1 text-sm font-black text-accent-blue">{report.fearGreed.label}</p>
             </div>
             <p className="mt-3 text-xs leading-5 text-slate-400">
-              {report.fearGreed.description} 공식 공포와 탐욕 지수가 아니라 {assetLabel}의 캔들로 만든 참고값입니다.
+              {report.fearGreed.description} {assetLabel}의 캔들 흐름으로 과열과 침체 정도를 읽어낸 레이더 값입니다.
             </p>
           </div>
         </div>

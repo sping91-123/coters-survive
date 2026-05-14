@@ -58,18 +58,18 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "기본 모드는 전체 시장의 핵심 흐름을 확인하는 모드입니다. Pro는 코인, 글로벌, AI 브리핑, 관심종목, 알림을 매일 반복해서 돌리는 감시 모드입니다.",
-    paid: "현재 Pro 레이더가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 더 넓은 한도로 사용할 수 있습니다.",
+    free: "기본은 오늘 시장의 큰 흐름을 빠르게 확인하기에 좋습니다. 장중에 코인, 글로벌, AI 브리핑, 관심종목, 알림까지 계속 확인하려면 Pro 한도가 필요합니다.",
+    paid: "Pro 한도가 적용되어 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 여유 있게 반복 확인할 수 있습니다.",
     proHref: "/pro"
   },
   crypto: {
-    free: "기본 모드는 코인 레이더의 핵심 흐름을 확인하는 모드입니다. Coin Pro는 코인 스캔, 관심코인, AI 브리핑, 알림을 넉넉하게 반복 감시하는 모드입니다.",
-    paid: "코인 Pro 레이더가 열려 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 더 여유 있게 반복 확인할 수 있습니다.",
+    free: "기본은 코인 시장의 큰 흐름을 확인하기에 좋습니다. 장중에 후보를 다시 돌리고, 관심코인과 코인 알림까지 챙기려면 Coin Pro 한도가 필요합니다.",
+    paid: "Coin Pro 한도가 적용되어 있습니다. 코인 스캔, 관심코인, AI 브리핑, 알림을 더 여유 있게 반복 확인할 수 있습니다.",
     proHref: "/pro?market=crypto"
   },
   stocks: {
-    free: "기본 모드는 글로벌 레이더의 핵심 흐름을 확인하는 모드입니다. Global Pro는 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 감시하는 모드입니다.",
-    paid: "글로벌 Pro 레이더가 열려 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 더 넓게 확인할 수 있습니다.",
+    free: "기본은 글로벌 시장의 큰 흐름을 확인하기에 좋습니다. 장중에 미국주식, ETF, 지수, 매크로 브리핑과 알림을 반복 확인하려면 Global Pro 한도가 필요합니다.",
+    paid: "Global Pro 한도가 적용되어 있습니다. 미국주식, ETF, 지수, 매크로 브리핑과 알림을 더 넓게 확인할 수 있습니다.",
     proHref: "/pro?market=stocks"
   }
 };
@@ -121,8 +121,8 @@ export function UsageMeterPanel({
       : scopedOverCount > 0
         ? "오늘 기본 한도에 걸린 항목이 있습니다."
         : scopedUsedTotal > 0
-          ? "오늘 레이더 사용량이 쌓이고 있습니다."
-          : "오늘 레이더 한도가 열려 있습니다.";
+          ? "오늘 레이더를 사용하고 있습니다."
+          : "오늘 사용할 레이더가 준비되어 있습니다.";
 
   return (
     <section className="rounded-lg border border-cyan-300/25 bg-surface-card p-4 shadow-glow sm:p-5">
@@ -159,7 +159,7 @@ export function UsageMeterPanel({
       <div className="mt-4 flex flex-col gap-2 rounded-md border border-cyan-300/20 bg-cyan-300/10 p-3 text-xs leading-5 text-cyan-100 sm:flex-row sm:items-center sm:justify-between">
         <span className="flex items-start gap-2">
           <Zap className="mt-0.5 shrink-0" size={14} aria-hidden />
-          오늘 남은 레이더 여유와 Pro 한도를 함께 보여드립니다.
+          오늘 남은 사용량을 확인하고, 부족한 항목은 Pro에서 더 넓게 열어둘 수 있습니다.
         </span>
         {compact ? (
           <Link href={copy.proHref} className="font-black text-cyan-200 hover:text-white">

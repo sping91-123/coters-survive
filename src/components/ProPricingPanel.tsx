@@ -59,8 +59,8 @@ const valueRows = [
 ];
 
 const proDifferenceRows = [
-  "기본 모드는 하루 핵심 흐름을 확인하는 모드입니다. Pro는 장중에 반복해서 레이더를 돌리고 변화가 생긴 자산을 계속 확인하는 감시 모드입니다.",
-  "Pro는 AI 브리핑, 관심종목, 알림 규칙의 한도를 넓혀 직접 찾아보는 시간을 줄이는 구독입니다.",
+  "기본은 하루 핵심 흐름을 확인하는 용도입니다. Pro는 장중에 레이더를 반복 실행하고 변화가 생긴 자산을 계속 따라가기 위한 구독입니다.",
+  "Pro는 AI 브리핑, 관심종목, 알림 규칙의 한도를 넓혀 직접 찾아보는 시간을 줄여줍니다.",
   "Chart Radar는 매수와 매도를 대신 결정하지 않습니다. 대신 시장 구조, 뉴스, 매크로, 위험 요소를 빠르게 모아 판단 시간을 줄여줍니다."
 ];
 
@@ -119,26 +119,26 @@ const scopeCopy: Record<
   },
   crypto: {
     eyebrow: "Coin Radar Pro",
-    title: "코인 화면에서는 코인 전용 플랜과 All Market 플랜만 보여드립니다.",
+    title: "코인만 집중해서 본다면 Coin Pro, 전체 시장까지 보려면 All Market Pro가 맞습니다.",
     body:
       "BTC, ETH, 알트코인, 코인뉴스, 코인 알림을 중심으로 쓰는 사용자라면 Coin Pro로 충분합니다. 글로벌 시장까지 함께 볼 예정이라면 All Market Pro를 선택하면 됩니다.",
     representativePrice: "월 14,900원",
     representativeBody: "코인 레이더, ICT 구조, 기술지표, 코인뉴스, 코인 알림을 코인 시장에 맞춰 엽니다.",
     highlightedPlanId: "crypto_monthly",
     freeHref: "/survival",
-    filterNotice: "코인 전용 화면입니다. 글로벌 전용 플랜은 숨기고 All Market 플랜만 함께 보여드립니다.",
+    filterNotice: "코인 중심 사용자에게 필요한 요금제만 정리했습니다.",
     priceAnchor: "하루 500원 정도의 비용으로 코인 레이더, 뉴스 브리핑, 관심코인, 알림을 매일 확인하는 구조입니다."
   },
   stocks: {
     eyebrow: "Global Radar Pro",
-    title: "글로벌 화면에서는 글로벌 전용 플랜과 All Market 플랜만 보여드립니다.",
+    title: "미국주식과 매크로를 집중해서 본다면 Global Pro, 코인까지 함께 보면 All Market Pro가 맞습니다.",
     body:
       "미국주식, ETF, 지수, 매크로 흐름을 중심으로 쓰는 사용자라면 Global Pro로 충분합니다. 코인까지 함께 볼 예정이라면 All Market Pro를 선택하면 됩니다.",
     representativePrice: "월 14,900원",
     representativeBody: "글로벌 레이더, 기술지표, 글로벌뉴스, 매크로 브리핑, 관심자산 알림을 한 화면으로 엽니다.",
     highlightedPlanId: "stocks_monthly",
     freeHref: "/global",
-    filterNotice: "글로벌 전용 화면입니다. 코인 전용 플랜은 숨기고 All Market 플랜만 함께 보여드립니다.",
+    filterNotice: "글로벌 시장 중심 사용자에게 필요한 요금제만 정리했습니다.",
     priceAnchor: "하루 500원 정도의 비용으로 미국주식, ETF, 지수, 매크로 이벤트를 한 화면에서 점검합니다."
   }
 };
@@ -351,7 +351,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
         <div className="rounded-lg border border-surface-line bg-surface-card p-4 text-sm leading-6 text-slate-300">
           <p className="font-black text-white">기본과 Pro의 차이</p>
           <p className="mt-2 text-slate-400">
-            기본은 핵심 확인, Pro는 장중 반복 감시와 알림을 위한 작업 공간입니다.
+            기본은 핵심 확인에 가깝고, Pro는 장중 반복 확인과 알림까지 이어가는 작업 공간입니다.
           </p>
         </div>
       </div>
@@ -359,7 +359,7 @@ export function ProPricingPanel({ marketScope = "all" }: { marketScope?: Billing
       <div className="overflow-hidden rounded-lg border border-surface-line bg-surface-card">
         <div className="border-b border-white/10 p-4">
           <p className="text-xs font-black tracking-[0.2em] text-cyan-300">BASIC VS PRO</p>
-          <h3 className="mt-1 text-xl font-black text-white">돈을 내면 무엇이 달라지는지 먼저 보여드립니다.</h3>
+          <h3 className="mt-1 text-xl font-black text-white">Pro에서 실제로 넓어지는 범위입니다.</h3>
         </div>
         <div className="grid divide-y divide-white/10 md:grid-cols-4 md:divide-x md:divide-y-0">
           {freeVsProRows.map((row) => (
