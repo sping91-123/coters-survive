@@ -1356,3 +1356,6 @@ The altcoin page now reuses the same chart analysis surface as BTC and ETH, but 
 
 ### 2026-05-14 continuous improvement 63 Altcoin free usage gate.
 Altcoin single-symbol analysis is now treated as a monetizable Coin Pro value: Basic users can inspect three distinct altcoins per day, while Coin Pro and bundle users can continue without the practical Basic gate. The gate counts unique alt symbols per local day rather than refresh clicks so revisiting the same coin does not feel punitive.
+
+### 2026-05-14 continuous improvement 64 Payment launch readiness health check.
+The health endpoint now reports a launch readiness score and structured blocking actions. This makes it clearer whether web checkout, RevenueCat app subscriptions, public URL, Supabase admin, AI provider, and macro freshness are actually ready before paid launch.

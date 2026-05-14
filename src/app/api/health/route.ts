@@ -42,6 +42,22 @@ function getFallbackPaymentUrl(planId: string) {
   );
 }
 
+function scoreLaunchReadiness(checks: Record<string, boolean>) {
+  const weights = {
+    supabasePublic: 15,
+    supabaseAdmin: 15,
+    aiProvider: 12,
+    siteUrl: 10,
+    macroReady: 8,
+    webPaymentProvider: 14,
+    webPaymentLinks: 10,
+    androidBilling: 12,
+    iosBilling: 4
+  };
+
+  return Object.entries(weights).reduce((score, [key, weight]) => score + (checks[key] ? weight : 0), 0);
+}
+
 export async function GET() {
   const macroCalendarPayload = await getMacroCalendarPayload();
   const macroAgeHours = hoursSince(macroCalendarPayload.updatedAt);
@@ -59,6 +75,8 @@ export async function GET() {
   const hasAIProvider = hasGroq || hasGemini;
   const hasPaymentProvider = hasTossSecret && hasTossClient;
   const hasAppPaymentProvider = hasRevenueCatRest && hasSupabaseAdmin && (hasRevenueCatAndroid || hasRevenueCatIos);
+  const hasAndroidBillingProvider = hasRevenueCatAndroid && hasRevenueCatRest && hasSupabaseAdmin;
+  const hasIosBillingProvider = hasRevenueCatIos && hasRevenueCatRest && hasSupabaseAdmin;
   const planPaymentLinks = paidBillingPlans.map((plan) => {
     const directUrl = getDirectPaymentUrl(plan.id);
     const fallbackUrl = getFallbackPaymentUrl(plan.id);
@@ -80,9 +98,54 @@ export async function GET() {
   const macroReady = hasAutomaticMacroRefresh || !isMacroStale;
   const coreReady = hasSupabaseUrl && hasSupabaseKey && hasAIProvider && macroReady;
   const readyForWebPaidLaunch = coreReady && hasSiteUrl && hasPaymentProvider && paymentLinksReady;
-  const readyForAndroidLaunch = coreReady && hasSiteUrl && hasRevenueCatAndroid && hasRevenueCatRest && hasSupabaseAdmin;
-  const readyForIosLaunch = coreReady && hasSiteUrl && hasRevenueCatIos && hasRevenueCatRest && hasSupabaseAdmin;
+  const readyForAndroidLaunch = coreReady && hasSiteUrl && hasAndroidBillingProvider;
+  const readyForIosLaunch = coreReady && hasSiteUrl && hasIosBillingProvider;
   const readyForPaidLaunch = readyForWebPaidLaunch || readyForAndroidLaunch || readyForIosLaunch;
+  const launchScore = scoreLaunchReadiness({
+    supabasePublic: hasSupabaseUrl && hasSupabaseKey,
+    supabaseAdmin: hasSupabaseAdmin,
+    aiProvider: hasAIProvider,
+    siteUrl: hasSiteUrl,
+    macroReady,
+    webPaymentProvider: hasPaymentProvider,
+    webPaymentLinks: paymentLinksReady,
+    androidBilling: hasAndroidBillingProvider,
+    iosBilling: hasIosBillingProvider
+  });
+  const blockingActions = [
+    hasSiteUrl
+      ? null
+      : {
+          area: "public_url",
+          label: "공개 URL 설정",
+          env: "NEXT_PUBLIC_SITE_URL",
+          reason: "결제 성공, 약관, 개인정보처리방침, 앱스토어 심사용 링크가 같은 도메인을 바라봐야 합니다."
+        },
+    hasPaymentProvider || hasAndroidBillingProvider || hasIosBillingProvider
+      ? null
+      : {
+          area: "payment_provider",
+          label: "결제 제공자 연결",
+          env: "TOSS_PAYMENTS_SECRET_KEY 또는 REVENUECAT_REST_API_KEY",
+          reason: "유료 결제 확인과 Pro 권한 반영을 서버에서 검증해야 합니다."
+        },
+    readyForWebPaidLaunch || paymentLinksReady || readyForAndroidLaunch || readyForIosLaunch
+      ? null
+      : {
+          area: "web_payment_links",
+          label: "웹 플랜별 결제 링크 설정",
+          env: "NEXT_PUBLIC_CRYPTO_MONTHLY_PAYMENT_URL 등",
+          reason: "웹에서 요금제를 누르면 실제 결제창으로 이동해야 합니다."
+        },
+    macroReady
+      ? null
+      : {
+          area: "macro_calendar",
+          label: "매크로 일정 갱신",
+          env: "매크로 데이터 소스 또는 수동 일정 갱신",
+          reason: "매크로 일정이 오래되면 첫 화면 신뢰도가 떨어집니다."
+        }
+  ].filter((item): item is { area: string; label: string; env: string; reason: string } => Boolean(item));
   const warnings = [
     hasSupabaseUrl && hasSupabaseKey ? null : "로그인 연결 정보가 아직 준비되지 않았습니다.",
     hasAIProvider ? null : "AI 제공자 키가 아직 연결되지 않았습니다.",
@@ -98,9 +161,11 @@ export async function GET() {
     service: "chart-radar",
     status: readyForPaidLaunch ? "ready" : coreReady ? "degraded" : "attention_required",
     readyForPaidLaunch,
+    launchScore,
     checkedAt: new Date().toISOString(),
     runtime: "nextjs",
     warnings,
+    blockingActions,
     checks: {
       supabasePublic: hasSupabaseUrl && hasSupabaseKey,
       siteUrl: hasSiteUrl,
