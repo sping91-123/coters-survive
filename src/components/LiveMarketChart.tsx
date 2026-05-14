@@ -21,7 +21,6 @@ import {
   Bot,
   Bug,
   Calculator,
-  ClipboardCheck,
   Copy,
   History,
   HelpCircle,
@@ -2224,11 +2223,11 @@ export function LiveMarketChart({ majorOnly = false }: { majorOnly?: boolean } =
             {analysis ? (
               <div className="mt-3 grid gap-2 sm:grid-cols-3">
                 <Link
-                  href="/diagnosis"
+                  href="/news?market=crypto"
                   className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-accent-blue px-3 text-sm font-extrabold text-slate-950 hover:bg-sky-300"
                 >
-                  <ClipboardCheck size={16} aria-hidden />
-                  매매 전 체크
+                  <Activity size={16} aria-hidden />
+                  시장 브리핑
                 </Link>
                 <Link
                   href="/calculator"

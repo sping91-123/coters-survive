@@ -1,7 +1,6 @@
 "use client";
 // 시장별 포지션 크기와 손익비를 빠르게 계산하는 페이지.
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { Calculator, ShieldAlert } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
 import { Header } from "@/components/Header";
@@ -121,8 +120,7 @@ export default function CalculatorPage({ searchParams }: { searchParams?: { mark
 
         <div className="rounded-lg border border-accent-blue/20 bg-accent-blue/5 px-4 py-3 text-xs leading-6 text-slate-400">
           <span className="font-bold text-accent-blue">Chart Radar</span>에서 관찰 구간과 손절 기준을 확인한 뒤,
-          시장별 포지션 크기와 손익비를 계산해보세요.
-          진입 위험도는 <Link href="/diagnosis" className="font-bold text-accent-blue underline underline-offset-2">진입 진단</Link>에서 확인할 수 있습니다.
+          시장별 포지션 크기와 손익비를 계산해보세요. 방향과 손절가가 맞지 않으면 계산 전에 경고합니다.
         </div>
 
         <section className="rounded-lg border border-surface-line bg-surface-card p-4 shadow-glow sm:p-5">
@@ -164,7 +162,7 @@ export default function CalculatorPage({ searchParams }: { searchParams?: { mark
             <Field label="진입가" value={entryPrice} onChange={setEntryPrice} placeholder="예. 68000" />
             <Field label="손절가" value={stopPrice} onChange={setStopPrice} placeholder="예. 66500" />
             <Field label={marketCopy.leverageLabel} value={leverage} onChange={setLeverage} placeholder={marketCopy.leveragePlaceholder} />
-            <Field label="목표가 선택" value={targetPrice} onChange={setTargetPrice} placeholder="예. 71000" />
+            <Field label="목표가" value={targetPrice} onChange={setTargetPrice} placeholder="예. 71000" />
           </div>
 
           <div className="mt-5 rounded-lg border border-white/10 bg-black/20 p-4">
