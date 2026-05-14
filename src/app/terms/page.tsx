@@ -1,4 +1,4 @@
-// Chart Radar의 서비스 이용 조건을 안내하는 약관 페이지입니다.
+// Chart Radar 서비스 이용 조건을 안내하는 약관 페이지입니다.
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, FileText, ShieldAlert } from "lucide-react";
@@ -34,17 +34,17 @@ const sections = [
   {
     title: "5. 금지 행위",
     body:
-      "사용자는 서비스를 무단 복제하거나, 자동화된 방식으로 과도하게 호출하거나, 타인의 계정을 사용하거나, 서비스 결과를 투자 자문·확정 신호처럼 재판매해서는 안 됩니다. 이러한 행위가 확인되면 이용이 제한될 수 있습니다."
+      "사용자는 서비스를 무단 복제하거나 자동화된 방식으로 과도하게 호출하거나, 타인의 계정을 사용하거나, 서비스 결과를 투자 자문·확정 신호처럼 재판매해서는 안 됩니다. 이러한 행위가 확인되면 이용이 제한될 수 있습니다."
   },
   {
-    title: "6. 데이터와 면책",
+    title: "6. 데이터 면책",
     body:
-      "시세와 지표 데이터는 외부 데이터 제공처, 네트워크 상태, 사용 환경, 제공처 제한의 영향을 받을 수 있습니다. 데이터 지연, 오류, 중단 또는 사용자의 매매 손실에 대해 서비스 운영자는 법령상 허용되는 범위 내에서 책임을 지지 않습니다."
+      "시세와 지표 데이터는 외부 데이터 제공처, 네트워크 상태, 사용 환경, 제공처 제한의 영향을 받을 수 있습니다. 데이터 지연, 오류, 중단 또는 사용자의 매매 손실에 대해 서비스 운영자는 법령이 허용하는 범위 내에서 책임을 지지 않습니다."
   },
   {
     title: "7. 계정 삭제",
     body:
-      "사용자는 언제든 계정과 저장 데이터를 삭제 요청할 수 있습니다. 계정 삭제 시 복기, 관심 종목, 알림 조건 등 계정 기반 데이터가 삭제되며, 법령상 보관이 필요한 결제·분쟁 관련 기록은 필요한 기간 동안 보관될 수 있습니다."
+      "사용자는 언제든 계정과 저장 데이터를 삭제 요청할 수 있습니다. 계정 삭제 후 복기, 관심 종목, 알림 조건 등 계정 기반 데이터가 삭제되며, 법령상 보관이 필요한 결제·분쟁 관련 기록은 필요한 기간 동안 별도로 보관될 수 있습니다."
   }
 ];
 
@@ -58,20 +58,20 @@ export default function TermsPage() {
           홈으로 돌아가기
         </Link>
 
-        <section className="rounded-lg border border-surface-line bg-surface-card p-5 shadow-glow">
+        <section className="enterprise-panel p-5">
           <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-accent-blue/25 bg-accent-blue/10 text-accent-blue">
               <FileText size={20} aria-hidden />
             </div>
             <div>
               <h1 className="text-2xl font-black text-white">이용약관</h1>
-              <p className="mt-2 text-sm leading-6 text-slate-400">시행일 2026년 5월 13일</p>
+              <p className="mt-2 text-sm leading-6 text-slate-400">시행일 2026년 5월 13일.</p>
             </div>
           </div>
 
           <div className="mt-6 grid gap-4">
             {sections.map((section) => (
-              <section key={section.title} className="rounded-lg border border-surface-line bg-surface-cardSoft p-4">
+              <section key={section.title} className="rounded-xl border border-surface-line bg-surface-cardSoft p-4">
                 <h2 className="text-base font-bold text-white">{section.title}</h2>
                 <p className="mt-2 text-sm leading-7 text-slate-400 [word-break:keep-all]">{section.body}</p>
               </section>
@@ -79,7 +79,7 @@ export default function TermsPage() {
           </div>
         </section>
 
-        <section className="rounded-lg border border-signal-warning/25 bg-signal-warning/10 p-4 text-sm leading-6 text-signal-warning">
+        <section className="rounded-xl border border-signal-warning/25 bg-signal-warning/10 p-4 text-sm leading-6 text-signal-warning">
           <div className="flex items-start gap-3">
             <ShieldAlert className="mt-0.5 shrink-0" size={18} aria-hidden />
             <p>

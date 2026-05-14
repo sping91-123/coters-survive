@@ -1,4 +1,4 @@
-// 결제 성공 후 서버 승인 확인 상태를 안내하는 페이지입니다.
+// 결제 완료 후 서버 승인 상태와 다음 행동을 안내하는 페이지입니다.
 import Link from "next/link";
 import { CheckCircle2, Crown, ReceiptText, RotateCw } from "lucide-react";
 import { AppFooter } from "@/components/AppFooter";
@@ -24,12 +24,12 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-5">
         <Header />
         <RadarTopNav market="all" />
-        <section className="rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.24)]">
+        <section className="enterprise-panel p-6">
           <div className="text-center">
-            <CheckCircle2 className="mx-auto text-emerald-300" size={42} aria-hidden />
-            <h2 className="mt-4 text-2xl font-black text-slate-950 dark:text-white">결제 요청을 확인하고 있습니다.</h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-emerald-900 dark:text-emerald-100">
-              결제 내역을 확인하는 중입니다. 승인 확인이 끝나면 Pro 레이더, AI 브리핑, 알림 한도가 바로 확장됩니다.
+            <CheckCircle2 className="mx-auto text-signal-success" size={42} aria-hidden />
+            <h2 className="mt-4 text-2xl font-black text-slate-950 dark:text-white">결제 확인을 진행하고 있습니다.</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 dark:text-slate-300">
+              결제 승인 정보와 계정 권한을 확인하는 중입니다. 확인이 끝나면 선택한 Pro 기능이 계정에 반영됩니다.
             </p>
           </div>
 
@@ -41,24 +41,24 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
           />
 
           <div className="mt-6 grid gap-3 md:grid-cols-3">
-            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
-              <Crown className="text-emerald-300" size={19} aria-hidden />
-              <p className="mt-3 font-black text-slate-950 dark:text-white">Pro 권한 활성화</p>
-              <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
-                승인 확인 후 레이더, AI 브리핑, 알림 한도가 계정에 적용됩니다.
+            <div className="rounded-xl border border-signal-success/20 bg-signal-success/10 p-4">
+              <Crown className="text-signal-success" size={19} aria-hidden />
+              <p className="mt-3 font-black text-slate-950 dark:text-white">Pro 권한 반영</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+                승인 확인 후 레이더 분석, AI 브리핑, 알림 한도가 결제 상품 기준으로 적용됩니다.
               </p>
             </div>
-            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
-              <RotateCw className="text-emerald-300" size={19} aria-hidden />
-              <p className="mt-3 font-black text-slate-950 dark:text-white">권한 반영 확인</p>
-              <p className="mt-2 text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
+            <div className="rounded-xl border border-accent-blue/20 bg-accent-blue/10 p-4">
+              <RotateCw className="text-accent-blue" size={19} aria-hidden />
+              <p className="mt-3 font-black text-slate-950 dark:text-white">권한 새로고침</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
                 화면이 그대로라면 새로고침하거나 다시 로그인하면 최신 권한을 불러옵니다.
               </p>
             </div>
-            <div className="rounded-lg border border-emerald-500/20 bg-white/70 p-4 dark:border-white/10 dark:bg-black/20">
-              <ReceiptText className="text-emerald-300" size={19} aria-hidden />
+            <div className="rounded-xl border border-white/10 bg-white/60 p-4 dark:bg-black/20">
+              <ReceiptText className="text-slate-500 dark:text-slate-300" size={19} aria-hidden />
               <p className="mt-3 font-black text-slate-950 dark:text-white">결제 정보</p>
-              <p className="mt-2 break-all text-sm leading-6 text-slate-700 dark:text-emerald-100/80">
+              <p className="mt-2 break-all text-sm leading-6 text-slate-600 dark:text-slate-300">
                 {orderId ? `주문번호 ${orderId}` : amount ? `결제금액 ${amount}원` : "문의가 필요하면 결제 영수증을 함께 보관해 주세요."}
               </p>
             </div>
@@ -67,15 +67,15 @@ export default function CheckoutSuccessPage({ searchParams }: CheckoutSuccessPag
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
             <Link
               href="/survival"
-              className="inline-flex min-h-11 items-center justify-center rounded-md bg-emerald-300 px-5 text-sm font-black text-slate-950"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl bg-accent-blue px-5 text-sm font-black text-slate-950"
             >
-              레이더로 돌아가기
+              코인 레이더로 이동
             </Link>
             <Link
               href="/pro"
-              className="inline-flex min-h-11 items-center justify-center rounded-md border border-emerald-500/30 bg-white/60 px-5 text-sm font-black text-emerald-900 dark:border-emerald-300/30 dark:bg-black/20 dark:text-emerald-100"
+              className="inline-flex min-h-11 items-center justify-center rounded-xl border border-surface-line bg-white/60 px-5 text-sm font-black text-slate-700 hover:border-accent-blue/40 dark:bg-black/20 dark:text-slate-200"
             >
-              Pro 화면 보기
+              Pro 상품 다시 보기
             </Link>
           </div>
         </section>
