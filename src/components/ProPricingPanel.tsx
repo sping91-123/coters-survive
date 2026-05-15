@@ -130,14 +130,14 @@ const scopeCopy: Record<
   },
   stocks: {
     eyebrow: "Global Radar Pro",
-    title: "미국주식, 해외선물, ETF와 매크로를 집중해서 본다면 Global Pro가 맞습니다.",
-    body: "미국주식, 해외선물, ETF, 지수, 원자재와 매크로 흐름을 중심으로 쓰는 사용자라면 Global Pro로 충분합니다. 코인까지 함께 확인한다면 All Market Pro가 더 효율적입니다.",
+    title: "미국주식, 해외선물, ETF와 매크로를 따로 챙겨본다면 Global Pro가 맞습니다.",
+    body: "미국주식, 해외선물, ETF, 원자재, 채권, 변동성 지표와 매크로 흐름을 중심으로 쓰는 사용자라면 Global Pro로 충분합니다. 여러 차트와 경제 캘린더를 따로 열지 않고 장전, 장중, 마감 후 루틴을 한 화면에서 반복할 수 있습니다. 코인까지 함께 확인한다면 All Market Pro가 더 효율적입니다.",
     representativePrice: "월 14,900원",
-    representativeBody: "글로벌 레이더, 해외선물, 기술지표, 글로벌 뉴스, 매크로 브리핑, 관심자산 알림을 한 화면으로 씁니다.",
+    representativeBody: "글로벌 레이더, 해외선물, 섹터 ETF, 기술지표, 글로벌 뉴스, 매크로 브리핑, 관심자산 알림을 한 화면으로 씁니다.",
     highlightedPlanId: "stocks_monthly",
     freeHref: "/global",
     filterNotice: "글로벌 시장 중심 사용자에게 필요한 요금제만 정리했습니다.",
-    priceAnchor: "하루 500원 정도의 비용으로 미국주식, 해외선물, ETF, 매크로 이벤트를 한 화면에서 점검합니다."
+    priceAnchor: "하루 500원 정도의 비용으로 미국주식, 해외선물, ETF, 원자재, 채권, 변동성 지표와 매크로 이벤트를 한 화면에서 점검합니다."
   }
 };
 
@@ -147,8 +147,8 @@ function getScopedDisplayPlan(plan: BillingPlan, scope: BillingPageScope): Billi
   if (scope === "stocks") {
     return {
       ...plan,
-      description: "글로벌 레이더의 첫 흐름을 먼저 확인합니다. 반복 감시와 알림은 Global Pro에서 넓어집니다.",
-      highlights: ["QQQ / SPY 흐름 확인", "주요 글로벌 뉴스 확인", "AI 브리핑 하루 1회"],
+      description: "글로벌 레이더의 첫 흐름을 먼저 확인합니다. 반복 감시, 관심자산 확장, 알림은 Global Pro에서 넓어집니다.",
+      highlights: ["QQQ / SPY 흐름 확인", "주요 글로벌 뉴스 확인", "글로벌 AI 브리핑 하루 1회"],
       limits: {
         ...plan.limits,
         radarScans: "하루 1회",

@@ -18,10 +18,13 @@ const fallbackUniverse: StockSymbolInfo[] = [
   { symbol: "ES=F", name: "S&P 500 Futures", group: "futures" },
   { symbol: "GC=F", name: "Gold Futures", group: "futures" },
   { symbol: "CL=F", name: "Crude Oil Futures", group: "futures" },
+  { symbol: "ZN=F", name: "10Y Treasury Note Futures", group: "futures" },
   { symbol: "SPY", name: "S&P 500 ETF", group: "index_etf" },
   { symbol: "QQQ", name: "Nasdaq 100 ETF", group: "index_etf" },
+  { symbol: "^VIX", name: "CBOE Volatility Index", group: "index_etf" },
   { symbol: "NVDA", name: "Nvidia", group: "mega_cap" },
   { symbol: "AAPL", name: "Apple", group: "mega_cap" },
+  { symbol: "SMH", name: "Semiconductor ETF", group: "ai_chip" },
   { symbol: "AMD", name: "AMD", group: "ai_chip" },
   { symbol: "TSLA", name: "Tesla", group: "growth" },
   { symbol: "JPM", name: "JPMorgan", group: "finance" },
@@ -39,7 +42,7 @@ const groupLabels: Record<StockSymbolInfo["group"], string> = {
 };
 
 const groupOrder: StockSymbolInfo["group"][] = ["futures", "index_etf", "mega_cap", "ai_chip", "growth", "finance", "commodity"];
-const featuredSymbols = ["NQ=F", "ES=F", "SPY", "QQQ", "NVDA", "GLD"];
+const featuredSymbols = ["NQ=F", "ES=F", "QQQ", "SPY", "^VIX", "TLT", "NVDA", "SMH", "GLD", "CL=F"];
 const globalWatchlistStorageKey = "chart-radar.globalWatchlist.v1";
 const globalWatchlistMaxItems = 150;
 type GlobalRadarMode = "combined" | "ict" | "technical";
@@ -217,6 +220,93 @@ function groupPlaybook(group: StockSymbolInfo["group"] | undefined) {
   if (group === "finance") return "금융·섹터주는 금리와 경기 기대를 같이 봐야 합니다. 지수와 다른 움직임이면 섹터 이슈를 확인하세요.";
   if (group === "commodity") return "원자재 ETF는 달러, 금리, 지정학 이슈 영향을 크게 받습니다. 차트와 매크로 캘린더를 같이 보세요.";
   return "선택한 자산의 그룹 특성을 확인하고, 지수 흐름과 비교해 상대 강도를 판단하세요.";
+}
+
+function groupChecklist(group: StockSymbolInfo["group"] | undefined) {
+  if (group === "futures") {
+    return {
+      compare: "같이 볼 시장. 달러, 금리, VIX, 관련 ETF",
+      risk: "위험 포인트. 지표 발표 직후 급반전과 장 초반 휩쏘",
+      action: "확인 순서. 1분 방향보다 15분과 1시간 기준선 안착을 먼저 봅니다."
+    };
+  }
+
+  if (group === "index_etf") {
+    return {
+      compare: "같이 볼 시장. QQQ, SPY, VIX, TLT, 섹터 ETF",
+      risk: "위험 포인트. 지수는 강한데 폭이 좁은 상승이면 추격 신뢰도가 낮아집니다.",
+      action: "확인 순서. 지수 ETF와 선물이 같은 방향인지 먼저 맞춥니다."
+    };
+  }
+
+  if (group === "mega_cap") {
+    return {
+      compare: "같이 볼 시장. QQQ, XLK, 실적 일정, 옵션 만기 구간",
+      risk: "위험 포인트. 개별 호재보다 지수와 섹터가 약하면 상승이 오래 버티기 어렵습니다.",
+      action: "확인 순서. 선택 종목이 QQQ보다 강한지 상대 강도를 봅니다."
+    };
+  }
+
+  if (group === "ai_chip") {
+    return {
+      compare: "같이 볼 시장. SMH, SOXX, NVDA, 금리, 달러",
+      risk: "위험 포인트. 반도체는 좋은 자리도 변동폭이 커서 손절 기준이 좁으면 흔들립니다.",
+      action: "확인 순서. SMH와 선택 종목이 같은 방향이면 후보 신뢰도가 올라갑니다."
+    };
+  }
+
+  if (group === "growth") {
+    return {
+      compare: "같이 볼 시장. QQQ, ARKK, TLT, VIX",
+      risk: "위험 포인트. 금리 상승과 위험회피 구간에서는 반등이 짧게 끝날 수 있습니다.",
+      action: "확인 순서. 기술지표 과열보다 거래량과 지지선 회복을 먼저 봅니다."
+    };
+  }
+
+  if (group === "finance") {
+    return {
+      compare: "같이 볼 시장. XLF, 금리, 은행주, 달러",
+      risk: "위험 포인트. 금리 반응과 경기 우려가 엇갈리면 방향성이 갑자기 흐려집니다.",
+      action: "확인 순서. XLF와 대형 금융주가 같은 방향인지 확인합니다."
+    };
+  }
+
+  if (group === "commodity") {
+    return {
+      compare: "같이 볼 시장. 달러, 금리, 원자재 선물, 관련 ETF",
+      risk: "위험 포인트. 원자재는 뉴스 한 줄에 갭과 긴 꼬리가 자주 나옵니다.",
+      action: "확인 순서. 차트 기준선과 매크로 이벤트 시간을 함께 확인합니다."
+    };
+  }
+
+  return {
+    compare: "같이 볼 시장. QQQ, SPY, VIX, 금리",
+    risk: "위험 포인트. 단독 종목보다 시장 전체 방향을 먼저 확인해야 합니다.",
+    action: "확인 순서. 지수, 섹터, 선택 종목 순서로 좁혀갑니다."
+  };
+}
+
+function GlobalAssetChecklist({ selectedInfo }: { selectedInfo: StockSymbolInfo | null }) {
+  const checklist = groupChecklist(selectedInfo?.group);
+  const items = [
+    { icon: Compass, title: "동반 체크", body: checklist.compare },
+    { icon: Shield, title: "위험 체크", body: checklist.risk },
+    { icon: Target, title: "판단 순서", body: checklist.action }
+  ];
+
+  return (
+    <div className="mt-3 grid gap-2 md:grid-cols-3">
+      {items.map(({ icon: Icon, title, body }) => (
+        <article key={title} className="rounded-lg border border-white/10 bg-black/20 p-3">
+          <div className="flex items-center gap-2">
+            <Icon className="text-cyan-300" size={15} aria-hidden />
+            <p className="text-xs font-black text-white">{title}</p>
+          </div>
+          <p className="mt-2 text-[11px] font-bold leading-5 text-slate-400 [word-break:keep-all]">{body}</p>
+        </article>
+      ))}
+    </div>
+  );
 }
 
 function GlobalPlaybook({
@@ -586,7 +676,7 @@ export function StockRadarApp() {
     return universe
       .filter((item) => selectedGroup === "all" || item.group === selectedGroup)
       .filter((item) => !query || item.symbol.toLowerCase().includes(query) || item.name.toLowerCase().includes(query))
-      .slice(0, 24);
+      .slice(0, 48);
   }, [searchQuery, selectedGroup, universe]);
   const savedItems = useMemo(
     () => savedSymbols.map((savedSymbol) => universe.find((item) => item.symbol === savedSymbol)).filter(Boolean) as StockSymbolInfo[],
@@ -808,6 +898,8 @@ export function StockRadarApp() {
             </button>
           ))}
         </div>
+
+        <GlobalAssetChecklist selectedInfo={selectedInfo} />
 
         <div className="mt-3 rounded-lg border border-white/10 bg-black/20 p-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

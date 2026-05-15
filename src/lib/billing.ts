@@ -100,14 +100,14 @@ export const billingPlans: BillingPlan[] = [
     billingAmount: 14900,
     monthlyValue: 14900,
     appStoreProductId: "chart_radar_global_monthly",
-    description: "미국주식, 해외선물, ETF, 주요 지수와 매크로 이벤트를 장전, 장중, 마감 기준으로 감시하는 글로벌 전용 플랜입니다.",
-    highlights: ["글로벌 레이더 하루 100회", "글로벌 AI 브리핑 하루 30회", "관심자산 50개와 알림 조건 20개"],
+    description: "미국주식, 해외선물, ETF, 원자재, 채권, 변동성 지표와 매크로 이벤트를 장전, 장중, 마감 기준으로 감시하는 글로벌 전용 플랜입니다.",
+    highlights: ["글로벌 레이더 하루 100회", "70개 이상 글로벌 자산군 감시", "관심자산 50개와 알림 조건 20개"],
     limits: {
       radarScans: "글로벌 100회",
       aiBriefings: "글로벌 30회",
       watchlist: "글로벌 50개",
       alerts: "글로벌 조건 20개",
-      markets: "글로벌"
+      markets: "글로벌 자산군"
     }
   },
   {
@@ -120,7 +120,7 @@ export const billingPlans: BillingPlan[] = [
     monthlyValue: 12417,
     appStoreProductId: "chart_radar_global_yearly",
     description: "글로벌 시장과 매크로 흐름을 꾸준히 확인하는 사용자에게 맞춘 연간 플랜입니다.",
-    highlights: ["Global Pro 전체 기능", "월 환산 12,417원", "매크로와 섹터 레이더 우선 적용"],
+    highlights: ["Global Pro 전체 기능", "월 환산 12,417원", "매크로, 해외선물, 섹터 레이더 우선 적용"],
     limits: {
       radarScans: "글로벌 100회",
       aiBriefings: "글로벌 40회",
