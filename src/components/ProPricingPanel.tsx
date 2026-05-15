@@ -53,15 +53,15 @@ const valueRows = [
   },
   {
     icon: Crown,
-    title: "마감 후 복기 준비",
+    title: "마감 후 복기 리포트",
     body: "오늘 본 근거와 실제 움직임을 다음 매매에서 반복하거나 피해야 할 기준으로 남길 수 있습니다."
   }
 ];
 
 const proDifferenceRows = [
-  "Basic은 처음 확인용입니다. Pro는 장중에 여러 번 다시 확인하고, 관심종목 감시와 알림 조건까지 이어지는 실전 모드입니다.",
-  "Pro는 AI 브리핑, 관심종목, 알림 조건의 한도를 넓혀 직접 찾아보는 시간을 줄이고 중요한 변화를 놓치지 않게 합니다.",
-  "Chart Radar의 유료 가치는 예측 문장이 아니라 시장 구조, 뉴스, 매크로, 위험 요소를 빠르게 종합해 보는 데 있습니다."
+  "Basic은 하루의 첫 방향을 확인하는 입구입니다. Pro는 장중 변화가 생길 때마다 다시 돌려보고 놓치기 쉬운 후보를 계속 추적하는 실전 모드입니다.",
+  "Pro는 AI 브리핑, 관심종목, 알림 조건의 폭을 넓혀 사용자가 직접 여러 화면을 돌아다니는 시간을 줄입니다.",
+  "Chart Radar의 유료 가치는 단순 예측 문장이 아니라 시장 구조, 뉴스, 매크로, 위험 요소를 한 번에 정리하는 반복 감시 흐름에 있습니다."
 ];
 
 function getFreeVsProRows(scope: BillingPageScope) {
@@ -70,7 +70,7 @@ function getFreeVsProRows(scope: BillingPageScope) {
       { label: "레이더 스캔", free: "코인 하루 2회", pro: "코인 하루 200회" },
       { label: "알트 개별 분석", free: "하루 3개", pro: "하루 300개" },
       { label: "AI 브리핑", free: "코인 하루 1회", pro: "코인 하루 30회" },
-      { label: "관심코인", free: "코인 1개 저장", pro: "코인 50개 감시" },
+      { label: "관심코인", free: "코인 1개 추적", pro: "코인 50개 감시" },
       { label: "알림", free: "코인 조건 1개", pro: "코인 조건 20개" }
     ];
   }
@@ -79,7 +79,7 @@ function getFreeVsProRows(scope: BillingPageScope) {
     return [
       { label: "레이더 스캔", free: "글로벌 하루 1회", pro: "글로벌 하루 100회" },
       { label: "AI 브리핑", free: "글로벌 하루 1회", pro: "글로벌 하루 30회" },
-      { label: "관심자산", free: "자산 1개 저장", pro: "자산 50개 감시" },
+      { label: "관심자산", free: "자산 1개 추적", pro: "자산 50개 감시" },
       { label: "알림", free: "글로벌 조건 1개", pro: "글로벌 조건 20개" }
     ];
   }
@@ -87,7 +87,7 @@ function getFreeVsProRows(scope: BillingPageScope) {
   return [
     { label: "레이더 스캔", free: "코인 2회, 알트 3개, 글로벌 1회", pro: "코인 200회, 알트 300개, 글로벌 100회" },
     { label: "AI 브리핑", free: "시장별 하루 1회", pro: "시장별 하루 30회 이상" },
-    { label: "관심종목", free: "시장별 1개 저장", pro: "시장별 50개 이상 감시" },
+    { label: "관심종목", free: "시장별 1개 추적", pro: "시장별 50개 이상 감시" },
     { label: "알림", free: "시장별 조건 1개", pro: "시장별 조건 20개 이상" }
   ];
 }

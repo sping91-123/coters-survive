@@ -31,7 +31,8 @@ const blockedPhrases = [
   "RevenueCat",
   "Gemini",
   "Groq",
-  "Flash"
+  "Flash",
+  "이 기기에 먼저"
 ];
 
 const brokenPatterns = ["�", "媛", "肄", "湲", "덉", "쒖", "뺤", "釉", "諛", "留", "寃", "怨", "臾", "濡"];

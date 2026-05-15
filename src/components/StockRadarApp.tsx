@@ -133,7 +133,7 @@ function getGlobalSessionState(now = new Date()) {
   }
 
   return {
-    title: "장 마감·장전 준비 구간",
+    title: "장 마감·장전 점검 구간",
     detail: "새 캔들이 적은 시간대입니다. 지금은 후보 선별과 지지·저항 기준선 정리에 더 적합합니다.",
     tone: "neutral" as const
   };

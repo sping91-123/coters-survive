@@ -1949,7 +1949,7 @@ export function LiveMarketChart({ majorOnly = false, altOnly = false }: { majorO
         window.setTimeout(() => setSavedMessage(""), 1800);
         return;
       } catch {
-        setSavedMessage("이 기기에 먼저 저장했습니다. 계정 연결 후 다시 저장하면 다른 기기에서도 이어볼 수 있습니다.");
+        setSavedMessage("복기에 남겼습니다. 잠시 후 다시 열어도 같은 판독을 확인할 수 있습니다.");
       }
     }
 

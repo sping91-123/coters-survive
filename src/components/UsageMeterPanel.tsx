@@ -62,7 +62,7 @@ const initialUsageSnapshot: UsageSnapshot = { dateKey: "", counts: {} };
 
 const scopedUsageCopy: Record<BillingPageScope, { free: string; paid: string; proHref: string }> = {
   all: {
-    free: "Basic에서는 오늘 시장의 첫 흐름을 먼저 확인합니다. 장중에 다시 돌려보고, 관심종목을 넓히고, 알림까지 받고 싶다면 Pro가 필요합니다.",
+    free: "Basic에서는 오늘 시장의 첫 흐름을 먼저 확인합니다. 장중 변화를 다시 돌려보고, 관심종목을 넓히고, 알림까지 받고 싶다면 Pro가 필요합니다.",
     paid: "Pro 실전 감시 모드가 열려 있습니다. 코인, 글로벌, AI 브리핑, 관심종목, 알림을 장중에도 끊기지 않게 이어갈 수 있습니다.",
     proHref: "/pro"
   },
@@ -145,7 +145,7 @@ export function UsageMeterPanel({
         <div className="flex shrink-0 gap-2">
           <Link href={copy.proHref} className="enterprise-button inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-3 text-xs font-black">
             <Crown size={13} aria-hidden />
-            Pro 보기
+            {isPaid ? "Pro 활성" : "Pro 보기"}
           </Link>
         </div>
       </div>
@@ -159,7 +159,7 @@ export function UsageMeterPanel({
       <div className="mt-4 flex flex-col gap-2 rounded-xl border border-accent-blue/20 bg-accent-blue/10 p-3 text-xs leading-5 text-accent-blue sm:flex-row sm:items-center sm:justify-between">
         <span className="flex items-start gap-2">
           <Zap className="mt-0.5 shrink-0" size={14} aria-hidden />
-          Basic은 첫 확인용이고, Pro는 장중 재확인과 알림까지 이어지는 실전 감시 모드입니다.
+          Basic은 첫 방향 확인용이고, Pro는 장중 재확인과 알림까지 이어지는 실전 감시 모드입니다.
         </span>
         {compact ? (
           <Link href={copy.proHref} className="font-black text-accent-blue hover:text-white">
